@@ -122,11 +122,12 @@ int setnode(call_t *c, void *params) {
 }
 
 int unsetnode(call_t *c) {
-    free(get_node_private_data(c));
+	struct nodedata *nodedata = get_node_private_data(c);
 // <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
         PRINT_RADIO("SIC unsetnode: sic_free\n");
 // ->RF00000000-AdamXu
 	free(nodedata->rx_busy);
+    free(get_node_private_data(c));
     return 0;
 }
 
