@@ -166,7 +166,7 @@ void cs_init(call_t *c) {
 		int count = 0;
 		while(count < nodedata->sic_iteration_limit)
 		{
-			PRINT_RADIO("SIC cs_init: rx_busy[%d]=%d\n", count, rx_busy[count]);
+			PRINT_RADIO("SIC cs_init: nodedata->rx_busy[%d]=%d\n", count, nodedata->rx_busy[count]);
 			count++;
 		}
 	}
