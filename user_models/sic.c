@@ -5,6 +5,7 @@
  *  \date   2018
  **/
 #include <include/modelutils.h>
+#include <include/sic.h>
 
 
 /* ************************************************** */
