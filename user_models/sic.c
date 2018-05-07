@@ -350,7 +350,14 @@ void cs(call_t *c, packet_t *packet) {
 
     /* capture effect */
     if (packet->rxdBm > nodedata->rxdBm && nodedata->sic_iteration_current <= nodedata->sic_iteration_limit) {
-        nodedata->rxdBm += packet->rxdBm;
+	if(MIN_DBM == nodedata->rxdBm)
+	{
+		nodedata->rxdBm = packet->rxdBm;
+	}
+	else
+	{
+		nodedata->rxdBm += packet->rxdBm;
+	}
 	{
 		int count = 0;
 		while(count < nodedata->sic_iteration_limit)
@@ -492,6 +499,33 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
     return 0;
 }
 
+
+/* ************************************************** */
+/* ************************************************** */
+
+int compInc(const void *a, const void *b)
+{
+    return *(int *)a - *(int *)b;
+}
+
+int compDec(const void *a, const void *b)
+{
+    return *(int *)b - *(int *)a;
+}
+
+int adam_Qsort_Inc_Double(double* base, int len)
+{
+	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
+	if(NULL == base || 0 == len)
+	{
+		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
+		goto END;
+	}
+	qsort(base, len, sizeof(double), compInc);
+	
+END:
+	return error_id;
+}
 
 /* ************************************************** */
 /* ************************************************** */
