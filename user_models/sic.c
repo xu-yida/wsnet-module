@@ -21,20 +21,26 @@ model_t model =  {
 
 /* ************************************************** */
 /* ************************************************** */
+struct sic_signal_t
+{
+	nodeid_t node;
+	double rxdBm;
+};
+
 struct nodedata {
-    uint64_t Ts;
-    double power;
-    int channel;
-    entityid_t modulation;
-    double mindBm;
-    int sleep;  
+	uint64_t Ts;
+	double power;
+	int channel;
+	entityid_t modulation;
+	double mindBm;
+	int sleep;  
 	int sic_iteration_limit;
 	int sic_iteration_current;
 	int sic_remainder;
-    int tx_busy;
-	// sic_iteration_limit decide size of rx_busy
-    int* rx_busy;
-    double rxdBm;
+	int tx_busy;
+	// sic_iteration_limit decide length of rx_busy
+	sic_signal_t* rx_busy;
+	double rxdBm;
 };
 
 
@@ -106,7 +112,7 @@ int setnode(call_t *c, void *params) {
 // <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
         PRINT_RADIO("SIC setnode: malloc\n");
 // ->RF00000000-AdamXu
-	nodedata->rx_busy = malloc(nodedata->sic_iteration_limit*sizeof(int));
+	nodedata->rx_busy = malloc(nodedata->sic_iteration_limit*sizeof(sic_signal));
 	if(NULL == nodedata->rx_busy)
 	{
 // <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
@@ -160,13 +166,12 @@ void cs_init(call_t *c) {
     }
     /* init cs */
     nodedata->tx_busy = -1;
-	memset(nodedata->rx_busy, -1, nodedata->sic_iteration_limit*sizeof(int));
 // <-RF00000000-AdamXu-2018/04/30-add log for sic
 	{
 		int count = 0;
 		while(count < nodedata->sic_iteration_limit)
 		{
-			PRINT_RADIO("SIC cs_init: nodedata->rx_busy[%d]=%d\n", count, nodedata->rx_busy[count]);
+			nodedata->rx_busy[count].node = -1;
 			count++;
 		}
 	}
@@ -257,8 +262,8 @@ void rx(call_t *c, packet_t *packet) {
 		int flag_find = 0;
 		while(count < nodedata->sic_iteration_current)
 		{
-			if (nodedata->rx_busy[count] == packet->id) {
-			    nodedata->rx_busy[count] = -1;
+			if (nodedata->rx_busy[count].node == c->node) {
+			    nodedata->rx_busy[count].node = -1;
 			    nodedata->rxdBm   = MIN_DBM;
 				nodedata->sic_iteration_current--;
 				if(nodedata->sic_iteration_current < 0)
@@ -362,20 +367,20 @@ void cs(call_t *c, packet_t *packet) {
 		int count = 0;
 		while(count < nodedata->sic_iteration_limit)
 		{
-			if(-1 == nodedata->rx_busy[count])
+			if(-1 == nodedata->rx_busy[count].node)
 			{
-				nodedata->rx_busy[count] = packet->id;
+				nodedata->rx_busy[count].node = c->node;
 				nodedata->sic_iteration_current++;
 			}
-			PRINT_RADIO("SIC cs: nodedata->rx_busy[%d]=%d\n", count, nodedata->rx_busy[count]);
+			PRINT_RADIO("SIC cs: nodedata->rx_busy[%d].node=%d\n", count, nodedata->rx_busy[count].node);
 			count++;
 		}
 	}
-// <-RF00000000-AdamXu-2018/04/25-add log for radio
-        PRINT_RADIO("SIC E: radio-rx0 %"PRId64" %d, packet->rxdBm=%f, nodedata->rxdBm=%f, packet->id=%d\n", get_time(), c->node, packet->rxdBm, nodedata->rxdBm, packet->id);
-// ->RF00000000-AdamXu
         /* log cs */
         PRINT_REPLAY("radio-rx0 %"PRId64" %d\n", get_time(), c->node);
+// <-RF00000000-AdamXu-2018/04/25-add log for radio
+        PRINT_RADIO("SIC E\n");
+// ->RF00000000-AdamXu
         return;
     }
 
