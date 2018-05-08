@@ -112,7 +112,7 @@ int setnode(call_t *c, void *params) {
 // <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
         PRINT_RADIO("SIC setnode: malloc\n");
 // ->RF00000000-AdamXu
-	nodedata->rx_busy = malloc(nodedata->sic_iteration_limit*sizeof(sic_signal));
+	nodedata->rx_busy = malloc(nodedata->sic_iteration_limit*sizeof(sic_signal_t));
 	if(NULL == nodedata->rx_busy)
 	{
 // <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
