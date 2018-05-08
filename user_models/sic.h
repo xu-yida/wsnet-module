@@ -19,6 +19,11 @@ typedef enum
 	ADAM_ERROR_NO_MEMORY
 } adam_error_code_t;
 
+typedef struct sic_signal_t
+{
+	nodeid_t node;
+	double rxdBm;
+}sic_signal_t;
 
 // <-RF00000000-AdamXu-2018/05/07-use qsort incremently on double numbers.
 // base: array for sort

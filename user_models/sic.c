@@ -21,11 +21,6 @@ model_t model =  {
 
 /* ************************************************** */
 /* ************************************************** */
-struct sic_signal_t
-{
-	nodeid_t node;
-	double rxdBm;
-};
 
 struct nodedata {
 	uint64_t Ts;
@@ -39,7 +34,7 @@ struct nodedata {
 	int sic_remainder;
 	int tx_busy;
 	// sic_iteration_limit decide length of rx_busy
-	struct sic_signal_t* rx_busy;
+	sic_signal_t* rx_busy;
 	double rxdBm;
 };
 
