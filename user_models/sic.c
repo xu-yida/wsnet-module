@@ -39,7 +39,7 @@ struct nodedata {
 	int sic_remainder;
 	int tx_busy;
 	// sic_iteration_limit decide length of rx_busy
-	sic_signal_t* rx_busy;
+	struct sic_signal_t* rx_busy;
 	double rxdBm;
 };
 
