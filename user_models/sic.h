@@ -21,8 +21,19 @@ typedef enum
 
 typedef struct sic_signal_t
 {
-	nodeid_t node;
+	packetid_t id;
 	double rxdBm;
+
+	// begin time
+	//uint64_t clock0;
+	//end time
+	uint64_t clock1;
+	
+	sic_signal_t* signal_pre_endtime;
+	sic_signal_t* signal_next_endtime;
+	
+	sic_signal_t* signal_higher_power;
+	sic_signal_t* signal_lower_power;
 }sic_signal_t;
 
 // <-RF00000000-AdamXu-2018/05/07-use qsort incremently on double numbers.
@@ -30,6 +41,31 @@ typedef struct sic_signal_t
 // len: length of base
 // return: error code
 int adam_Qsort_Inc_Double(double* base, int len);
+// ->RF00000000-AdamXu
+
+// <-RF00000000-AdamXu-2018/05/22-if a packet is decodable.
+// packet_id: id of packet
+// base_noise: environment noise
+// sic_threshold: SINR threshold
+// return: 1 decodable, 0 not
+int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_threshold);
+// ->RF00000000-AdamXu
+
+// <-RF00000000-AdamXu-2018/05/22-insert new signal to canditate buffer by time.
+// sic_signal: signal to insert
+// return: error code
+int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal);
+// ->RF00000000-AdamXu
+
+// <-RF00000000-AdamXu-2018/05/22-insert new signal to canditate buffer by power.
+// sic_signal: signal to insert
+// return: error code
+int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal);
+// ->RF00000000-AdamXu
+
+// <-RF00000000-AdamXu-2018/05/22-insert new signal to canditate buffer.
+// return: error code
+int adam_Update_Candidate();
 // ->RF00000000-AdamXu
 
 #endif //__radio_public__

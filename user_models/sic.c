@@ -18,6 +18,10 @@ model_t model =  {
     {NULL, 0}
 };
 
+sic_signal_t* g_sic_signal_time_first = NULL;
+//sic_signal_t* g_sic_signal_time_last = NULL;
+sic_signal_t* g_sic_signal_power_first = NULL;
+//sic_signal_t* g_sic_signal_power_last = NULL;
 
 /* ************************************************** */
 /* ************************************************** */
@@ -29,12 +33,12 @@ struct nodedata {
 	entityid_t modulation;
 	double mindBm;
 	int sleep;  
-	int sic_iteration_limit;
-	int sic_iteration_current;
-	int sic_remainder;
+	//int sic_iteration_limit;
+	//int sic_iteration_current;
+	//double sic_remainder;
+	double sic_threshold;
 	int tx_busy;
-	// sic_iteration_limit decide length of rx_busy
-	sic_signal_t* rx_busy;
+	int rx_busy;
 	double rxdBm;
 };
 
@@ -69,9 +73,9 @@ int setnode(call_t *c, void *params) {
     nodedata->mindBm = -92;
     nodedata->sleep = 0;
 	
-    nodedata->sic_iteration_limit = MIN_SIC_ITERATION;
-    nodedata->sic_remainder = MIN_SIC_REMAIN;
-    nodedata->sic_iteration_current = 0;
+    //nodedata->sic_iteration_limit = MIN_SIC_ITERATION;
+    //nodedata->sic_remainder = MIN_SIC_REMAIN;
+    //nodedata->sic_iteration_current = 0;
 
     /* get parameters */
     das_init_traverse(params);
@@ -104,17 +108,6 @@ int setnode(call_t *c, void *params) {
     }
 
     set_node_private_data(c, nodedata);
-// <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
-        PRINT_RADIO("SIC setnode: malloc\n");
-// ->RF00000000-AdamXu
-	nodedata->rx_busy = malloc(nodedata->sic_iteration_limit*sizeof(sic_signal_t));
-	if(NULL == nodedata->rx_busy)
-	{
-// <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
-	        PRINT_RADIO("ERROR! SIC setnode: malloc\n");
-// ->RF00000000-AdamXu
-		goto error;
-	}
     return 0;
 
  error:
@@ -124,10 +117,6 @@ int setnode(call_t *c, void *params) {
 
 int unsetnode(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
-// <-RF00000000-AdamXu-2018/05/02-SIC malloc and free
-        PRINT_RADIO("SIC unsetnode: sic_free\n");
-// ->RF00000000-AdamXu
-	free(nodedata->rx_busy);
     free(get_node_private_data(c));
     return 0;
 }
@@ -138,7 +127,7 @@ int unsetnode(call_t *c) {
 int bootstrap(call_t *c) {
     struct nodedata *nodedata = get_node_private_data(c);
     nodedata->tx_busy = -1;
-    nodedata->rx_busy = NULL;
+    nodedata->rx_busy = -1;
     nodedata->rxdBm = MIN_DBM;
     return 0;
 }
@@ -156,21 +145,12 @@ void cs_init(call_t *c) {
     if (nodedata->tx_busy != -1) {
         PRINT_REPLAY("radio-tx1 %"PRId64" %d\n", get_time(), c->node);
     }
-    if (nodedata->rx_busy != NULL) {
+    if (nodedata->rx_busy != -1) {
         PRINT_REPLAY("radio-rx1 %"PRId64" %d\n", get_time(), c->node);
     }
     /* init cs */
     nodedata->tx_busy = -1;
-// <-RF00000000-AdamXu-2018/04/30-add log for sic
-	{
-		int count = 0;
-		while(count < nodedata->sic_iteration_limit)
-		{
-			nodedata->rx_busy[count].node = -1;
-			count++;
-		}
-	}
-// ->RF00000000-AdamXu
+    nodedata->rx_busy = -1;
     nodedata->rxdBm = MIN_DBM;
 }
 
@@ -242,58 +222,39 @@ void rx(call_t *c, packet_t *packet) {
     /* radio sleep */
     if (nodedata->sleep) {
         packet_dealloc(packet);
-        return;
+        goto END;
     }
 
     /* half-duplex */
     if (nodedata->tx_busy != -1) {
         packet_dealloc(packet);
-        return;
+        goto END;
     }
-    
+        
     /* handle carrier sense */
-    	{
-    		int count = 0;
-		int flag_find = 0;
-		while(count < nodedata->sic_iteration_current)
-		{
-			if (nodedata->rx_busy[count].node == c->node) {
-			    nodedata->rx_busy[count].node = -1;
-			    nodedata->rxdBm   = MIN_DBM;
-				nodedata->sic_iteration_current--;
-				if(nodedata->sic_iteration_current < 0)
-				{
-					// <-RF00000000-AdamXu-2018/04/30-add log for sic
-					PRINT_RADIO("ERROR! SIC rx: sic_iteration_current=%d\n", nodedata->sic_iteration_current);
-					// ->RF00000000-AdamXu
-					nodedata->sic_iteration_current = 0;
-				}
-				flag_find++;
-			    /* log rx */
-			    PRINT_REPLAY("radio-rx1 %"PRId64" %d\n", get_time(), c->node);
-			    /* consume energy */
-			    battery_consume_rx(c, packet->duration);
-			}
-			count++;
-		}
-		PRINT_RADIO("SIC rx: flag_find=%d\n", flag_find);
-		if(0 == flag_find)
-		{
-		    packet_dealloc(packet);
-		    return;
-		}
-    	}
+	adam_Update_Candidate();
+	if (adam_Is_Packet_Decodable(packet->id, MEDIA_GET_WHITE_NOISE(c, packet->channel), DEFAULT_SIC_THRESHOLD)) {
+		nodedata->rx_busy = -1;
+		nodedata->rxdBm   = MIN_DBM;
+		/* log rx */
+		PRINT_REPLAY("radio-rx1 %"PRId64" %d\n", get_time(), c->node);
+		/* consume energy */
+		battery_consume_rx(c, packet->duration);
+	} else {
+		packet_dealloc(packet);
+		goto END;
+	}
 
     /* check wether the reception has killed us */
     if (!is_node_alive(c->node)) {
         packet_dealloc(packet);
-        return;
+        goto END;
     }
 
     /* drop packet depending on the FER */
     if (get_random_double() < packet->PER) {
         packet_dealloc(packet);
-        return;
+        goto END;
     }    
 
     /* forward to upper layers */
@@ -309,76 +270,72 @@ void rx(call_t *c, packet_t *packet) {
         RX(&c_up, packet_up);
     }
 
+END:
     return;
 }
 
 void cs(call_t *c, packet_t *packet) {
     struct nodedata *nodedata = get_node_private_data(c);
+	sic_signal_t* sic_signal = NULL;
 // <-RF00000000-AdamXu-2018/04/25-add log for radio
         PRINT_RADIO("SIC B: radio-rx0 %"PRId64" %d, packet->rxdBm=%f, nodedata->rxdBm=%f, packet->id=%d\n", get_time(), c->node, packet->rxdBm, nodedata->rxdBm, packet->id);
 // ->RF00000000-AdamXu
 
     /* radio sleep */
     if (nodedata->sleep) {
-        return;
+        goto END;
     }
 
     /* half-duplex */
     if (nodedata->tx_busy != -1) {
-        return;
+        goto END;
     }
 
     /* check sensibility */
     if (packet->rxdBm < nodedata->mindBm) {
-        return;
+        goto END;
     }
 
     /* check channel */
     if (nodedata->channel != packet->channel) {
-        return;
+        goto END;
     }
 
     /* check Ts */
     if (nodedata->Ts != (packet->Tb*radio_get_modulation_bit_per_symbol(c))) {
-        return;
+        goto END;
     }
 
     /* check channel */
     if (packet->modulation != nodedata->modulation) {
-        return;
+        goto END;
     }
 
-    /* capture effect */
-    if (packet->rxdBm > nodedata->rxdBm && nodedata->sic_iteration_current <= nodedata->sic_iteration_limit) {
-	if(MIN_DBM == nodedata->rxdBm)
-	{
-		nodedata->rxdBm = packet->rxdBm;
-	}
-	else
-	{
-		nodedata->rxdBm += packet->rxdBm;
-	}
-	{
-		int count = 0;
-		while(count < nodedata->sic_iteration_limit)
+	/* capture effect */
+	if (packet->rxdBm > nodedata->rxdBm) {
+		//nodedata->rxdBm = packet->rxdBm;
+		sic_signal = malloc(sizeof(sic_signal_t));
+		if(NULL == sic_signal)
 		{
-			if(-1 == nodedata->rx_busy[count].node)
-			{
-				nodedata->rx_busy[count].node = c->node;
-				nodedata->sic_iteration_current++;
-			}
-			PRINT_RADIO("SIC cs: nodedata->rx_busy[%d].node=%d\n", count, nodedata->rx_busy[count].node);
-			count++;
+			PRINT_RADIO("ERROR! MALLOC FAIL!");
+			goto END;
 		}
+		sic_signal->id = packet->id;
+		sic_signal->rxdBm = packet->rxdBm;
+		sic_signal->clock1 = packet->clock1;
+		sic_signal->signal_pre_endtime = NULL;
+		sic_signal->signal_next_endtime = NULL;
+		sic_signal->signal_higher_power = NULL;
+		sic_signal->signal_lower_power = NULL;
+		adam_Insert_SIgnal2Candidate_Time(sic_signal);
+		adam_Insert_SIgnal2Candidate_Power(sic_signal);
+		
+		nodedata->rx_busy = packet->id;
+		/* log cs */
+		PRINT_REPLAY("radio-rx0 %"PRId64" %d\n", get_time(), c->node);
 	}
-        /* log cs */
-        PRINT_REPLAY("radio-rx0 %"PRId64" %d\n", get_time(), c->node);
-// <-RF00000000-AdamXu-2018/04/25-add log for radio
-        PRINT_RADIO("SIC E\n");
-// ->RF00000000-AdamXu
-        return;
-    }
-
+	
+END:
     return;
 }
 
@@ -502,18 +459,49 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 
 /* ************************************************** */
 /* ************************************************** */
+int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_threshold)
+{
+	int is_decodable = 0;
+	int sum_interf_noise = base_noise;
+	sic_signal_t* p_sic_current = NULL;
 
-int compInc(const void *a, const void *b)
+	// get total interference and noise
+	for(p_sic_current = g_sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+	{
+		sum_interf_noise += p_sic_current->rxdBm;
+	}
+	// judge items one by one
+	for(p_sic_current = g_sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+	{
+		sum_interf_noise -= p_sic_current->rxdBm;
+		if(p_sic_current->rxdBm >= sum_interf_noise*sic_threshold) //meet SINR threshold, continue
+		{
+			if(id == p_sic_current->id)
+			{
+				is_decodable = 1;
+				break
+			}
+		}
+		else //cannot meet SINR threshold, quit
+		{
+			break;
+		}
+	}
+
+	return is_decodable;
+}
+
+int comp_Inc(const void *a, const void *b)
 {
     return *(int *)a - *(int *)b;
 }
 
-int compDec(const void *a, const void *b)
+int comp_Dec(const void *a, const void *b)
 {
     return *(int *)b - *(int *)a;
 }
 
-int adam_Qsort_Inc_Double(double* base, int len)
+adam_error_code_t adam_Qsort_Inc_Double(double* base, int len)
 {
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	if(NULL == base || 0 == len)
@@ -521,7 +509,150 @@ int adam_Qsort_Inc_Double(double* base, int len)
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
 		goto END;
 	}
-	qsort(base, len, sizeof(double), compInc);
+	qsort(base, len, sizeof(double), comp_Inc);
+	
+END:
+	return error_id;
+}
+
+int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal)
+{
+	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
+	sic_signal_t* p_sic_current = NULL;
+	if(NULL == sic_signal)
+	{
+		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
+		goto END;
+	}
+	
+	// no item
+	if(NULL == g_sic_signal_time_first)
+	{
+		g_sic_signal_time_first = sic_signal;
+		goto END;
+	}
+	// earlier than the first item
+	if(g_sic_signal_time_first->clock1 > sic_signal->clock1)
+	{
+		sic_signal->signal_next_endtime = g_sic_signal_time_first;
+		g_sic_signal_time_first->signal_pre_endtime = sic_signal;
+		g_sic_signal_time_first = sic_signal;
+		break;
+	}
+	else
+	{
+		for(p_sic_current = g_sic_signal_time_first->signal_next_endtime; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
+		{
+			if(p_sic_current->clock1 > sic_signal->clock1)
+			{
+				sic_signal->signal_next_endtime = p_sic_current;
+				sic_signal->signal_pre_endtime = p_sic_current->signal_pre_endtime;
+				p_sic_current->signal_pre_endtime->signal_next_endtime = sic_signal;
+				p_sic_current->signal_pre_endtime = sic_signal;
+				break;
+			}
+			// later than the last item
+			if(NULL == p_sic_current->signal_next_endtime)
+			{
+				sic_signal->signal_pre_endtime = p_sic_current;
+				p_sic_current->signal_next_endtime = sic_signal;
+				break;
+			}
+		}
+	}
+END:
+	return error_id;
+}
+
+int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal)
+{
+	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
+	sic_signal_t* p_sic_current = NULL;
+	if(NULL == sic_signal)
+	{
+		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
+		goto END;
+	}
+	
+	// no item
+	if(NULL == g_sic_signal_power_first)
+	{
+		g_sic_signal_power_first = sic_signal;
+		goto END;
+	}
+	// higher than the first item
+	if(g_sic_signal_power_first->rxdBm < sic_signal->rxdBm)
+	{
+		sic_signal->signal_lower_power = g_sic_signal_power_first;
+		g_sic_signal_power_first->signal_higher_power = sic_signal;
+		g_sic_signal_power_first = sic_signal;
+		break;
+	}
+	else
+	{
+		for(p_sic_current = g_sic_signal_power_first->signal_lower_power; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+		{
+			if(p_sic_current->rxdBm < sic_signal->rxdBm)
+			{
+				sic_signal->signal_lower_power = p_sic_current;
+				sic_signal->signal_higher_power = p_sic_current->signal_higher_power;
+				p_sic_current->signal_higher_power->signal_lower_power = sic_signal;
+				p_sic_current->signal_higher_power = sic_signal;
+				break;
+			}
+			// lower than the last item
+			if(NULL == p_sic_current->signal_lower_power)
+			{
+				sic_signal->signal_higher_power = p_sic_current;
+				p_sic_current->signal_lower_power = sic_signal;
+				break;
+			}
+		}
+	}
+END:
+	return error_id;
+}
+
+int adam_Update_Candidate()
+{
+	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
+	uint64_t time = get_time();
+	sic_signal_t* p_sic_current = g_sic_signal_time_first;
+	sic_signal_t* p_sic_temp = NULL;
+
+	while(NULL != p_sic_current)
+	{
+		if(time > p_sic_current->clock1)
+		{
+			// not latest item
+			if(NULL != p_sic_current->signal_next_endtime)
+			{
+				p_sic_current->signal_next_endtime->signal_pre_endtime = NULL;
+			}
+			// not highest item
+			if(NULL != p_sic_current->signal_higher_power)
+			{
+				p_sic_current->signal_higher_power->signal_lower_power = p_sic_current->signal_lower_power;
+			}
+			else // is highest item, change header
+			{
+				g_sic_signal_power_first = p_sic_current->signal_lower_power;
+			}
+			// not lowest item
+			if(NULL != p_sic_current->signal_lower_power)
+			{
+				p_sic_current->signal_lower_power->signal_higher_power = p_sic_current->signal_higher_power;
+			}
+			g_sic_signal_time_first = p_sic_current->signal_next_endtime;
+			p_sic_temp = p_sic_current;
+			p_sic_current = p_sic_current->signal_next_endtime
+			free(p_sic_temp);
+		}
+		else // all outdated items have been removed, up to date now
+		{
+			break;
+		}
+	}
 	
 END:
 	return error_id;
