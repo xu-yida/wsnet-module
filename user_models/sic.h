@@ -29,19 +29,12 @@ typedef struct sic_signal_t
 	//end time
 	uint64_t clock1;
 	
-	sic_signal_t* signal_pre_endtime;
-	sic_signal_t* signal_next_endtime;
+	struct sic_signal_t* signal_pre_endtime;
+	struct sic_signal_t* signal_next_endtime;
 	
-	sic_signal_t* signal_higher_power;
-	sic_signal_t* signal_lower_power;
+	struct sic_signal_t* signal_higher_power;
+	struct sic_signal_t* signal_lower_power;
 }sic_signal_t;
-
-// <-RF00000000-AdamXu-2018/05/07-use qsort incremently on double numbers.
-// base: array for sort
-// len: length of base
-// return: error code
-int adam_Qsort_Inc_Double(double* base, int len);
-// ->RF00000000-AdamXu
 
 // <-RF00000000-AdamXu-2018/05/22-if a packet is decodable.
 // packet_id: id of packet

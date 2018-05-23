@@ -116,7 +116,6 @@ int setnode(call_t *c, void *params) {
 }
 
 int unsetnode(call_t *c) {
-	struct nodedata *nodedata = get_node_private_data(c);
     free(get_node_private_data(c));
     return 0;
 }
@@ -479,7 +478,7 @@ int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_thresh
 			if(id == p_sic_current->id)
 			{
 				is_decodable = 1;
-				break
+				break;
 			}
 		}
 		else //cannot meet SINR threshold, quit
@@ -489,30 +488,6 @@ int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_thresh
 	}
 
 	return is_decodable;
-}
-
-int comp_Inc(const void *a, const void *b)
-{
-    return *(int *)a - *(int *)b;
-}
-
-int comp_Dec(const void *a, const void *b)
-{
-    return *(int *)b - *(int *)a;
-}
-
-adam_error_code_t adam_Qsort_Inc_Double(double* base, int len)
-{
-	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
-	if(NULL == base || 0 == len)
-	{
-		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
-		goto END;
-	}
-	qsort(base, len, sizeof(double), comp_Inc);
-	
-END:
-	return error_id;
 }
 
 int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal)
@@ -586,7 +561,6 @@ int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal)
 		sic_signal->signal_lower_power = g_sic_signal_power_first;
 		g_sic_signal_power_first->signal_higher_power = sic_signal;
 		g_sic_signal_power_first = sic_signal;
-		break;
 	}
 	else
 	{
@@ -645,7 +619,7 @@ int adam_Update_Candidate()
 			}
 			g_sic_signal_time_first = p_sic_current->signal_next_endtime;
 			p_sic_temp = p_sic_current;
-			p_sic_current = p_sic_current->signal_next_endtime
+			p_sic_current = p_sic_current->signal_next_endtime;
 			free(p_sic_temp);
 		}
 		else // all outdated items have been removed, up to date now
@@ -654,7 +628,6 @@ int adam_Update_Candidate()
 		}
 	}
 	
-END:
 	return error_id;
 }
 
