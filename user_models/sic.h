@@ -61,4 +61,6 @@ int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal);
 int adam_Update_Candidate();
 // ->RF00000000-AdamXu
 
+extern double MEDIA_GET_WHITE_NOISE(call_t *c, int channel);
+
 #endif //__radio_public__

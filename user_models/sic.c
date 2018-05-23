@@ -512,7 +512,6 @@ int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal)
 		sic_signal->signal_next_endtime = g_sic_signal_time_first;
 		g_sic_signal_time_first->signal_pre_endtime = sic_signal;
 		g_sic_signal_time_first = sic_signal;
-		break;
 	}
 	else
 	{
