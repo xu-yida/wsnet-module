@@ -137,6 +137,7 @@ int unsetnode(call_t *c) {
 		nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
 		p_sic_temp = p_sic_current;
 		p_sic_current = p_sic_current->signal_next_endtime;
+		PRINT_RADIO("free(%d)", p_sic_temp->id);
 		free(p_sic_temp);
 	}
 	free(get_node_private_data(c));
@@ -349,6 +350,7 @@ void cs(call_t *c, packet_t *packet) {
 		sic_signal->signal_next_endtime = NULL;
 		sic_signal->signal_higher_power = NULL;
 		sic_signal->signal_lower_power = NULL;
+		PRINT_RADIO("malloc(%d)", sic_signal->id);
 		adam_Insert_SIgnal2Candidate_Time(c, sic_signal);
 		adam_Insert_SIgnal2Candidate_Power(c, sic_signal);
 		
@@ -485,7 +487,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double
 {
 	struct nodedata *nodedata = get_node_private_data(c);
 	int is_decodable = 0;
-	int sum_interf_noise = base_noise;
+	double sum_interf_noise = base_noise;
 	sic_signal_t* p_sic_current = NULL;
 
 	PRINT_RADIO("B: id=%d, base_noise=%f, sic_threshold=%f", id, base_noise, sic_threshold);
@@ -493,11 +495,13 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
 		sum_interf_noise += p_sic_current->rxdBm;
+		PRINT_RADIO("sum_interf_noise1=%f", sum_interf_noise);
 	}
 	// judge items one by one
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
 		sum_interf_noise -= p_sic_current->rxdBm;
+		PRINT_RADIO("sum_interf_noise2=%f, p_sic_current->rxdBm=%f", sum_interf_noise, p_sic_current->rxdBm);
 		if(p_sic_current->rxdBm >= sum_interf_noise*sic_threshold) //meet SINR threshold, continue
 		{
 			if(id == p_sic_current->id)
@@ -521,6 +525,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
+	PRINT_RADIO("B");
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
@@ -534,6 +539,8 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		goto END;
 	}
 	// earlier than the first item
+	PRINT_RADIO("nodedata->sic_signal_time_first->clock1=%"PRId64"", nodedata->sic_signal_time_first->clock1);
+	PRINT_RADIO("sic_signal->clock1=%"PRId64"", sic_signal->clock1);
 	if(nodedata->sic_signal_time_first->clock1 > sic_signal->clock1)
 	{
 		sic_signal->signal_next_endtime = nodedata->sic_signal_time_first;
@@ -544,6 +551,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 	{
 		for(p_sic_current = nodedata->sic_signal_time_first->signal_next_endtime; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
 		{
+			PRINT_RADIO("p_sic_current->clock1=%"PRId64", sic_signal->clock1=%"PRId64"", p_sic_current->clock1, sic_signal->clock1);
 			if(p_sic_current->clock1 > sic_signal->clock1)
 			{
 				sic_signal->signal_next_endtime = p_sic_current;
@@ -562,6 +570,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		}
 	}
 END:
+	PRINT_RADIO("E: error_id=%d", error_id);
 	return error_id;
 }
 
@@ -570,6 +579,7 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
+	PRINT_RADIO("B");
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
@@ -583,6 +593,8 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 		goto END;
 	}
 	// higher than the first item
+	PRINT_RADIO("nodedata->sic_signal_power_first->rxdBm=%f", nodedata->sic_signal_power_first->rxdBm);
+	PRINT_RADIO("sic_signal->rxdBm=%f", sic_signal->rxdBm);
 	if(nodedata->sic_signal_power_first->rxdBm < sic_signal->rxdBm)
 	{
 		sic_signal->signal_lower_power = nodedata->sic_signal_power_first;
@@ -593,6 +605,7 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 	{
 		for(p_sic_current = nodedata->sic_signal_power_first->signal_lower_power; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 		{
+			PRINT_RADIO("p_sic_current->rxdBm=%f, sic_signal->rxdBm=%f", p_sic_current->rxdBm, sic_signal->rxdBm);
 			if(p_sic_current->rxdBm < sic_signal->rxdBm)
 			{
 				sic_signal->signal_lower_power = p_sic_current;
@@ -611,6 +624,7 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 		}
 	}
 END:
+	PRINT_RADIO("E: error_id=%d", error_id);
 	return error_id;
 }
 
@@ -621,6 +635,7 @@ int adam_Update_Candidate(call_t *c)
 	uint64_t time = get_time();
 	sic_signal_t* p_sic_current = nodedata->sic_signal_time_first;
 	sic_signal_t* p_sic_temp = NULL;
+	PRINT_RADIO("B");
 
 	while(NULL != p_sic_current)
 	{
@@ -648,6 +663,7 @@ int adam_Update_Candidate(call_t *c)
 			nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
 			p_sic_temp = p_sic_current;
 			p_sic_current = p_sic_current->signal_next_endtime;
+			PRINT_RADIO("free(%d)", p_sic_temp->id);
 			free(p_sic_temp);
 		}
 		else // all outdated items have been removed, up to date now
@@ -656,6 +672,7 @@ int adam_Update_Candidate(call_t *c)
 		}
 	}
 	
+	PRINT_RADIO("E: error_id=%d", error_id);
 	return error_id;
 }
 
