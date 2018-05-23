@@ -18,10 +18,6 @@ model_t model =  {
     {NULL, 0}
 };
 
-sic_signal_t* g_sic_signal_time_first = NULL;
-//sic_signal_t* g_sic_signal_time_last = NULL;
-sic_signal_t* g_sic_signal_power_first = NULL;
-//sic_signal_t* g_sic_signal_power_last = NULL;
 
 /* ************************************************** */
 /* ************************************************** */
@@ -33,13 +29,12 @@ struct nodedata {
 	entityid_t modulation;
 	double mindBm;
 	int sleep;  
-	//int sic_iteration_limit;
-	//int sic_iteration_current;
-	//double sic_remainder;
 	double sic_threshold;
 	int tx_busy;
 	int rx_busy;
 	double rxdBm;
+	sic_signal_t* sic_signal_time_first;
+	sic_signal_t* sic_signal_power_first;
 };
 
 
@@ -62,20 +57,19 @@ int destroy(call_t *c) {
 /* ************************************************** */
 /* ************************************************** */
 int setnode(call_t *c, void *params) {
-    struct nodedata *nodedata = malloc(sizeof(struct nodedata));
-    param_t *param;
-    
-    /* default values */
-    nodedata->Ts = 91;
-    nodedata->channel = 0;
-    nodedata->power = 0;
-    nodedata->modulation = -1;
-    nodedata->mindBm = -92;
-    nodedata->sleep = 0;
-	
-    //nodedata->sic_iteration_limit = MIN_SIC_ITERATION;
-    //nodedata->sic_remainder = MIN_SIC_REMAIN;
-    //nodedata->sic_iteration_current = 0;
+	struct nodedata *nodedata = malloc(sizeof(struct nodedata));
+	param_t *param;
+
+	/* default values */
+	nodedata->Ts = 91;
+	nodedata->channel = 0;
+	nodedata->power = 0;
+	nodedata->modulation = -1;
+	nodedata->mindBm = -92;
+	nodedata->sleep = 0;
+
+	nodedata->sic_signal_time_first = NULL;
+	nodedata->sic_signal_power_first = NULL;
 
     /* get parameters */
     das_init_traverse(params);
@@ -116,8 +110,37 @@ int setnode(call_t *c, void *params) {
 }
 
 int unsetnode(call_t *c) {
-    free(get_node_private_data(c));
-    return 0;
+	struct nodedata *nodedata = get_node_private_data(c);
+	sic_signal_t* p_sic_current = NULL;
+	sic_signal_t* p_sic_temp = NULL;
+	for(p_sic_current = nodedata->sic_signal_time_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
+	{
+		// not latest item
+		if(NULL != p_sic_current->signal_next_endtime)
+		{
+			p_sic_current->signal_next_endtime->signal_pre_endtime = NULL;
+		}
+		// not highest item
+		if(NULL != p_sic_current->signal_higher_power)
+		{
+			p_sic_current->signal_higher_power->signal_lower_power = p_sic_current->signal_lower_power;
+		}
+		else // is highest item, change header
+		{
+			nodedata->sic_signal_power_first = p_sic_current->signal_lower_power;
+		}
+		// not lowest item
+		if(NULL != p_sic_current->signal_lower_power)
+		{
+			p_sic_current->signal_lower_power->signal_higher_power = p_sic_current->signal_higher_power;
+		}
+		nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
+		p_sic_temp = p_sic_current;
+		p_sic_current = p_sic_current->signal_next_endtime;
+		free(p_sic_temp);
+	}
+	free(get_node_private_data(c));
+	return 0;
 }
 
 
@@ -231,8 +254,8 @@ void rx(call_t *c, packet_t *packet) {
     }
         
     /* handle carrier sense */
-	adam_Update_Candidate();
-	if (adam_Is_Packet_Decodable(packet->id, MEDIA_GET_WHITE_NOISE(c, packet->channel), DEFAULT_SIC_THRESHOLD)) {
+	adam_Update_Candidate(c);
+	if (adam_Is_Packet_Decodable(c, packet->id, MEDIA_GET_WHITE_NOISE(c, packet->channel), DEFAULT_SIC_THRESHOLD)) {
 		nodedata->rx_busy = -1;
 		nodedata->rxdBm   = MIN_DBM;
 		/* log rx */
@@ -326,8 +349,8 @@ void cs(call_t *c, packet_t *packet) {
 		sic_signal->signal_next_endtime = NULL;
 		sic_signal->signal_higher_power = NULL;
 		sic_signal->signal_lower_power = NULL;
-		adam_Insert_SIgnal2Candidate_Time(sic_signal);
-		adam_Insert_SIgnal2Candidate_Power(sic_signal);
+		adam_Insert_SIgnal2Candidate_Time(c, sic_signal);
+		adam_Insert_SIgnal2Candidate_Power(c, sic_signal);
 		
 		nodedata->rx_busy = packet->id;
 		/* log cs */
@@ -458,19 +481,21 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 
 /* ************************************************** */
 /* ************************************************** */
-int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_threshold)
+int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double sic_threshold)
 {
+	struct nodedata *nodedata = get_node_private_data(c);
 	int is_decodable = 0;
 	int sum_interf_noise = base_noise;
 	sic_signal_t* p_sic_current = NULL;
 
+	PRINT_RADIO("B: id=%d, base_noise=%f, sic_threshold=%f", id, base_noise, sic_threshold);
 	// get total interference and noise
-	for(p_sic_current = g_sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
 		sum_interf_noise += p_sic_current->rxdBm;
 	}
 	// judge items one by one
-	for(p_sic_current = g_sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
 		sum_interf_noise -= p_sic_current->rxdBm;
 		if(p_sic_current->rxdBm >= sum_interf_noise*sic_threshold) //meet SINR threshold, continue
@@ -487,11 +512,13 @@ int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_thresh
 		}
 	}
 
+	PRINT_RADIO("B: is_decodable=%d", is_decodable);
 	return is_decodable;
 }
 
-int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal)
+int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 {
+	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
 	if(NULL == sic_signal)
@@ -501,21 +528,21 @@ int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal)
 	}
 	
 	// no item
-	if(NULL == g_sic_signal_time_first)
+	if(NULL == nodedata->sic_signal_time_first)
 	{
-		g_sic_signal_time_first = sic_signal;
+		nodedata->sic_signal_time_first = sic_signal;
 		goto END;
 	}
 	// earlier than the first item
-	if(g_sic_signal_time_first->clock1 > sic_signal->clock1)
+	if(nodedata->sic_signal_time_first->clock1 > sic_signal->clock1)
 	{
-		sic_signal->signal_next_endtime = g_sic_signal_time_first;
-		g_sic_signal_time_first->signal_pre_endtime = sic_signal;
-		g_sic_signal_time_first = sic_signal;
+		sic_signal->signal_next_endtime = nodedata->sic_signal_time_first;
+		nodedata->sic_signal_time_first->signal_pre_endtime = sic_signal;
+		nodedata->sic_signal_time_first = sic_signal;
 	}
 	else
 	{
-		for(p_sic_current = g_sic_signal_time_first->signal_next_endtime; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
+		for(p_sic_current = nodedata->sic_signal_time_first->signal_next_endtime; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
 		{
 			if(p_sic_current->clock1 > sic_signal->clock1)
 			{
@@ -538,8 +565,9 @@ END:
 	return error_id;
 }
 
-int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal)
+int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 {
+	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
 	if(NULL == sic_signal)
@@ -549,21 +577,21 @@ int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal)
 	}
 	
 	// no item
-	if(NULL == g_sic_signal_power_first)
+	if(NULL == nodedata->sic_signal_power_first)
 	{
-		g_sic_signal_power_first = sic_signal;
+		nodedata->sic_signal_power_first = sic_signal;
 		goto END;
 	}
 	// higher than the first item
-	if(g_sic_signal_power_first->rxdBm < sic_signal->rxdBm)
+	if(nodedata->sic_signal_power_first->rxdBm < sic_signal->rxdBm)
 	{
-		sic_signal->signal_lower_power = g_sic_signal_power_first;
-		g_sic_signal_power_first->signal_higher_power = sic_signal;
-		g_sic_signal_power_first = sic_signal;
+		sic_signal->signal_lower_power = nodedata->sic_signal_power_first;
+		nodedata->sic_signal_power_first->signal_higher_power = sic_signal;
+		nodedata->sic_signal_power_first = sic_signal;
 	}
 	else
 	{
-		for(p_sic_current = g_sic_signal_power_first->signal_lower_power; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+		for(p_sic_current = nodedata->sic_signal_power_first->signal_lower_power; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 		{
 			if(p_sic_current->rxdBm < sic_signal->rxdBm)
 			{
@@ -586,11 +614,12 @@ END:
 	return error_id;
 }
 
-int adam_Update_Candidate()
+int adam_Update_Candidate(call_t *c)
 {
+	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	uint64_t time = get_time();
-	sic_signal_t* p_sic_current = g_sic_signal_time_first;
+	sic_signal_t* p_sic_current = nodedata->sic_signal_time_first;
 	sic_signal_t* p_sic_temp = NULL;
 
 	while(NULL != p_sic_current)
@@ -609,14 +638,14 @@ int adam_Update_Candidate()
 			}
 			else // is highest item, change header
 			{
-				g_sic_signal_power_first = p_sic_current->signal_lower_power;
+				nodedata->sic_signal_power_first = p_sic_current->signal_lower_power;
 			}
 			// not lowest item
 			if(NULL != p_sic_current->signal_lower_power)
 			{
 				p_sic_current->signal_lower_power->signal_higher_power = p_sic_current->signal_higher_power;
 			}
-			g_sic_signal_time_first = p_sic_current->signal_next_endtime;
+			nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
 			p_sic_temp = p_sic_current;
 			p_sic_current = p_sic_current->signal_next_endtime;
 			free(p_sic_temp);

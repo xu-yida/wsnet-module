@@ -41,26 +41,24 @@ typedef struct sic_signal_t
 // base_noise: environment noise
 // sic_threshold: SINR threshold
 // return: 1 decodable, 0 not
-int adam_Is_Packet_Decodable(packetid_t id, double base_noise, double sic_threshold);
+int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double sic_threshold);
 // ->RF00000000-AdamXu
 
 // <-RF00000000-AdamXu-2018/05/22-insert new signal to canditate buffer by time.
 // sic_signal: signal to insert
 // return: error code
-int adam_Insert_SIgnal2Candidate_Time(sic_signal_t* sic_signal);
+int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal);
 // ->RF00000000-AdamXu
 
 // <-RF00000000-AdamXu-2018/05/22-insert new signal to canditate buffer by power.
 // sic_signal: signal to insert
 // return: error code
-int adam_Insert_SIgnal2Candidate_Power(sic_signal_t* sic_signal);
+int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal);
 // ->RF00000000-AdamXu
 
 // <-RF00000000-AdamXu-2018/05/22-insert new signal to canditate buffer.
 // return: error code
-int adam_Update_Candidate();
+int adam_Update_Candidate(call_t *c);
 // ->RF00000000-AdamXu
-
-extern double MEDIA_GET_WHITE_NOISE(call_t *c, int channel);
 
 #endif //__radio_public__
