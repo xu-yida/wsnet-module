@@ -492,7 +492,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double
 	double sum_interf_noise = base_noise;
 	sic_signal_t* p_sic_current = NULL;
 
-	PRINT_RADIO("B: id=%d, base_noise=%f, sic_threshold=%f\n", id, base_noise, sic_threshold);
+	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise, sic_threshold);
 	// get total interference and noise
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
@@ -518,7 +518,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double
 		}
 	}
 
-	PRINT_RADIO("B: is_decodable=%d\n", is_decodable);
+	PRINT_RADIO("E: is_decodable=%d\n", is_decodable);
 	return is_decodable;
 }
 
@@ -527,7 +527,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
-	PRINT_RADIO("B\n");
+	PRINT_RADIO("B: c->node=%d\n", c->node);
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
@@ -581,7 +581,7 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
-	PRINT_RADIO("B\n");
+	PRINT_RADIO("B: c->node=%d\n", c->node);
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
@@ -637,7 +637,7 @@ int adam_Update_Candidate(call_t *c)
 	uint64_t time = get_time();
 	sic_signal_t* p_sic_current = nodedata->sic_signal_time_first;
 	sic_signal_t* p_sic_temp = NULL;
-	PRINT_RADIO("B\n");
+	PRINT_RADIO("B: c->node=%d\n", c->node);
 
 	while(NULL != p_sic_current)
 	{
@@ -674,7 +674,7 @@ int adam_Update_Candidate(call_t *c)
 		}
 	}
 	
-	PRINT_RADIO("E: error_id=%d", error_id);
+	PRINT_RADIO("E: error_id=%d\n", error_id);
 	return error_id;
 }
 
