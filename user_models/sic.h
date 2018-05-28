@@ -61,4 +61,14 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal);
 int adam_Update_Candidate(call_t *c);
 // ->RF00000000-AdamXu
 
+// <-RF00000000-AdamXu-2018/05/28-set radio power.
+// power: by dBm
+void adam_Set_Power(call_t *c, double power);
+// ->RF00000000-AdamXu
+
+// <-RF00000000-AdamXu-2018/05/28-get radio power.
+// return: power by dBm
+double adam_Get_Power(call_t *c);
+// ->RF00000000-AdamXu
+
 #endif //__radio_public__

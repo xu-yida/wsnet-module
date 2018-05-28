@@ -300,7 +300,7 @@ END:
 }
 
 void cs(call_t *c, packet_t *packet) {
-    struct nodedata *nodedata = get_node_private_data(c);
+	struct nodedata *nodedata = get_node_private_data(c);
 	sic_signal_t* sic_signal = NULL;
 // <-RF00000000-AdamXu-2018/04/25-add log for radio
         PRINT_RADIO("SIC B: radio-rx0 %"PRId64" %d, packet->rxdBm=%f, nodedata->rxdBm=%f, packet->id=%d\n", get_time(), c->node, packet->rxdBm, nodedata->rxdBm, packet->id);
@@ -676,6 +676,18 @@ int adam_Update_Candidate(call_t *c)
 	
 	PRINT_RADIO("E: error_id=%d\n", error_id);
 	return error_id;
+}
+
+double adam_Get_Power(call_t *c)
+{
+	PRINT_RADIO("get_power=%f", get_power(c));
+	return get_power(c);
+}
+
+void adam_Set_Power(call_t *c, double power)
+{
+	PRINT_RADIO("power=%f", power);
+	set_power(c, power);
 }
 
 /* ************************************************** */
