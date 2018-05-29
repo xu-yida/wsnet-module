@@ -680,17 +680,6 @@ int adam_Update_Candidate(call_t *c)
 	return error_id;
 }
 
-double adam_Get_Power(call_t *c)
-{
-	PRINT_RADIO("get_power=%f", get_power(c));
-	return get_power(c);
-}
-
-void adam_Set_Power(call_t *c, double power)
-{
-	PRINT_RADIO("power=%f", power);
-	set_power(c, power);
-}
 
 /* ************************************************** */
 /* ************************************************** */

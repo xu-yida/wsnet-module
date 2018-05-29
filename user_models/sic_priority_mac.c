@@ -487,18 +487,17 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		data_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
-		// adjust power
+		// adjust power for high priority
 		if(1 == nodedata->priority && 1 == adam_check_channel_busy(c))
 		{
-			adam_Set_Power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
-		}
-		else
-		{
-			adam_Set_Power(c, nodedata->base_power_tx);
+			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
 		}
 
 		/* Send data */
 		TX(&c0, packet);
+		
+		// recover power
+		radio_set_power(c, nodedata->base_power_tx);
 
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_TIMEOUT;
@@ -597,7 +596,7 @@ void tx(call_t *c, packet_t *packet) {
 //#endif//ADAM_PRIORITY_TEST
 	if(0 == nodedata->base_power_tx)
 	{
-		nodedata->base_power_tx = adam_Get_Power(c);
+		nodedata->base_power_tx = radio_set_power(c);
 	}
 	PRINT_MAC("nodedata->base_power_tx=%f, nodedata->state=%d", nodedata->base_power_tx, nodedata->state);
 
