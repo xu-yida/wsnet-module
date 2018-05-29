@@ -141,8 +141,9 @@ int unsetnode(call_t *c) {
 		p_sic_temp = p_sic_current;
 		p_sic_current = p_sic_current->signal_next_endtime;
 		PRINT_RADIO("NULL==p_sic_current(%d)\n", NULL==p_sic_current);
-		PRINT_RADIO("free(%d)\n", p_sic_temp->id);
+		PRINT_RADIO("free(%d) B\n", p_sic_temp->id);
 		free(p_sic_temp);
+		PRINT_RADIO("free E\n");
 	}
 	free(get_node_private_data(c));
 	PRINT_RADIO("E\n");
