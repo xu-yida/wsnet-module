@@ -138,6 +138,7 @@ int unsetnode(call_t *c) {
 		nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
 		p_sic_temp = p_sic_current;
 		p_sic_current = p_sic_current->signal_next_endtime;
+		PRINT_RADIO("NULL==p_sic_current(%d)\n", NULL==p_sic_current);
 		PRINT_RADIO("free(%d)\n", p_sic_temp->id);
 		free(p_sic_temp);
 	}
@@ -303,7 +304,8 @@ void cs(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	sic_signal_t* sic_signal = NULL;
 // <-RF00000000-AdamXu-2018/04/25-add log for radio
-        PRINT_RADIO("SIC B: radio-rx0 %"PRId64" %d, packet->rxdBm=%f, nodedata->rxdBm=%f, packet->id=%d\n", get_time(), c->node, packet->rxdBm, nodedata->rxdBm, packet->id);
+        PRINT_RADIO("B: packet->id=%d, c->node=%d\n", c->node, packet->id);
+        PRINT_RADIO("radio-rx0 %"PRId64", packet->rxdBm=%f, nodedata->rxdBm=%f\n", get_time(), packet->rxdBm, nodedata->rxdBm);
 // ->RF00000000-AdamXu
 
     /* radio sleep */
