@@ -43,7 +43,7 @@ struct nodedata {
 void cs_init(call_t *c);
 
 // <-RF00000000-AdamXu-2018/05/29-declare for test.
-double get_power(call_t *c);
+//double get_power(call_t *c);
 // ->RF00000000-AdamXu
 
 /* ************************************************** */
@@ -106,8 +106,9 @@ int setnode(call_t *c, void *params) {
 
 	
 	set_node_private_data(c, nodedata);
-	PRINT_RADIO("dBm: nodedata->power=%f\n", nodedata->power);
-	PRINT_RADIO("dBm: get_power=%f\n", get_power(c));
+	PRINT_RADIO("c->node=%d\n", c->node);
+	//PRINT_RADIO("dBm: nodedata->power=%f\n", nodedata->power);
+	//PRINT_RADIO("dBm: get_power=%f\n", get_power(c));
 	return 0;
 
  error:
@@ -390,8 +391,9 @@ double get_cs(call_t *c) {
 }
 
 double get_power(call_t *c) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    return nodedata->power;
+	struct nodedata *nodedata = get_node_private_data(c);
+	PRINT_RADIO("B: nodedata->power=%f\n", nodedata->power);
+	return nodedata->power;
 }
 
 void set_power(call_t *c, double power) {

@@ -216,8 +216,9 @@ int setnode(call_t *c, void *params) {
         }
     }
 
-    set_node_private_data(c, nodedata);
-    return 0;
+	set_node_private_data(c, nodedata);
+	PRINT_MAC("c->node=%d\n", c->node);
+	return 0;
 
  error:
     free(nodedata);
@@ -595,6 +596,7 @@ void tx(call_t *c, packet_t *packet) {
 		nodedata->priority = 0;
 	}
 //#endif//ADAM_PRIORITY_TEST
+	PRINT_MAC("nodedata->base_power_tx=%f\n", nodedata->base_power_tx);
 	if(0 == nodedata->base_power_tx)
 	{
 		nodedata->base_power_tx = radio_get_power(c);
