@@ -101,8 +101,10 @@ int setnode(call_t *c, void *params) {
         }
     }
 
-    set_node_private_data(c, nodedata);
-    return 0;
+	
+	PRINT_RADIO("dBm: nodedata->power=%f", nodedata->power);
+	set_node_private_data(c, nodedata);
+	return 0;
 
  error:
     free(nodedata);
