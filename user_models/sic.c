@@ -111,10 +111,10 @@ int setnode(call_t *c, void *params) {
 
 int unsetnode(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
-	sic_signal_t* p_sic_current = NULL;
+	sic_signal_t* p_sic_current = nodedata->sic_signal_time_first;
 	sic_signal_t* p_sic_temp = NULL;
 	PRINT_RADIO("B\n");
-	for(p_sic_current = nodedata->sic_signal_time_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
+	while(NULL != p_sic_current)
 	{
 		PRINT_RADIO("for1\n");
 		// not latest item
