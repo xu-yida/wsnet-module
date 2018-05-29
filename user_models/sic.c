@@ -116,6 +116,7 @@ int unsetnode(call_t *c) {
 	PRINT_RADIO("B\n");
 	for(p_sic_current = nodedata->sic_signal_time_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
 	{
+		PRINT_RADIO("for1\n");
 		// not latest item
 		if(NULL != p_sic_current->signal_next_endtime)
 		{
@@ -135,6 +136,7 @@ int unsetnode(call_t *c) {
 		{
 			p_sic_current->signal_lower_power->signal_higher_power = p_sic_current->signal_higher_power;
 		}
+		PRINT_RADIO("for2\n");
 		nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
 		p_sic_temp = p_sic_current;
 		p_sic_current = p_sic_current->signal_next_endtime;
