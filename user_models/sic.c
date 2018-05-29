@@ -305,7 +305,7 @@ void cs(call_t *c, packet_t *packet) {
 	sic_signal_t* sic_signal = NULL;
 // <-RF00000000-AdamXu-2018/04/25-add log for radio
         PRINT_RADIO("B: packet->id=%d, c->node=%d\n", c->node, packet->id);
-        PRINT_RADIO("radio-rx0 %"PRId64", packet->rxdBm=%f, nodedata->rxdBm=%f\n", get_time(), packet->rxdBm, nodedata->rxdBm);
+        PRINT_RADIO("radio-rx0 %"PRId64", packet->rxdBm=%f\n", get_time(), packet->rxdBm);
 // ->RF00000000-AdamXu
 
     /* radio sleep */

@@ -260,7 +260,7 @@ int adam_check_channel_busy(call_t *c) {
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int channel_state = 0;
 
-	PRINT_MAC("B: gain=%f, nodedata->EDThreshold=%f", (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2)), nodedata->EDThreshold);
+	PRINT_MAC("B: gain=%f, nodedata->EDThreshold=%f\n", (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2)), nodedata->EDThreshold);
 	if (nodedata->cs)
 	{
 		if(radio_get_cs(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
@@ -347,7 +347,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
 	header = (struct _sic_dcf_802_11_header *) nodedata->txbuf->data;
 	priority = header->priority;
-	PRINT_MAC("STATE_BACKOFF: priority=%d", priority);
+	PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
         /* Backoff */
         if (nodedata->backoff > 0) {
 		//low channel power blocks low priority; high channel power blocks high priority
@@ -492,7 +492,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		{
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
 		}
-		PRINT_MAC("STATE_DATA radio_get_power=%f", radio_get_power(c));
+		PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(c));
 
 		/* Send data */
 		TX(&c0, packet);
@@ -599,7 +599,7 @@ void tx(call_t *c, packet_t *packet) {
 	{
 		nodedata->base_power_tx = radio_get_power(c);
 	}
-	PRINT_MAC("nodedata->base_power_tx=%f, nodedata->state=%d", nodedata->base_power_tx, nodedata->state);
+	PRINT_MAC("nodedata->base_power_tx=%f, nodedata->state=%d\n", nodedata->base_power_tx, nodedata->state);
 
     if (nodedata->state == STATE_IDLE) {
         nodedata->clock = get_time();  
