@@ -145,6 +145,7 @@ int unsetnode(call_t *c) {
 		free(p_sic_temp);
 		PRINT_RADIO("free E\n");
 	}
+	PRINT_RADIO("free2 B\n");
 	free(get_node_private_data(c));
 	PRINT_RADIO("E\n");
 	return 0;
