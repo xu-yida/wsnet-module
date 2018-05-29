@@ -492,6 +492,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		{
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
 		}
+		PRINT_MAC("STATE_DATA radio_get_power=%f", radio_get_power(c));
 
 		/* Send data */
 		TX(&c0, packet);
