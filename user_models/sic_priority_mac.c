@@ -596,7 +596,7 @@ void tx(call_t *c, packet_t *packet) {
 //#endif//ADAM_PRIORITY_TEST
 	if(0 == nodedata->base_power_tx)
 	{
-		nodedata->base_power_tx = radio_set_power(c);
+		nodedata->base_power_tx = radio_get_power(c);
 	}
 	PRINT_MAC("nodedata->base_power_tx=%f, nodedata->state=%d", nodedata->base_power_tx, nodedata->state);
 
