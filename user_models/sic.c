@@ -116,7 +116,6 @@ int unsetnode(call_t *c) {
 	PRINT_RADIO("B\n");
 	while(NULL != p_sic_current)
 	{
-		PRINT_RADIO("for1\n");
 		// not latest item
 		if(NULL != p_sic_current->signal_next_endtime)
 		{
@@ -136,16 +135,13 @@ int unsetnode(call_t *c) {
 		{
 			p_sic_current->signal_lower_power->signal_higher_power = p_sic_current->signal_higher_power;
 		}
-		PRINT_RADIO("for2\n");
 		nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
 		p_sic_temp = p_sic_current;
 		p_sic_current = p_sic_current->signal_next_endtime;
 		PRINT_RADIO("NULL==p_sic_current(%d)\n", NULL==p_sic_current);
 		PRINT_RADIO("free(%d) B\n", p_sic_temp->id);
 		free(p_sic_temp);
-		PRINT_RADIO("free E\n");
 	}
-	PRINT_RADIO("free2 B\n");
 	free(get_node_private_data(c));
 	PRINT_RADIO("E\n");
 	return 0;
