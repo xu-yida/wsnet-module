@@ -217,7 +217,7 @@ int setnode(call_t *c, void *params) {
     }
 
 	set_node_private_data(c, nodedata);
-	PRINT_MAC("c->node=%d\n", c->node);
+	PRINT_MAC("MAC c->node=%d\n", c->node);
 	return 0;
 
  error:
