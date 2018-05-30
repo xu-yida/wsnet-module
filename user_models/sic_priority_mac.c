@@ -579,6 +579,7 @@ END:
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_MAC("packet->txdBm=%f\n", packet->txdBm);
 
 	das_insert(nodedata->packets, (void*)packet);
 
@@ -597,7 +598,7 @@ void tx(call_t *c, packet_t *packet) {
 		nodedata->priority = 0;
 	}
 //#endif//ADAM_PRIORITY_TEST
-	PRINT_MAC("nodedata->base_power_tx=%f\n", nodedata->base_power_tx);
+	//PRINT_MAC("nodedata->base_power_tx=%f\n", nodedata->base_power_tx);
 	if(0 == nodedata->base_power_tx)
 	{
 		nodedata->base_power_tx = radio_get_power(c);
