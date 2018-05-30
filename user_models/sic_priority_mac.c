@@ -9,7 +9,6 @@
 #include <include/modelutils.h>
 
 #include <sic.h>
-#include <internals.h>
 
 /**
  * TODO: 
@@ -301,9 +300,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int priority = 0;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
-	entity_t *entity = get_entity_by_id(c->entity);
 	
-	PRINT_MAC("B: entity->model->type=%d\n", entity->model->type);
     
     /* Drop unscheduled events */
     if (nodedata->clock != get_time()) {
@@ -581,9 +578,7 @@ END:
 /* ************************************************** */
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
-	entity_t *entity = get_entity_by_id(c->entity);
 	PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
-	PRINT_MAC("entity->model->type=%d\n", entity->model->type);
 
 	das_insert(nodedata->packets, (void*)packet);
 
