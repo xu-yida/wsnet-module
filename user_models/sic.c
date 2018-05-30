@@ -106,7 +106,7 @@ int setnode(call_t *c, void *params) {
 
 	
 	set_node_private_data(c, nodedata);
-	PRINT_RADIO("RADIO c->node=%d\n", c->node);
+	//PRINT_RADIO("RADIO c->node=%d\n", c->node);
 	//PRINT_RADIO("dBm: nodedata->power=%f\n", nodedata->power);
 	//PRINT_RADIO("dBm: get_power=%f\n", get_power(c));
 	return 0;
