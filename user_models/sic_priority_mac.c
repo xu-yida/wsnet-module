@@ -9,7 +9,7 @@
 #include <include/modelutils.h>
 
 #include <sic.h>
-#include <src/internals.h>
+#include <internals.h>
 
 /**
  * TODO: 
