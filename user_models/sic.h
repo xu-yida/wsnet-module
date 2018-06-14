@@ -36,6 +36,33 @@ typedef struct sic_signal_t
 	struct sic_signal_t* signal_lower_power;
 }sic_signal_t;
 
+
+/* ************************************************** */
+/* ************************************************** */
+struct _sic_802_11_header {
+	int src;
+	int dst;
+	int type;
+};
+struct _sic_802_11_rts_header {
+	uint64_t nav;
+	int size;
+	char padding[8];
+};
+struct _sic_802_11_cts_header {
+	uint64_t nav;
+	char padding[6];
+};
+struct _sic_802_11_data_header {
+	uint64_t nav;
+	int size;
+	int priority;
+	char padding[22];
+};
+struct _sic_802_11_ack_header {
+	char padding[14];
+};
+
 // <-RF00000000-AdamXu-2018/05/22-if a packet is decodable.
 // packet_id: id of packet
 // base_noise: environment noise

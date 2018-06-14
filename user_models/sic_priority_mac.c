@@ -60,33 +60,6 @@
 #define ADAM_HIGH_PRIOTITY_RATIO 10
 #define ADAM_HIGH_POWER_RATIO 2
 
-/* ************************************************** */
-/* ************************************************** */
-struct _sic_dcf_802_11_header {
-	int src;
-	int dst;
-	int type;
-	// 0: low; 1: high
-	int priority;
-};
-struct _dcf_802_11_rts_header {
-    uint64_t nav;
-    int size;
-    char padding[8];
-};
-struct _dcf_802_11_cts_header {
-    uint64_t nav;
-    char padding[6];
-};
-struct _dcf_802_11_data_header {
-    uint64_t nav;
-    int size;
-    char padding[22];
-};
-struct _dcf_802_11_ack_header {
-    char padding[14];
-};
-
 
 /* ************************************************** */
 /* ************************************************** */
@@ -291,11 +264,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	struct entitydata *entitydata = get_entity_private_data(c);
 	packet_t *packet;	
-	struct _sic_dcf_802_11_header *header;
-	struct _dcf_802_11_rts_header *rts_header;
-	struct _dcf_802_11_cts_header *cts_header;
-	struct _dcf_802_11_data_header *data_header;
-	//  struct _dcf_802_11_ack_header *ack_header;
+	struct _sic_802_11_header *header;
+	struct _sic_802_11_rts_header *rts_header;
+	struct _sic_802_11_cts_header *cts_header;
+	struct _sic_802_11_data_header *data_header;
+	//  struct _sic_802_11_ack_header *ack_header;
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int priority = 0;
@@ -318,11 +291,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             if (nodedata->txbuf == NULL) {
                 goto END;
             }
-//#ifdef ADAM_PRIORITY_TEST
-		// Assign priority to packet
-		header = (struct _sic_dcf_802_11_header *) nodedata->txbuf->data;
-		header->priority = nodedata->priority;
-//#endif//ADAM_PRIORITY_TEST
         }
         
         /* Initial backoff */
@@ -347,9 +315,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             goto END;
         }
         
-	header = (struct _sic_dcf_802_11_header *) nodedata->txbuf->data;
-	priority = header->priority;
-	PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
+	if(NULL == nodedata->txbuf)
+	{
+		goto END;
+	}
+	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
+	priority = data_header->priority;
+	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
         /* Backoff */
         if (nodedata->backoff > 0) {
 		//low channel power blocks low priority; high channel power blocks high priority
@@ -375,7 +347,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         }
         
         /* Broadcast or unicast */
-        header = (struct _sic_dcf_802_11_header *) nodedata->txbuf->data;
+        header = (struct _sic_802_11_header *) nodedata->txbuf->data;
         if (header->dst == BROADCAST_ADDR) {
             nodedata->state = STATE_BROADCAST;
         } else {
@@ -397,15 +369,15 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_RTS:
         /* Build RTS */
-        packet = packet_create(c, sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_rts_header), -1);
-        header = (struct _sic_dcf_802_11_header *) packet->data;
+        packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header), -1);
+        header = (struct _sic_802_11_header *) packet->data;
         header->dst = nodedata->dst;
         header->src = c->node;
         header->type = RTS_TYPE; 
-        rts_header = (struct _dcf_802_11_rts_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        rts_header = (struct _sic_802_11_rts_header *) (packet->data + sizeof(struct _sic_802_11_header));
         rts_header->size = nodedata->txbuf->size;
-        rts_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_cts_header)) * radio_get_Tb(&c0) * 8 + macMinSIFSPeriod + nodedata->txbuf->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header)) * 8 * radio_get_Tb(&c0);				
-        timeout = (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_rts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT; 			
+        rts_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * radio_get_Tb(&c0) * 8 + macMinSIFSPeriod + nodedata->txbuf->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);				
+        timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT; 			
         
         /* Send RTS */
         TX(&c0, packet); 
@@ -450,15 +422,15 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_CTS:
         /* Build CTS */
-        packet = packet_create(c, sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_cts_header), -1);
-        header= (struct _sic_dcf_802_11_header *) packet->data;
+        packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header), -1);
+        header= (struct _sic_802_11_header *) packet->data;
         header->dst = nodedata->dst;
         header->src = c->node;
         header->type = CTS_TYPE; 
-        cts_header = (struct _dcf_802_11_cts_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
-        cts_header->nav = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header)) * 8 * radio_get_Tb(&c0); 						
-        timeout = (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
-        
+        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+        cts_header->nav = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0); 						
+        timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
+
         /* Send CTS */
         TX(&c0, packet); 
         
@@ -473,7 +445,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         /* Return to pending state */
         nodedata->state = nodedata->state_pending;
         if (nodedata->state != STATE_IDLE) {
-            header = (struct _sic_dcf_802_11_header *) nodedata->txbuf->data;
+            header = (struct _sic_802_11_header *) nodedata->txbuf->data;
             nodedata->dst = header->dst;
         }
         nodedata->clock = get_time();
@@ -484,13 +456,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
     case STATE_DATA:
 		/* Build data packet */	
 		packet = packet_clone(nodedata->txbuf);
-		header = (struct _sic_dcf_802_11_header *) packet->data;
-		data_header = (struct _dcf_802_11_data_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
-		data_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
-		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
+		header = (struct _sic_802_11_header *) packet->data;
+		data_header = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
+		data_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
+		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
 		// adjust power for high priority
-		if(1 == nodedata->priority && 1 == adam_check_channel_busy(c))
+		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
 		}
@@ -524,12 +496,12 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_ACK:
         /* Build ack packet */	
-        packet = packet_create(c, sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_ack_header), -1);
-        header = (struct _sic_dcf_802_11_header *) packet->data;
+        packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header), -1);
+        header = (struct _sic_802_11_header *) packet->data;
         header->type = ACK_TYPE; 
         header->src = c->node;
         header->dst = nodedata->dst;
-        // ack_header = (struct _dcf_802_11_ack_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        // ack_header = (struct _sic_802_11_ack_header *) (packet->data + sizeof(struct _sic_802_11_header));
         timeout =  packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
         
         /* Send ack */
@@ -545,7 +517,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         /* Return to pending state */
         nodedata->state = nodedata->state_pending;
         if (nodedata->state != STATE_IDLE) {
-            header = (struct _sic_dcf_802_11_header *) nodedata->txbuf->data;
+            header = (struct _sic_802_11_header *) nodedata->txbuf->data;
             nodedata->dst = header->dst;
         }
         nodedata->clock = get_time();
@@ -570,7 +542,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
     }
 
 END:
-    return error_id;
+	PRINT_MAC("E: error_id=%d\n", error_id);
+	return error_id;
 }
 
 
@@ -579,31 +552,8 @@ END:
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
-	PRINT_MAC("packet->txdBm=%f\n", packet->txdBm);
 
 	das_insert(nodedata->packets, (void*)packet);
-
-//#ifdef ADAM_PRIORITY_TEST
-	// Generate high priority data randomly. for test
-	if(STATE_BROADCAST != nodedata->state && 
-		STATE_RTS != nodedata->state &&
-		STATE_CTS != nodedata->state &&
-		STATE_ACK != nodedata->state &&
-		0 == get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO)
-	{
-		nodedata->priority = 1;
-	}
-	else
-	{
-		nodedata->priority = 0;
-	}
-//#endif//ADAM_PRIORITY_TEST
-	//PRINT_MAC("nodedata->base_power_tx=%f\n", nodedata->base_power_tx);
-	if(0 == nodedata->base_power_tx)
-	{
-		nodedata->base_power_tx = radio_get_power(c);
-	}
-	PRINT_MAC("nodedata->base_power_tx=%f, nodedata->state=%d\n", nodedata->base_power_tx, nodedata->state);
 
     if (nodedata->state == STATE_IDLE) {
         nodedata->clock = get_time();  
@@ -616,11 +566,11 @@ void tx(call_t *c, packet_t *packet) {
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {
     struct nodedata *nodedata = get_node_private_data(c);
-    struct _sic_dcf_802_11_header *header = (struct _sic_dcf_802_11_header *) packet->data;
-    struct _dcf_802_11_rts_header *rts_header;
-    struct _dcf_802_11_cts_header *cts_header;
-    struct _dcf_802_11_data_header *data_header;
-    // struct _dcf_802_11_ack_header *ack_header;
+    struct _sic_802_11_header *header = (struct _sic_802_11_header *) packet->data;
+    struct _sic_802_11_rts_header *rts_header;
+    struct _sic_802_11_cts_header *cts_header;
+    struct _sic_802_11_data_header *data_header;
+    // struct _sic_802_11_ack_header *ack_header;
     array_t *up = get_entity_bindings_up(c);
     int i = up->size;
 
@@ -628,7 +578,7 @@ void rx(call_t *c, packet_t *packet) {
 		
     case RTS_TYPE:
         /* Receive RTS*/
-        rts_header = (struct _dcf_802_11_rts_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        rts_header = (struct _sic_802_11_rts_header *) (packet->data + sizeof(struct _sic_802_11_header));
 			
         if (header->dst != c->node) {
             /* Packet not for us */
@@ -664,7 +614,7 @@ void rx(call_t *c, packet_t *packet) {
 			
     case CTS_TYPE:
         /* Receive CTS */
-        cts_header = (struct _dcf_802_11_cts_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
 			
         if (header->dst != c->node) {
             /* Packet not for us */
@@ -698,7 +648,7 @@ void rx(call_t *c, packet_t *packet) {
 			
     case DATA_TYPE:
         /* Received DATA */
-        data_header = (struct _dcf_802_11_data_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        data_header = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
 			
         if (header->dst != c->node) {
             /* Packet not for us */
@@ -751,7 +701,7 @@ void rx(call_t *c, packet_t *packet) {
 
     case BROADCAST_TYPE:
         /* Receive RTS*/
-        data_header = (struct _dcf_802_11_data_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        data_header = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
         
         if (header->dst != BROADCAST_ADDR) {
             /* Packet not for us */
@@ -775,7 +725,7 @@ void rx(call_t *c, packet_t *packet) {
 
     case ACK_TYPE:
         /* Received ACK */
-        // ack_header = (struct _dcf_802_11_ack_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+        // ack_header = (struct _sic_802_11_ack_header *) (packet->data + sizeof(struct _sic_802_11_header));
         
         if (header->dst != c->node) {
             /* Packet not for us */
@@ -817,25 +767,27 @@ void rx(call_t *c, packet_t *packet) {
 /* ************************************************** */
 /* ************************************************** */
 int set_header(call_t *c, packet_t *packet, destination_t *dst) {
-    struct _sic_dcf_802_11_header *header = (struct _sic_dcf_802_11_header *) packet->data;
-    struct _dcf_802_11_data_header *dheader = (struct _dcf_802_11_data_header *) (packet->data + sizeof(struct _sic_dcf_802_11_header));
+	struct _sic_802_11_header *header = (struct _sic_802_11_header *) packet->data;
+	struct _sic_802_11_data_header *dheader = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
 
-    if ((header->dst = dst->id) == BROADCAST_ADDR) {
-        header->type =BROADCAST_TYPE;
-    } else {
-        header->type = DATA_TYPE;
-    }
-    header->src = c->node;
-    dheader->size = packet->size;
-    return 0;
+	if ((header->dst = dst->id) == BROADCAST_ADDR) {
+		header->type =BROADCAST_TYPE;
+	} else {
+		header->type = DATA_TYPE;
+	}
+	header->src = c->node;
+	dheader->size = packet->size;
+	// add priority here
+	dheader->priority = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
+	return 0;
 }
 
 int get_header_size(call_t *c) {
-    return (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_data_header));
+	return (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_data_header));
 }
 
 int get_header_real_size(call_t *c) {
-    return (sizeof(struct _sic_dcf_802_11_header) + sizeof(struct _dcf_802_11_data_header));
+	return (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_data_header));
 }
 
 
