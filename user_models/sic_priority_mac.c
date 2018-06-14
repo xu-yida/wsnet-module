@@ -158,7 +158,6 @@ int setnode(call_t *c, void *params) {
 	/* Init packets buffer */
 	nodedata->packets = das_create();
 	nodedata->txbuf = NULL;
-	nodedata->base_power_tx = 0;
 //#ifdef ADAM_PRIORITY_TEST
 	nodedata->priority = 0;
 //#endif//ADAM_PRIORITY_TEST
