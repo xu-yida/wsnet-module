@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="100" duration="10s" x="100" y="100" z="0"/>
+<simulation nodes="50" duration="10s" x="100" y="100" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -25,12 +25,12 @@
   <default loss="0" angle-xy="random" angle-z="random"/>
 </entity>
 
-<entity name="radio" library="radio_half1d" >
+<entity name="radio" library="radio_sic" >
   <default  sensibility="-92" T_b="727" dBm="10" channel="0" modulation="none"/>
 </entity>
 
 <!-- == MAC ===================================================== -->
-<entity name="mac" library="mac_dcf_802_11" >
+<entity name="mac" library="mac_sic" >
 </entity>
 
 <!-- == APPLICATION ===================================================== -->
