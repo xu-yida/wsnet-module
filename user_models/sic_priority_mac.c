@@ -779,6 +779,10 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	dheader->size = packet->size;
 	// add priority here
 	dheader->priority = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
+	if(1 == dheader->priority)
+	{
+		PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	}
 	return 0;
 }
 
