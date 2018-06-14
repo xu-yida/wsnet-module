@@ -57,7 +57,7 @@
 /* ************************************************** */
 /* ************************************************** */
 //#define ADAM_PRIORITY_TEST
-#define ADAM_HIGH_PRIOTITY_RATIO 10
+#define ADAM_HIGH_PRIOTITY_RATIO 5
 #define ADAM_HIGH_POWER_RATIO 2
 
 
@@ -770,6 +770,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	struct _sic_802_11_header *header = (struct _sic_802_11_header *) packet->data;
 	struct _sic_802_11_data_header *dheader = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
 
+	PRINT_MAC("B\n");
 	if ((header->dst = dst->id) == BROADCAST_ADDR) {
 		header->type =BROADCAST_TYPE;
 	} else {
@@ -781,7 +782,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	dheader->priority = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
 	if(1 == dheader->priority)
 	{
-		PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+		PRINT_MAC("E: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	}
 	return 0;
 }
