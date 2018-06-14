@@ -461,9 +461,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
 		// adjust power for high priority
+		base_power_tx = radio_get_power(c);
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
-			base_power_tx = radio_get_power(c);
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
 			PRINT_MAC("STATE_DATA radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
 		}
@@ -487,9 +487,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
 
 		// adjust power for high priority
+		base_power_tx = radio_get_power(c);
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
-			base_power_tx = radio_get_power(c);
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
 			PRINT_MAC("STATE_BROADCAST radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
 		}
