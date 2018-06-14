@@ -84,7 +84,6 @@ struct nodedata {
 	int cs;
 	int cca;
 	double EDThreshold;
-	double base_power_tx;
 //#ifdef ADAM_PRIORITY_TEST
 	// 0: low; 1: high
 	int priority;
@@ -464,9 +463,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// adjust power for high priority
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
-			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
+			double base_power_tx = radio_get_power(c);
+			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
+			PRINT_MAC("STATE_DATA radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
 		}
-		PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(c));
 
 		/* Send data */
 		TX(&c0, packet);
@@ -489,9 +489,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// adjust power for high priority
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
-			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+nodedata->base_power_tx);
+			double base_power_tx = radio_get_power(c);
+			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
+			PRINT_MAC("STATE_BROADCAST radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
 		}
-		PRINT_MAC("STATE_BROADCAST radio_get_power=%f\n", radio_get_power(c));
 		
 		/* Send data */
 		TX(&c0, packet);
