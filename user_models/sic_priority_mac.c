@@ -269,7 +269,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	//  struct _sic_802_11_ack_header *ack_header;
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
-	int priority = 0;
+	int priority;
+	double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	
     
@@ -462,7 +463,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// adjust power for high priority
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
-			double base_power_tx = radio_get_power(c);
+			base_power_tx = radio_get_power(c);
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
 			PRINT_MAC("STATE_DATA radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
 		}
@@ -471,7 +472,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		TX(&c0, packet);
 		
 		// recover power
-		radio_set_power(c, nodedata->base_power_tx);
+		radio_set_power(c, base_power_tx);
 
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_TIMEOUT;
@@ -488,7 +489,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// adjust power for high priority
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
-			double base_power_tx = radio_get_power(c);
+			base_power_tx = radio_get_power(c);
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
 			PRINT_MAC("STATE_BROADCAST radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
 		}
@@ -497,7 +498,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		TX(&c0, packet);
 		
 		// recover power
-		radio_set_power(c, nodedata->base_power_tx);
+		radio_set_power(c, base_power_tx);
 
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_BROAD_DONE;
