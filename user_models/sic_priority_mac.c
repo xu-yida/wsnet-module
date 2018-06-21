@@ -96,30 +96,6 @@ struct entitydata {
 };
 
 
-
-// <-RF00000000-AdamXu-2018/06/21-for log.
-typedef struct _entity {
-    entityid_t id;
-    char *name;
-    
-    library_t library;
-    
-    model_t *model;
-    methods_t *methods;
-    
-    int (*init) (call_t *c, void *params);
-    int (*destroy) (call_t *c);
-    int (*bootstrap) (call_t *c);
-    int (*setnode) (call_t *c, void *params);
-    int (*unsetnode) (call_t *c);
-    int (*ioctl) (call_t *c, int option, void *in, void **out);
-    
-    void *private;
-    
-    array_t bundles;
-} entity_t;
-// ->RF00000000-AdamXu
-
 /* ************************************************** */
 /* ************************************************** */
 model_t model =  {
@@ -296,12 +272,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	int priority;
 	double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
-	
-	// <-RF00000000-AdamXu-2018/06/20-add model type log.
-	entity_t *entity = get_entity_by_id(c->entity);
-	PRINT_MAC("B: nodedata->state=%d, entity->model->type=%d\n", nodedata->state, entity->model->type);
-	// ->RF00000000-AdamXu
-	
+		
     
     /* Drop unscheduled events */
     if (nodedata->clock != get_time()) {
