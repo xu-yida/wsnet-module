@@ -273,6 +273,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	
+	// <-RF00000000-AdamXu-2018/06/20-add model type log.
+	entity_t *entity = get_entity_by_id(c->entity);
+	PRINT_MAC("B: nodedata->state=%d, entity->model->type=%d\n", nodedata->state, entity->model->type);
+	// ->RF00000000-AdamXu
+	
     
     /* Drop unscheduled events */
     if (nodedata->clock != get_time()) {
