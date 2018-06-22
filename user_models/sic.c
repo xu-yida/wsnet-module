@@ -194,7 +194,6 @@ void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	array_t *down = get_entity_bindings_down(c);
 	int i = down->size;
-	double base_power_tx;
     
     /* radio sleep */
 	if (nodedata->sleep) {
@@ -212,6 +211,7 @@ void tx(call_t *c, packet_t *packet) {
 	/* transmit to antenna */
 	while (i--) {
 		packet_t *packet_down;
+		double base_power_tx;
 
 		if (i > 0) {
 			packet_down = packet_clone(packet);         
@@ -220,10 +220,10 @@ void tx(call_t *c, packet_t *packet) {
 		}
 		c->from = down->elts[i];
 
-		PRINT_RADIO("packet_down->type=%d, radio_get_power=%f\n", packet_down->type, radio_get_power(c));
+		base_power_tx = radio_get_power(c);
+		PRINT_RADIO("packet_down->type=%d, base_power_tx=%f\n", packet_down->type, base_power_tx);
 		if(1 == packet_down->type)
 		{
-			base_power_tx = radio_get_power(c);
 			radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
 			PRINT_RADIO("radio_get_power=%f\n", radio_get_power(c));
 		}
