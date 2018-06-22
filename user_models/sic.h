@@ -11,6 +11,13 @@
 #define MIN_SIC_ITERATION 2
 #define DEFAULT_SIC_THRESHOLD 1
 
+
+/* ************************************************** */
+/* ************************************************** */
+//#define ADAM_PRIORITY_TEST
+#define ADAM_HIGH_PRIOTITY_RATIO 5
+#define ADAM_HIGH_POWER_RATIO 2
+
 typedef enum
 {
 	ADAM_ERROR_NO_ERROR = 0,
