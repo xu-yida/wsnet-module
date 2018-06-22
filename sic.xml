@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="100" duration="10s" x="100" y="100" z="0"/>
+<simulation nodes="1000" duration="20s" x="400" y="400" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -21,37 +21,43 @@
 </entity>
 
 <!-- == RADIO and ANTENNA ============================================ -->
+
 <entity name="omnidirectionnal" library="antenna_omnidirectionnal" >
   <default loss="0" angle-xy="random" angle-z="random"/>
 </entity>
 
 <entity name="radio" library="radio_sic" >
-  <default  sensibility="-92" T_b="727" dBm="10" channel="0" modulation="none"/>
+  <default  sensibility="-92" T_s="727" dBm="10" channel="0" modulation="none"/>
 </entity>
 
 <!-- == MAC ===================================================== -->
+
 <entity name="mac" library="mac_sic" >
 </entity>
 
+
 <!-- == APPLICATION ===================================================== -->
-<entity name="epidemic-source" library="application_epidemic" >
-<init p="0.3" q="1"/>
-<default type="1" period="2s"/>
+
+<entity name="routing" library="routing_greedy" >
 </entity>
 
-<entity name="epidemic-sensor" library="application_epidemic" >
-<init p="0.3" q="1"/>
-<default type="0"/>
+<!-- == APPLICATION ===================================================== -->
+
+<entity name="cbr" library="application_cbr" >
+  <default period="1s" start="0" size="100" destination-x="random" destination-y="random" destination-z="random"/>
 </entity>
 
 
 <!-- == MOBILITY ===================================================== -->
-<entity name="static-pos" library="mobility_static" >
+<entity name="static" library="mobility_static" >
   <default x="random" y="random" z="random"/>
 </entity>
 
-<entity name="center-pos" library="mobility_static" >
-  <default x="50.0" y="50.0" z="0.0"/>
+
+<!-- == BATTERY ======================================================== -->
+
+<entity name="battery" library="energy_linear" >
+  <default energy="200000000" tx="2" rx="1"/>
 </entity>
 
 
@@ -64,8 +70,11 @@
 
 
 <!-- == Bundle ===================================================== -->
+
 <bundle name="sensor" worldsens="false" default="true" birth="0">
-  <mobility entity="static-pos"/>
+  <mobility entity="static"/>
+
+  <energy entity="battery"/> 
 
   <antenna entity="omnidirectionnal">
     <up entity="radio"/>
@@ -77,42 +86,21 @@
   </with>
 
   <with entity="mac">
-    <up entity="epidemic-sensor"/>
+    <up entity="routing"/>
     <down entity="radio"/>
   </with>
 
-  <with entity="epidemic-sensor">
+  <with entity="routing">
+    <up entity="cbr"/>
     <down entity="mac"/>
   </with>
 
-</bundle>
-
-<bundle name="source" worldsens="false" default="false" birth="0">
-  <mobility entity="center-pos"/>
-
-  <antenna entity="omnidirectionnal">
-    <up entity="radio"/>
-  </antenna>
-
-  <with entity="radio">
-    <up entity="mac"/>
-    <down entity="omnidirectionnal"/>
+  <with entity="cbr">
+    <down entity="routing"/>
   </with>
-
-  <with entity="mac">
-    <up entity="epidemic-source"/>
-    <down entity="radio"/>
-  </with>
-
-  <with entity="epidemic-source">
-    <down entity="mac"/>
-  </with>
-
 </bundle>
 
 <!-- == Nodes ===================================================== -->
-
-<node id="0" as="source"/>
 
 
 </worldsens>

@@ -408,7 +408,6 @@ double get_cs(call_t *c) {
 
 double get_power(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
-	PRINT_RADIO("B: nodedata->power=%f\n", nodedata->power);
 	return nodedata->power;
 }
 
