@@ -15,7 +15,7 @@
 /* ************************************************** */
 /* ************************************************** */
 //#define ADAM_PRIORITY_TEST
-#define ADAM_HIGH_PRIOTITY_RATIO 5
+#define ADAM_HIGH_PRIOTITY_RATIO 2
 #define ADAM_HIGH_POWER_RATIO 2
 
 typedef enum
