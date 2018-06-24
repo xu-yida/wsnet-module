@@ -228,6 +228,7 @@ int adam_check_channel_busy(call_t *c) {
 	PRINT_MAC("B: gain=%f, nodedata->EDThreshold=%f\n", (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2)), nodedata->EDThreshold);
 	if (nodedata->cs)
 	{
+		PRINT_MAC("radio_get_cs(&c0)=%f\n", radio_get_cs(&c0));
 		if(radio_get_cs(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
 		{
 			channel_state = 2;
@@ -238,6 +239,7 @@ int adam_check_channel_busy(call_t *c) {
 		}
 	}
 	else if (nodedata->cca) {
+		PRINT_MAC("radio_get_noise(&c0)=%f\n", radio_get_noise(&c0));
 		if(radio_get_noise(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
 		{
 			channel_state = 2;
@@ -247,6 +249,7 @@ int adam_check_channel_busy(call_t *c) {
 			channel_state = 1;
 		}
 	}
+	PRINT_MAC("E: channel_state=%d\n", channel_state);
 
 	return channel_state;
 }
@@ -455,6 +458,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 		// adjust power for high priority
 		//base_power_tx = radio_get_power(c);
+		PRINT_MAC("STATE_DATA data_header->priority = %d\n", data_header->priority);
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
 			packet->type = 1;
@@ -483,6 +487,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 		// adjust power for high priority
 		//base_power_tx = radio_get_power(c);
+		PRINT_MAC("STATE_BROADCAST data_header->priority = %d\n", data_header->priority);
 		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
 		{
 			packet->type = 1;
