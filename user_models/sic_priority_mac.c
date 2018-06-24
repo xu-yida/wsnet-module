@@ -263,7 +263,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int priority;
-	double base_power_tx;
+	//double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 		
     
