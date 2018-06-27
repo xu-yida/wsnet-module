@@ -445,11 +445,11 @@ void forward(call_t *c, packet_t *packet) {
 	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n"packet->id, c->node);
 	if(1 == packet->type)
 	{
-		n_hop = get_nexthop_high(c, &(dst->position));
+		n_hop = get_nexthop_high(c, &(header->dst_pos));
 	}
 	else
 	{
-		n_hop = get_nexthop_low(c, &(dst->position));
+		n_hop = get_nexthop_low(c, &(header->dst_pos));
 	}
 
 	/* delivers packet to application layer */
@@ -508,16 +508,15 @@ void rx(call_t *c, packet_t *packet) {
 	array_t *up = get_entity_bindings_up(c);
 	int i = up->size;
 	struct routing_header *header = (struct routing_header *) (packet->data + nodedata->overhead);
-	call_t c0, c1;
+	// get mac layer
+	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
+	//get radio layer
+	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c->node, c->entity};
 	double sensibility;
 
 	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n"packet->id, c->node);
 	switch(header->type) {
 	case HELLO_PACKET:
-		// get mac layer
-		c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
-		//get radio layer
-		c1 = {get_entity_bindings_down(&c0)->elts[0], c->node, c->entity};
 		sensibility = radio_get_sensibility(&c1);
 		nodedata->hello_rx++;
 		// high channel gain neighbours contains low channel gain neighbours

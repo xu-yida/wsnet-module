@@ -295,7 +295,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         nodedata->NB = 0;
         nodedata->backoff = macMinDIFSPeriod;
         nodedata->backoff_suspended = 0;
-			
+					
         /* Backoff */
         nodedata->clock = get_time();  
         dcf_802_11_state_machine(c,NULL);
@@ -315,7 +315,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		goto END;
 	}
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
-	priority = packet->type;
+	priority = nodedata->txbuf->type;
 	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
         /* Backoff */
         if (nodedata->backoff > 0) {
