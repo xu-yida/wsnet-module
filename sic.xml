@@ -38,7 +38,7 @@
 
 <!-- == APPLICATION ===================================================== -->
 
-<entity name="routing" library="routing_greedy" >
+<entity name="routing" library="routing_sic" >
 </entity>
 
 <!-- == APPLICATION ===================================================== -->

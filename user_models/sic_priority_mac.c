@@ -225,10 +225,10 @@ int adam_check_channel_busy(call_t *c) {
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int channel_state = 0;
 
-	PRINT_MAC("B: gain=%f, nodedata->EDThreshold=%f\n", (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2)), nodedata->EDThreshold);
+	//PRINT_MAC("B: gain=%f, nodedata->EDThreshold=%f\n", (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2)), nodedata->EDThreshold);
 	if (nodedata->cs)
 	{
-		PRINT_MAC("radio_get_cs(&c0)=%f\n", radio_get_cs(&c0));
+		//PRINT_MAC("radio_get_cs(&c0)=%f\n", radio_get_cs(&c0));
 		if(radio_get_cs(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
 		{
 			channel_state = 2;
@@ -239,7 +239,7 @@ int adam_check_channel_busy(call_t *c) {
 		}
 	}
 	else if (nodedata->cca) {
-		PRINT_MAC("radio_get_noise(&c0)=%f\n", radio_get_noise(&c0));
+		//PRINT_MAC("radio_get_noise(&c0)=%f\n", radio_get_noise(&c0));
 		if(radio_get_noise(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
 		{
 			channel_state = 2;
@@ -266,7 +266,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int priority;
-	//double base_power_tx;
+	double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 		
     
@@ -315,7 +315,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		goto END;
 	}
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
-	priority = data_header->priority;
+	priority = packet->type;
 	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
         /* Backoff */
         if (nodedata->backoff > 0) {
@@ -457,21 +457,18 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
 		// adjust power for high priority
-		//base_power_tx = radio_get_power(c);
-		PRINT_MAC("STATE_DATA data_header->priority = %d\n", data_header->priority);
-		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
+		base_power_tx = radio_get_power(c0);
+		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 		{
-			packet->type = 1;
-			PRINT_MAC("STATE_DATA packet->type = 1\n");
-			//radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
-			//PRINT_MAC("STATE_DATA radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
+			radio_set_power(c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
+			PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(c0));
 		}
 
 		/* Send data */
 		TX(&c0, packet);
 		
 		// recover power
-		//radio_set_power(c, base_power_tx);
+		radio_set_power(c0, base_power_tx);
 
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_TIMEOUT;
@@ -486,21 +483,18 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
 
 		// adjust power for high priority
-		//base_power_tx = radio_get_power(c);
-		PRINT_MAC("STATE_BROADCAST data_header->priority = %d\n", data_header->priority);
-		if(1 == data_header->priority && 1 == adam_check_channel_busy(c))
+		base_power_tx = radio_get_power(c0);
+		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 		{
-			packet->type = 1;
-			PRINT_MAC("STATE_BROADCAST packet->type = 1\n");
-			//radio_set_power(c, log10(ADAM_HIGH_POWER_RATIO)/log10(2)+base_power_tx);
-			//PRINT_MAC("STATE_BROADCAST radio_get_power=%f, base_power_tx=%f\n", radio_get_power(c), base_power_tx);
+			radio_set_power(c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
+			PRINT_MAC("STATE_BROADCAST radio_get_power=%f\n", radio_get_power(c0));
 		}
 		
 		/* Send data */
 		TX(&c0, packet);
 		
 		// recover power
-		//radio_set_power(c, base_power_tx);
+		radio_set_power(c0, base_power_tx);
 
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_BROAD_DONE;
@@ -556,7 +550,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
     }
 
 END:
-	PRINT_MAC("E: error_id=%d\n", error_id);
+	if(ADAM_ERROR_NO_ERROR != error_id)
+	{
+		PRINT_MAC("E: error_id=%d\n", error_id);
+	}
 	return error_id;
 }
 
@@ -793,11 +790,8 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	header->src = c->node;
 	dheader->size = packet->size;
 	// add priority here
-	dheader->priority = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
-	if(1 == dheader->priority)
-	{
-		PRINT_MAC("E: packet->id=%d, c->node=%d\n", packet->id, c->node);
-	}
+	//dheader->priority = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
+
 	return 0;
 }
 

@@ -17,6 +17,7 @@
 //#define ADAM_PRIORITY_TEST
 #define ADAM_HIGH_PRIOTITY_RATIO 2
 #define ADAM_HIGH_POWER_RATIO 2
+#define ADAM_HIGH_POWER_DBM_GAIN (log10(ADAM_HIGH_POWER_RATIO)/log10(2))
 
 typedef enum
 {
@@ -63,7 +64,7 @@ struct _sic_802_11_cts_header {
 struct _sic_802_11_data_header {
 	uint64_t nav;
 	int size;
-	int priority;
+	//int priority;
 	char padding[22];
 };
 struct _sic_802_11_ack_header {
