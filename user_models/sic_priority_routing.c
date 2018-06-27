@@ -379,10 +379,8 @@ int advert_callback(call_t *c, void *args) {
 	destination_t destination = {BROADCAST_ADDR, {-1, -1, -1}};
 	packet_t *packet = packet_create(c, nodedata->overhead + sizeof(struct routing_header), -1);
 	struct routing_header *header = (struct routing_header*) (packet->data + nodedata->overhead);
-	// get mac layer
-	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	//get radio layer
-	call_t c1 = {get_entity_bindings_down(c0)->elts[0], c->node, c->entity};
+	//call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c->node, c->entity};
 	int error_id = 0;
         
 	/* set mac header */
@@ -405,7 +403,7 @@ int advert_callback(call_t *c, void *args) {
 	header->hop = 1;
 	
 	// <-RF00000000-AdamXu-2018/06/25-use high power for neighour discovering.
-	//header->txdBm = ADAM_HIGH_POWER_DBM_GAIN+radio_get_power(c1);
+	//header->txdBm = ADAM_HIGH_POWER_DBM_GAIN+radio_get_power(&c1);
 	packet->type = 1;
 	// ->RF00000000-AdamXu
 
@@ -519,8 +517,8 @@ void rx(call_t *c, packet_t *packet) {
 		// get mac layer
 		c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 		//get radio layer
-		c1 = {get_entity_bindings_down(c0)->elts[0], c->node, c->entity};
-		sensibility = radio_get_sensibility(c1);
+		c1 = {get_entity_bindings_down(&c0)->elts[0], c->node, c->entity};
+		sensibility = radio_get_sensibility(&c1);
 		nodedata->hello_rx++;
 		// high channel gain neighbours contains low channel gain neighbours
 		PRINT_ROUTING("HELLO_PACKET packet->rxdBm=%f, packet->txdBm=%f, sensibility=%f\n", packet->rxdBm, packet->txdBm, sensibility);
