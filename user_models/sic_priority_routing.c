@@ -442,7 +442,7 @@ void forward(call_t *c, packet_t *packet) {
 	struct neighbor *n_hop;
 	destination_t destination; 
 	
-	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n"packet->id, c->node);
+	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n"packet->id, c->node);
 	if(1 == packet->type)
 	{
 		n_hop = get_nexthop_high(c, &(header->dst_pos));
@@ -514,7 +514,7 @@ void rx(call_t *c, packet_t *packet) {
 	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c0.node, c0.entity};
 	double sensibility;
 
-	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n"packet->id, c->node);
+	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n"packet->id, c->node);
 	switch(header->type) {
 	case HELLO_PACKET:
 		sensibility = radio_get_sensibility(&c1);
