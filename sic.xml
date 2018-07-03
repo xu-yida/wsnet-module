@@ -10,8 +10,7 @@
 
 
 <!-- == PROPAGATION, INTERFERENCES and MODULATION ===================== -->
-<entity name="range" library="propagation_range" >
-  <init  range="30"/>
+<entity name="range" library="propagation_freespace" >
 </entity>
 
 <entity name="interf" library="interferences_orthogonal">

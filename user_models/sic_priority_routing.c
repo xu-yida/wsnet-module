@@ -86,7 +86,6 @@ int destroy(call_t *c) {
 int setnode(call_t *c, void *params) {
     struct nodedata *nodedata = malloc(sizeof(struct nodedata));
     param_t *param;
-	PRINT_ROUTING("routing B\n");
 
     /* default values */
     nodedata->neighbors_low = das_create();
@@ -429,7 +428,6 @@ END:
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
-	PRINT_ROUTING("routing B\n");
 
 	nodedata->data_tx++;
 	TX(&c0, packet);
