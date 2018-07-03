@@ -445,7 +445,7 @@ void forward(call_t *c, packet_t *packet) {
 	struct neighbor *n_hop;
 	destination_t destination; 
 	
-	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n"packet->id, c->node);
+	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	if(1 == packet->type)
 	{
 		n_hop = get_nexthop_high(c, &(header->dst_pos));
