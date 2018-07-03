@@ -511,7 +511,7 @@ void rx(call_t *c, packet_t *packet) {
 	// get mac layer
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	//get radio layer
-	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c->node, c->entity};
+	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c0.node, c0.entity};
 	double sensibility;
 
 	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n"packet->id, c->node);

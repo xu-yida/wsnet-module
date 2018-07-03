@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="1000" duration="20s" x="400" y="400" z="0"/>
+<simulation nodes="3" duration="20s" x="400" y="400" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -101,6 +101,17 @@
 </bundle>
 
 <!-- == Nodes ===================================================== -->
+<node id="0" as="sensor">
+  <for entity="static" x="0" y="0" z="0" /> 
+</node>
+
+<node id="1" as="sensor">
+  <for entity="static" x="10" y="0" z="0" /> 
+</node>
+
+<node id="2" as="sensor">
+  <for entity="static" x="20" y="0" z="0" /> 
+</node>
 
 
 </worldsens>
