@@ -41,8 +41,9 @@
 </entity>
 
 <!-- == APPLICATION ===================================================== -->
-<entity name="bmac-timedriven" library="application_bmac_app_sample">
-  <default tx_period="1s" start="0s"/>
+
+<entity name="cbr" library="application_cbr" >
+  <default period="1s" start="0" size="100" destination-x="random" destination-y="random" destination-z="random"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->
@@ -88,11 +89,11 @@
   </with>
 
   <with entity="routing">
-    <up entity="bmac-timedriven"/>
+    <up entity="cbr"/>
     <down entity="mac"/>
   </with>
 
-  <with entity="bmac-timedriven">
+  <with entity="cbr">
     <down entity="routing"/>
   </with>
 </bundle>
