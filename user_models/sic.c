@@ -280,7 +280,7 @@ void rx(call_t *c, packet_t *packet) {
         
     /* handle carrier sense */
 	adam_Update_Candidate(c);
-	if (adam_Is_Packet_Decodable(c, packet->id, mW2dBm(MEDIA_GET_WHITE_NOISE(c, packet->channel)), DEFAULT_SIC_THRESHOLD)) {
+	if (adam_Is_Packet_Decodable(c, packet->id, MEDIA_GET_WHITE_NOISE(c, packet->channel), DEFAULT_SIC_THRESHOLD)) {
 		nodedata->rx_busy = -1;
 		nodedata->rxdBm   = MIN_DBM;
 		/* log rx */
@@ -508,27 +508,27 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 
 /* ************************************************** */
 /* ************************************************** */
-int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double sic_threshold)
+int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, double sic_threshold)
 {
 	struct nodedata *nodedata = get_node_private_data(c);
 	int is_decodable = 0;
-	double sum_interf_noise = base_noise;
+	double sum_interf_noise_mw = base_noise_mw;
 	sic_signal_t* p_sic_current = NULL;
 
-	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise, sic_threshold);
+	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise_mw, sic_threshold);
 	PRINT_RADIO("nodedata->sic_signal_power_first==NULL?%d\n", NULL == nodedata->sic_signal_power_first);
 	// get total interference and noise
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
-		sum_interf_noise += p_sic_current->rxdBm;
-		PRINT_RADIO("sum_interf_noise1=%f\n", sum_interf_noise);
+		sum_interf_noise_mw += dBm2mW(p_sic_current->rxdBm);
+		PRINT_RADIO("sum_interf_noise1=%f\n", sum_interf_noise_mw);
 	}
 	// judge items one by one
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
-		sum_interf_noise -= p_sic_current->rxdBm;
-		PRINT_RADIO("sum_interf_noise2=%f, p_sic_current->rxdBm=%f\n", sum_interf_noise, p_sic_current->rxdBm);
-		if(p_sic_current->rxdBm >= sum_interf_noise*sic_threshold) //meet SINR threshold, continue
+		sum_interf_noise_mw -= dBm2mW(p_sic_current->rxdBm);
+		PRINT_RADIO("sum_interf_noise2=%f, p_sic_current->rxmW=%f\n", sum_interf_noise_mw, dBm2mW(p_sic_current->rxdBm));
+		if(dBm2mW(p_sic_current->rxdBm) >= sum_interf_noise_mw*sic_threshold) //meet SINR threshold, continue
 		{
 			if(id == p_sic_current->id)
 			{
