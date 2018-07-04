@@ -464,6 +464,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		}
 
+		PRINT_MAC("STATE_DATA packet->id=%d\n", packet->id);
 		/* Send data */
 		TX(&c0, packet);
 		
