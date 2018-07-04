@@ -138,7 +138,6 @@ int setnode(call_t *c, void *params) {
 int unsetnode(call_t *c) {
     struct nodedata *nodedata = get_node_private_data(c);
     struct neighbor *neighbor;
-	PRINT_ROUTING("routing B\n");
     while ((neighbor = (struct neighbor *) das_pop(nodedata->neighbors_low)) != NULL) {
         free(neighbor);
     }

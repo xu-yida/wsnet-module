@@ -10,7 +10,7 @@
 
 
 <!-- == PROPAGATION, INTERFERENCES and MODULATION ===================== -->
-<entity name="range" library="propagation_freespace" >
+<entity name="free-space" library="propagation_freespace" >
 </entity>
 
 <entity name="interf" library="interferences_orthogonal">
@@ -62,7 +62,7 @@
 
 <!-- == Environment ===================================================== -->
 <environment>
-<propagation entity="range" range="30"/>
+<propagation entity="free-space" range="30"/>
 <interferences entity="interf"/>
 <modulation entity="none"/>
 </environment>
