@@ -512,6 +512,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 {
 	struct nodedata *nodedata = get_node_private_data(c);
 	int is_decodable = 0;
+	int signal_count = 0;
 	double sum_interf_noise_mw = base_noise_mw;
 	sic_signal_t* p_sic_current = NULL;
 
@@ -521,7 +522,8 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
 		sum_interf_noise_mw += dBm2mW(p_sic_current->rxdBm);
-		PRINT_RADIO("sum_interf_noise1=%f\n", sum_interf_noise_mw);
+		signal_count++;
+		PRINT_RADIO("sum_interf_noise1=%f, signal_count=%d\n", sum_interf_noise_mw, signal_count);
 	}
 	// judge items one by one
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
