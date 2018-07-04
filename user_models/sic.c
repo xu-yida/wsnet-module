@@ -565,7 +565,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		goto END;
 	}
 	// earlier than the first item
-	PRINT_RADIO("c->node=%d\n", c->node);
+	PRINT_RADIO("c->node=%d, sic_signal->id=%d\n", c->node, sic_signal->id);
 	PRINT_RADIO("nodedata->sic_signal_time_first->clock1=%"PRId64"\n", nodedata->sic_signal_time_first->clock1);
 	PRINT_RADIO("sic_signal->clock1=%"PRId64"\n", sic_signal->clock1);
 	if(nodedata->sic_signal_time_first->clock1 > sic_signal->clock1)
