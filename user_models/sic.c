@@ -516,6 +516,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double
 	sic_signal_t* p_sic_current = NULL;
 
 	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise, sic_threshold);
+	PRINT_RADIO("nodedata->sic_signal_power_first==NULL?%d\n", NULL == nodedata->sic_signal_power_first);
 	// get total interference and noise
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
