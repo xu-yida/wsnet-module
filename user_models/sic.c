@@ -518,6 +518,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 
 	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise_mw, sic_threshold);
 	PRINT_RADIO("nodedata->sic_signal_power_first==NULL?%d\n", NULL == nodedata->sic_signal_power_first);
+	PRINT_RADIO("get_time=%"PRId64"\n", get_time());
 	// get total interference and noise
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
@@ -553,7 +554,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
-	//PRINT_RADIO("B: c->node=%d\n", c->node);
+	PRINT_RADIO("get_time=%"PRId64"\n", get_time());
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
@@ -668,10 +669,10 @@ int adam_Update_Candidate(call_t *c)
 	sic_signal_t* p_sic_current = nodedata->sic_signal_time_first;
 	sic_signal_t* p_sic_temp = NULL;
 	PRINT_RADIO("B: c->node=%d\n", c->node);
+	PRINT_RADIO("get_time=%"PRId64"\n", time);
 
 	while(NULL != p_sic_current)
 	{
-		PRINT_RADIO("time=%"PRId64"\n", time);
 		PRINT_RADIO("p_sic_current->clock1=%"PRId64"\n", p_sic_current->clock1);
 		if(time > p_sic_current->clock1)
 		{
