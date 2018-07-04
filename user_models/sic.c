@@ -280,7 +280,7 @@ void rx(call_t *c, packet_t *packet) {
         
     /* handle carrier sense */
 	adam_Update_Candidate(c);
-	if (adam_Is_Packet_Decodable(c, packet->id, MEDIA_GET_WHITE_NOISE(c, packet->channel), DEFAULT_SIC_THRESHOLD)) {
+	if (adam_Is_Packet_Decodable(c, packet->id, mW2dBm(MEDIA_GET_WHITE_NOISE(c, packet->channel)), DEFAULT_SIC_THRESHOLD)) {
 		nodedata->rx_busy = -1;
 		nodedata->rxdBm   = MIN_DBM;
 		/* log rx */
@@ -512,7 +512,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise, double
 {
 	struct nodedata *nodedata = get_node_private_data(c);
 	int is_decodable = 0;
-	double sum_interf_noise = MIN_DBM+base_noise;
+	double sum_interf_noise = base_noise;
 	sic_signal_t* p_sic_current = NULL;
 
 	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise, sic_threshold);
