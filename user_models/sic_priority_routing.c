@@ -428,8 +428,8 @@ END:
 /* ************************************************** */
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
-	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
 	nodedata->data_tx++;
 	TX(&c0, packet);
