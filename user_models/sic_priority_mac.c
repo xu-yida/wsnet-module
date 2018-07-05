@@ -461,10 +461,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 		{
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
-			PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		}
 
-		PRINT_MAC("STATE_DATA packet->id=%d\n", packet->id);
+		PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
 		
@@ -488,9 +487,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 		{
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
-			PRINT_MAC("STATE_BROADCAST radio_get_power=%f\n", radio_get_power(&c0));
 		}
 		
+		PRINT_MAC("STATE_BROADCAST radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
 		
