@@ -296,7 +296,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	
 	// add priority here
 	packet->type = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
-	PRINT_ROUTING("packet->type=%d/n", packet->type);
+	PRINT_ROUTING("packet->type=%d\n", packet->type);
 
 	if(1 == packet->type)
 	{
