@@ -292,9 +292,11 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	struct routing_header *header = (struct routing_header *) (packet->data + nodedata->overhead);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int error_id = 0;
+	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	
 	// add priority here
 	packet->type = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
+	PRINT_ROUTING("packet->type=%d/n", packet->type);
 
 	if(1 == packet->type)
 	{
