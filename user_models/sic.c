@@ -554,12 +554,14 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
-	PRINT_RADIO("get_time=%"PRId64"\n", get_time());
+	
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
 		goto END;
 	}
+	PRINT_RADIO("c->node=%d, sic_signal->id=%d\n", c->node, sic_signal->id);
+	PRINT_RADIO("get_time=%"PRId64"\n", get_time());
 	
 	// no item
 	if(NULL == nodedata->sic_signal_time_first)
@@ -568,7 +570,6 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		goto END;
 	}
 	// earlier than the first item
-	PRINT_RADIO("c->node=%d, sic_signal->id=%d\n", c->node, sic_signal->id);
 	PRINT_RADIO("nodedata->sic_signal_time_first->clock1=%"PRId64"\n", nodedata->sic_signal_time_first->clock1);
 	PRINT_RADIO("sic_signal->clock1=%"PRId64"\n", sic_signal->clock1);
 	if(nodedata->sic_signal_time_first->clock1 > sic_signal->clock1)
@@ -612,12 +613,13 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 	struct nodedata *nodedata = get_node_private_data(c);
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 	sic_signal_t* p_sic_current = NULL;
-	PRINT_RADIO("B: c->node=%d\n", c->node);
+
 	if(NULL == sic_signal)
 	{
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
 		goto END;
 	}
+	PRINT_RADIO("c->node=%d, sic_signal->id=%d\n", c->node, sic_signal->id);
 	
 	// no item
 	if(NULL == nodedata->sic_signal_power_first)
