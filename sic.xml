@@ -101,14 +101,17 @@
 <!-- == Nodes ===================================================== -->
 <node id="0" as="sensor">
   <for entity="static" x="0" y="0" z="0" /> 
+  <for entity="cbr" start="10" /> 
 </node>
 
 <node id="1" as="sensor">
   <for entity="static" x="10" y="0" z="0" /> 
+  <for entity="cbr" destination="0" /> 
 </node>
 
 <node id="2" as="sensor">
   <for entity="static" x="20" y="0" z="0" /> 
+  <for entity="cbr" destination="0" /> 
 </node>
 
 
