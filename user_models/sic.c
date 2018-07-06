@@ -560,8 +560,9 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		error_id = ADAM_ERROR_UNEXPECTED_INPUT;
 		goto END;
 	}
-	PRINT_RADIO("c->node=%d, sic_signal->id=%d\n", c->node, sic_signal->id);
 	PRINT_RADIO("get_time=%"PRId64"\n", get_time());
+	PRINT_RADIO("c->node=%d, sic_signal->id=%d\n", c->node, sic_signal->id);
+	PRINT_RADIO("sic_signal->clock1=%"PRId64"\n", sic_signal->clock1);
 	
 	// no item
 	if(NULL == nodedata->sic_signal_time_first)
@@ -570,8 +571,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		goto END;
 	}
 	// earlier than the first item
-	PRINT_RADIO("nodedata->sic_signal_time_first->clock1=%"PRId64"\n", nodedata->sic_signal_time_first->clock1);
-	PRINT_RADIO("sic_signal->clock1=%"PRId64"\n", sic_signal->clock1);
+	PRINT_RADIO("nodedata->sic_signal_time_first->clock1=%"PRId64", nodedata->sic_signal_time_first->id=%d\n", nodedata->sic_signal_time_first->clock1, nodedata->sic_signal_time_first->id);
 	if(nodedata->sic_signal_time_first->clock1 > sic_signal->clock1)
 	{
 		sic_signal->signal_next_endtime = nodedata->sic_signal_time_first;
@@ -582,7 +582,7 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 	{
 		for(p_sic_current = nodedata->sic_signal_time_first->signal_next_endtime; NULL != p_sic_current; p_sic_current = p_sic_current->signal_next_endtime)
 		{
-			PRINT_RADIO("p_sic_current->clock1=%"PRId64", sic_signal->clock1=%"PRId64"\n", p_sic_current->clock1, sic_signal->clock1);
+			PRINT_RADIO("p_sic_current->clock1=%"PRId64", p_sic_current->id=%d\n", p_sic_current->clock1, p_sic_current->id);
 			if(p_sic_current->clock1 > sic_signal->clock1)
 			{
 				sic_signal->signal_next_endtime = p_sic_current;
@@ -601,6 +601,14 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 		}
 	}
 END:
+	if(NULL != nodedata->sic_signal_time_first)
+	{
+		PRINT_RADIO("nodedata->sic_signal_time_first->id=%d\n", nodedata->sic_signal_time_first->id);
+		if(NULL != nodedata->sic_signal_time_first->signal_next_endtime)
+		{
+			PRINT_RADIO("nodedata->sic_signal_time_first->signal_next_endtime->id=%d\n", nodedata->sic_signal_time_first->signal_next_endtime->id);
+		}
+	}
 	if(ADAM_ERROR_NO_ERROR != error_id)
 	{
 		PRINT_RADIO("E: error_id=%d\n", error_id);
@@ -659,6 +667,14 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 		}
 	}
 END:
+	if(NULL != nodedata->sic_signal_power_first)
+	{
+		PRINT_RADIO("nodedata->sic_signal_power_first->id=%d\n", nodedata->sic_signal_power_first->id);
+		if(NULL != nodedata->sic_signal_power_first->signal_lower_power)
+		{
+			PRINT_RADIO("nodedata->sic_signal_power_first->signal_lower_power->id=%d\n", nodedata->sic_signal_power_first->signal_lower_power->id);
+		}
+	}
 	PRINT_RADIO("E: error_id=%d\n", error_id);
 	return error_id;
 }
