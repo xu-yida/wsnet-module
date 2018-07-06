@@ -224,32 +224,34 @@ int adam_check_channel_busy(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int channel_state = 0;
+	double noise_mw = 0;
+	double threshold_mw = dBm2mW(nodedata->EDThreshold);
 
-	//PRINT_MAC("B: gain=%f, nodedata->EDThreshold=%f\n", (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2)), nodedata->EDThreshold);
+	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	if (nodedata->cs)
 	{
-		//PRINT_MAC("radio_get_cs(&c0)=%f\n", radio_get_cs(&c0));
-		if(radio_get_cs(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
+		noise_mw = dBm2mW(radio_get_cs(&c0));
+		if( noise_mw >= DEFAULT_SIC_THRESHOLD*threshold_mw)
 		{
 			channel_state = 2;
 		}
-		else if(radio_get_cs(&c0) >= nodedata->EDThreshold)
+		else if(noise_mw >= threshold_mw)
 		{
 			channel_state = 1;
 		}
 	}
 	else if (nodedata->cca) {
-		//PRINT_MAC("radio_get_noise(&c0)=%f\n", radio_get_noise(&c0));
-		if(radio_get_noise(&c0) >= (1+log10(1+DEFAULT_SIC_THRESHOLD)/log10(2))+nodedata->EDThreshold)
+		noise_mw = dBm2mW(radio_get_noise(&c0));
+		if(noise_mw >= DEFAULT_SIC_THRESHOLD*threshold_mw)
 		{
 			channel_state = 2;
 		}
-		else if(radio_get_noise(&c0) >= nodedata->EDThreshold)
+		else if(noise_mw >= threshold_mw)
 		{
 			channel_state = 1;
 		}
 	}
-	PRINT_MAC("E: channel_state=%d\n", channel_state);
+	PRINT_MAC("E: noise_mw=%f\n", noise_mw);
 
 	return channel_state;
 }
