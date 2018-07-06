@@ -228,6 +228,7 @@ int adam_check_channel_busy(call_t *c) {
 	double threshold_mw = dBm2mW(nodedata->EDThreshold);
 
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
+	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
 	if (nodedata->cs)
 	{
 		noise_mw = dBm2mW(radio_get_cs(&c0));
