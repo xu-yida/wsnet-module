@@ -681,20 +681,24 @@ int adam_Update_Candidate(call_t *c)
 			// not latest item
 			if(NULL != p_sic_current->signal_next_endtime)
 			{
+				PRINT_RADIO("p_sic_current->signal_next_endtime->id=%d\n", p_sic_current->signal_next_endtime->id);
 				p_sic_current->signal_next_endtime->signal_pre_endtime = NULL;
 			}
 			// not highest item
 			if(NULL != p_sic_current->signal_higher_power)
 			{
+				PRINT_RADIO("p_sic_current->signal_higher_power->id=%d\n", p_sic_current->signal_higher_power->id);
 				p_sic_current->signal_higher_power->signal_lower_power = p_sic_current->signal_lower_power;
 			}
 			else // is highest item, change header
 			{
+				PRINT_RADIO("nodedata->sic_signal_power_first->id=%d\n", nodedata->sic_signal_power_first->id);
 				nodedata->sic_signal_power_first = p_sic_current->signal_lower_power;
 			}
 			// not lowest item
 			if(NULL != p_sic_current->signal_lower_power)
 			{
+				PRINT_RADIO("p_sic_current->signal_lower_power->id=%d\n", p_sic_current->signal_lower_power->id);
 				p_sic_current->signal_lower_power->signal_higher_power = p_sic_current->signal_higher_power;
 			}
 			nodedata->sic_signal_time_first = p_sic_current->signal_next_endtime;
