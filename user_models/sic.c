@@ -673,7 +673,7 @@ int adam_Update_Candidate(call_t *c)
 
 	while(NULL != p_sic_current)
 	{
-		PRINT_RADIO("p_sic_current->clock1=%"PRId64"\n", p_sic_current->clock1);
+		PRINT_RADIO("p_sic_current->clock1=%"PRId64", p_sic_current->id=%d\n", p_sic_current->clock1, p_sic_current->id);
 		if(time > p_sic_current->clock1)
 		{
 			// not latest item
