@@ -43,7 +43,7 @@
 <!-- == APPLICATION ===================================================== -->
 
 <entity name="cbr" library="application_cbr" >
-  <default period="1s" start="0" size="100" destination-x="random" destination-y="random" destination-z="random"/>
+  <default period="1s" start="0" size="10000" destination-x="random" destination-y="random" destination-z="random"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->

@@ -337,6 +337,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	error_id =  SET_HEADER(&c0, packet, &destination);
 
 END:
+	PRINT_ROUTING("routing B: error_id=%d\n", error_id);
 	return error_id;
 }
 
