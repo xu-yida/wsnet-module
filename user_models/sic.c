@@ -523,6 +523,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
 		PRINT_RADIO("NULL == p_sic_current?%d\n", NULL == p_sic_current);
+		PRINT_RADIO("p_sic_current->id=%d\n", p_sic_current->id);
 		PRINT_RADIO("p_sic_current->rxdBm=%f\n", p_sic_current->rxdBm);
 		sum_interf_noise_mw += dBm2mW(p_sic_current->rxdBm);
 		signal_count++;
