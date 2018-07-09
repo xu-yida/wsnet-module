@@ -174,10 +174,10 @@ void cs_init(call_t *c) {
     struct nodedata *nodedata = get_node_private_data(c);
     /* log */
     if (nodedata->tx_busy != -1) {
-        PRINT_REPLAY("radio-tx1 %"PRId64" %d\n", get_time(), c->node);
+        PRINT_REPLAY("radio-tx1 %"PRId64", c->node=%d\n", get_time(), c->node);
     }
     if (nodedata->rx_busy != -1) {
-        PRINT_REPLAY("radio-rx1 %"PRId64" %d\n", get_time(), c->node);
+        PRINT_REPLAY("radio-rx1 %"PRId64", c->node=%d\n", get_time(), c->node);
     }
     /* init cs */
     nodedata->tx_busy = -1;
@@ -204,7 +204,7 @@ void tx(call_t *c, packet_t *packet) {
 	nodedata->tx_busy = packet->id;
 
 	/* log tx */
-	PRINT_REPLAY("radio-tx0 %"PRId64" %d 50\n", get_time(), c->node);
+	PRINT_REPLAY("radio-tx0 %"PRId64", c->node=%d 50\n", get_time(), c->node);
 
 	/* transmit to antenna */
 	while (i--) {
@@ -251,7 +251,7 @@ void tx_end(call_t *c, packet_t *packet) {
 
     /* log tx */
     if (nodedata->tx_busy == packet->id) {
-        PRINT_REPLAY("radio-tx1 %"PRId64" %d\n", get_time(), c->node);
+        PRINT_REPLAY("radio-tx1 %"PRId64", c->node=%d\n", get_time(), c->node);
         nodedata->tx_busy = -1;
     }
 
@@ -284,7 +284,7 @@ void rx(call_t *c, packet_t *packet) {
 		nodedata->rx_busy = -1;
 		nodedata->rxdBm   = MIN_DBM;
 		/* log rx */
-		PRINT_REPLAY("radio-rx1 %"PRId64" %d\n", get_time(), c->node);
+		PRINT_REPLAY("radio-rx1 %"PRId64", c->node=%d\n", get_time(), c->node);
 		/* consume energy */
 		battery_consume_rx(c, packet->duration);
 	} else {
@@ -381,7 +381,7 @@ void cs(call_t *c, packet_t *packet) {
 		
 		nodedata->rx_busy = packet->id;
 		/* log cs */
-		PRINT_REPLAY("radio-rx0 %"PRId64" %d\n", get_time(), c->node);
+		PRINT_REPLAY("radio-rx0 %"PRId64", c->node=%d\n", get_time(), c->node);
 	}
 	
 END:
