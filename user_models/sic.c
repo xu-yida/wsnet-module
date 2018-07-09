@@ -522,11 +522,11 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 	// get total interference and noise
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
+		PRINT_RADIO("NULL == p_sic_current?%d\n", NULL == p_sic_current);
 		sum_interf_noise_mw += dBm2mW(p_sic_current->rxdBm);
 		signal_count++;
 		PRINT_RADIO("sum_interf_noise1=%f, signal_count=%d\n", sum_interf_noise_mw, signal_count);
 	}
-		PRINT_RADIO("NULL == p_sic_current?%d\n", NULL == p_sic_current);
 	// judge items one by one
 	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
 	{
