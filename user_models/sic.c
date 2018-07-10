@@ -594,6 +594,10 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 				{
 					p_sic_current->signal_pre_endtime->signal_next_endtime = sic_signal;
 				}
+				else
+				{
+					nodedata->sic_signal_time_first = sic_signal;
+				}
 				p_sic_current->signal_pre_endtime = sic_signal;
 				break;
 			}
@@ -607,13 +611,21 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 //		}
 	}
 END:
-	if(NULL != nodedata->sic_signal_time_first)
+	if(NULL != p_sic_current->signal_next_endtime)
 	{
-		PRINT_RADIO("nodedata->sic_signal_time_first->id=%d\n", nodedata->sic_signal_time_first->id);
-		if(NULL != nodedata->sic_signal_time_first->signal_next_endtime)
-		{
-			PRINT_RADIO("nodedata->sic_signal_time_first->signal_next_endtime->id=%d\n", nodedata->sic_signal_time_first->signal_next_endtime->id);
-		}
+		PRINT_RADIO("p_sic_current->signal_next_endtime->id=%d\n", p_sic_current->signal_next_endtime->id);
+	}
+	if(NULL != p_sic_current->signal_pre_endtime)
+	{
+		PRINT_RADIO("p_sic_current->signal_pre_endtime->id=%d\n", p_sic_current->signal_pre_endtime->id);
+	}
+	if(NULL != sic_signal->signal_next_endtime)
+	{
+		PRINT_RADIO("sic_signal->signal_next_endtime->id=%d\n", sic_signal->signal_next_endtime->id);
+	}
+	if(NULL != sic_signal->signal_pre_endtime)
+	{
+		PRINT_RADIO("sic_signal->signal_pre_endtime->id=%d\n", sic_signal->signal_pre_endtime->id);
 	}
 	if(ADAM_ERROR_NO_ERROR != error_id)
 	{
@@ -663,6 +675,10 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 				{
 					p_sic_current->signal_higher_power->signal_lower_power = sic_signal;
 				}
+				else
+				{
+					nodedata->sic_signal_power_first = sic_signal;
+				}
 				p_sic_current->signal_higher_power = sic_signal;
 				break;
 			}
@@ -676,13 +692,21 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 		}
 //	}
 END:
-	if(NULL != nodedata->sic_signal_power_first)
+	if(NULL != p_sic_current->signal_lower_power)
 	{
-		PRINT_RADIO("nodedata->sic_signal_power_first->id=%d\n", nodedata->sic_signal_power_first->id);
-		if(NULL != nodedata->sic_signal_power_first->signal_lower_power)
-		{
-			PRINT_RADIO("nodedata->sic_signal_power_first->signal_lower_power->id=%d\n", nodedata->sic_signal_power_first->signal_lower_power->id);
-		}
+		PRINT_RADIO("p_sic_current->signal_lower_power->id=%d\n", p_sic_current->signal_lower_power->id);
+	}
+	if(NULL != p_sic_current->signal_higher_power)
+	{
+		PRINT_RADIO("p_sic_current->signal_higher_power->id=%d\n", p_sic_current->signal_higher_power->id);
+	}
+	if(NULL != sic_signal->signal_lower_power)
+	{
+		PRINT_RADIO("sic_signal->signal_lower_power->id=%d\n", sic_signal->signal_lower_power->id);
+	}
+	if(NULL != sic_signal->signal_higher_power)
+	{
+		PRINT_RADIO("sic_signal->signal_higher_power->id=%d\n", sic_signal->signal_higher_power->id);
 	}
 	if(ADAM_ERROR_NO_ERROR != error_id)
 	{
