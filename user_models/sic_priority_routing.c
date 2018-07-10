@@ -537,7 +537,7 @@ void rx(call_t *c, packet_t *packet) {
 		sensibility_mw = dBm2mW(radio_get_sensibility(&c1));
 		rx_mw = dBm2mW(packet->rxdBm);
 		tx_mw = dBm2mW(packet->txdBm);
-		noise_mw = MEDIA_GET_WHITE_NOISE(c0, packet->channel);
+		noise_mw = MEDIA_GET_WHITE_NOISE(&c0, packet->channel);
 		nodedata->hello_rx++;
 		// high channel gain neighbours contains low channel gain neighbours
 		PRINT_ROUTING("HELLO_PACKET rx_mw=%f, tx_mw=%f, sensibility_mw=%f, noise_mw=%f\n", rx_mw, tx_mw, sensibility_mw, noise_mw);
