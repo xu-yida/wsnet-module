@@ -529,23 +529,25 @@ void rx(call_t *c, packet_t *packet) {
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	//get radio layer
 	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c0.node, c0.entity};
-	double sensibility;
+	double sensibility_mw, rx_mw, tx_mw, noise_mw;
 
 	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	switch(header->type) {
 	case HELLO_PACKET:
-		sensibility = radio_get_sensibility(&c1);
+		sensibility_mw = dBm2mW(radio_get_sensibility(&c1));
+		rx_mw = dBm2mW(packet->rxdBm);
+		tx_mw = dBm2mW(packet->txdBm);
+		noise_mw = MEDIA_GET_WHITE_NOISE(c0, packet->channel);
 		nodedata->hello_rx++;
 		// high channel gain neighbours contains low channel gain neighbours
-		PRINT_ROUTING("HELLO_PACKET packet->rxdBm=%f, packet->txdBm=%f, sensibility=%f\n", packet->rxdBm, packet->txdBm, sensibility);
-		if(packet->rxdBm > ADAM_HIGH_POWER_DBM_GAIN + sensibility)
+		PRINT_ROUTING("HELLO_PACKET rx_mw=%f, tx_mw=%f, sensibility_mw=%f, noise_mw=%f\n", rx_mw, tx_mw, sensibility_mw, noise_mw);
+		if(rx_mw > ADAM_HIGH_POWER_RATIO*(noise_mw+sensibility_mw))
 		{
-			add_neighbor_high(c, header);
-		}
-		else if(packet->rxdBm > sensibility)
-		{
-			add_neighbor_high(c, header);
 			add_neighbor_low(c, header);
+		}
+		if(rx_mw > (noise_mw+sensibility_mw+rx_mw/3)*DEFAULT_SIC_THRESHOLD)
+		{
+			add_neighbor_high(c, header);
 		}
 		packet_dealloc(packet);
 		break;

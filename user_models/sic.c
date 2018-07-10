@@ -406,12 +406,14 @@ double get_cs(call_t *c) {
 
 double get_power(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
+	PRINT_RADIO("nodedata->power=%f\n", nodedata->power);
 	return nodedata->power;
 }
 
 void set_power(call_t *c, double power) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    nodedata->power = power;
+	struct nodedata *nodedata = get_node_private_data(c);
+	nodedata->power = power;
+	PRINT_RADIO("power=%f\n", power);
 }
 
 int get_channel(call_t *c) {
@@ -516,7 +518,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 	double sum_interf_noise_mw = base_noise_mw;
 	sic_signal_t* p_sic_current = NULL;
 
-	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f, sic_threshold=%f\n", c->node, id, base_noise_mw, sic_threshold);
+	PRINT_RADIO("B: c->node=%d, id=%d, base_noise=%f\n", c->node, id, base_noise_mw);
 	PRINT_RADIO("nodedata->sic_signal_power_first==NULL?%d\n", NULL == nodedata->sic_signal_power_first);
 	PRINT_RADIO("get_time=%"PRId64"\n", get_time());
 	// get total interference and noise
