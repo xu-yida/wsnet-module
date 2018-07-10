@@ -176,18 +176,19 @@ int ioctl(call_t *c, int option, void *in, void **out) {
 
 /* ************************************************** */
 /* ************************************************** */
-struct neighbor* get_nexthop_low(call_t *c, position_t *dst) {
+struct neighbor* get_nexthop_low(call_t *c, position_t *dst, nodeid_t dst_id) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	struct neighbor *neighbor = NULL, *n_hop = NULL;
 	uint64_t clock = get_time();
-	position_t* p_position = get_node_position(c->node);
-	double dist = distance(p_position, dst);
+	position_t* p_position_s = get_node_position(c->node);
+	position_t* p_position_d = get_node_position(dst_id);
+	double dist = distance(p_position_s, p_position_d);
 	double d = dist;
 
 	/* parse neighbors */
 	PRINT_ROUTING("clock=%"PRId64", nodedata->timeout=%"PRId64"\n", clock, nodedata->timeout);
-	PRINT_ROUTING("dst->x=%f, dst->y=%f, dst->z=%f\n", dst->x, dst->y, dst->z);
-	PRINT_ROUTING("p_position->x=%f, p_position->y=%f, p_position->z=%f\n", p_position->x, p_position->y, p_position->z);
+	//PRINT_ROUTING("dst->x=%f, dst->y=%f, dst->z=%f\n", dst->x, dst->y, dst->z);
+	//PRINT_ROUTING("p_position->x=%f, p_position->y=%f, p_position->z=%f\n", p_position->x, p_position->y, p_position->z);
 	das_init_traverse(nodedata->neighbors_low);    
 	while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_low)) != NULL) {        
 		PRINT_ROUTING("neighbor->id=%d, neighbor->time=%"PRId64"\n", neighbor->id, neighbor->time);
@@ -197,7 +198,7 @@ struct neighbor* get_nexthop_low(call_t *c, position_t *dst) {
 		}
 
 		/* choose next hop */
-		d = distance(&(neighbor->position), dst);
+		d = distance(&(neighbor->position), p_position_d);
 		PRINT_ROUTING("d=%f, dist=%f\n", d, dist);
 		if (d < dist) {
 			dist = d;
@@ -208,17 +209,18 @@ struct neighbor* get_nexthop_low(call_t *c, position_t *dst) {
 	return n_hop;
 }
 
-struct neighbor* get_nexthop_high(call_t *c, position_t *dst) {
+struct neighbor* get_nexthop_high(call_t *c, position_t *dst, nodeid_t dst_id) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	struct neighbor *neighbor = NULL, *n_hop = NULL;
 	uint64_t clock = get_time();
-	position_t* p_position = get_node_position(c->node);
-	double dist = distance(p_position, dst);
+	position_t* p_position_s = get_node_position(c->node);
+	position_t* p_position_d = get_node_position(dst_id);
+	double dist = distance(p_position_s, p_position_d);
 	double d = dist;
 
 	PRINT_ROUTING("clock=%"PRId64", nodedata->timeout=%"PRId64"\n", clock, nodedata->timeout);
-	PRINT_ROUTING("dst->x=%f, dst->y=%f, dst->z=%f\n", dst->x, dst->y, dst->z);
-	PRINT_ROUTING("p_position->x=%f, p_position->y=%f, p_position->z=%f\n", p_position->x, p_position->y, p_position->z);
+	//PRINT_ROUTING("dst->x=%f, dst->y=%f, dst->z=%f\n", dst->x, dst->y, dst->z);
+	//PRINT_ROUTING("p_position->x=%f, p_position->y=%f, p_position->z=%f\n", p_position->x, p_position->y, p_position->z);
 	/* parse neighbors */
 	das_init_traverse(nodedata->neighbors_high);    
 	while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_high)) != NULL) {        
@@ -229,7 +231,7 @@ struct neighbor* get_nexthop_high(call_t *c, position_t *dst) {
 		}
 
 		/* choose next hop */
-		d = distance(&(neighbor->position), dst);
+		d = distance(&(neighbor->position), p_position_d);
 		PRINT_ROUTING("d=%f, dist=%f\n", d, dist);
 		if (d < dist) {
 			dist = d;
@@ -318,11 +320,11 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 
 	if(1 == packet->type)
 	{
-		n_hop = get_nexthop_high(c, &(dst->position));
+		n_hop = get_nexthop_high(c, &(dst->position), dst->id);
 	}
 	else
 	{
-		n_hop = get_nexthop_low(c, &(dst->position));
+		n_hop = get_nexthop_low(c, &(dst->position), dst->id);
 	}
 
 	/* if no route, return -1 */
@@ -468,11 +470,11 @@ void forward(call_t *c, packet_t *packet) {
 	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	if(1 == packet->type)
 	{
-		n_hop = get_nexthop_high(c, &(header->dst_pos));
+		n_hop = get_nexthop_high(c, &(header->dst_pos), header->dst);
 	}
 	else
 	{
-		n_hop = get_nexthop_low(c, &(header->dst_pos));
+		n_hop = get_nexthop_low(c, &(header->dst_pos), header->dst);
 	}
 
 	/* delivers packet to application layer */
