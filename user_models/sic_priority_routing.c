@@ -177,53 +177,61 @@ int ioctl(call_t *c, int option, void *in, void **out) {
 /* ************************************************** */
 /* ************************************************** */
 struct neighbor* get_nexthop_low(call_t *c, position_t *dst) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    struct neighbor *neighbor = NULL, *n_hop = NULL;
-    uint64_t clock = get_time();
-    double dist = distance(get_node_position(c->node), dst);
-    double d = dist;
+	struct nodedata *nodedata = get_node_private_data(c);
+	struct neighbor *neighbor = NULL, *n_hop = NULL;
+	uint64_t clock = get_time();
+	double dist = distance(get_node_position(c->node), dst);
+	double d = dist;
 
-    /* parse neighbors */
-    das_init_traverse(nodedata->neighbors_low);    
-    while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_low)) != NULL) {        
-        if ((nodedata->timeout > 0)
-            && (clock - neighbor->time) >= nodedata->timeout ) {
-            continue;
-        }
-        
-        /* choose next hop */
-        if ((d = distance(&(neighbor->position), dst)) < dist) {
-            dist = d;
-            n_hop = neighbor;
-        }
-    }    
-    
-    return n_hop;
+	/* parse neighbors */
+	PRINT_ROUTING("clock=%"PRId64", nodedata->timeout=%"PRId64"\n", clock, nodedata->timeout);
+	das_init_traverse(nodedata->neighbors_low);    
+	while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_low)) != NULL) {        
+		PRINT_ROUTING("neighbor->id=%d, neighbor->time=%"PRId64"\n", neighbor->id, neighbor->time);
+		if ((nodedata->timeout > 0)
+			&& (clock - neighbor->time) >= nodedata->timeout ) {
+			continue;
+		}
+
+		/* choose next hop */
+		d = distance(&(neighbor->position), dst);
+		PRINT_ROUTING("d=%f, dist=%f\n", d, dist);
+		if ((d = distance(&(neighbor->position), dst)) < dist) {
+			dist = d;
+			n_hop = neighbor;
+		}
+	}    
+
+	return n_hop;
 }
 
 struct neighbor* get_nexthop_high(call_t *c, position_t *dst) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    struct neighbor *neighbor = NULL, *n_hop = NULL;
-    uint64_t clock = get_time();
-    double dist = distance(get_node_position(c->node), dst);
-    double d = dist;
+	struct nodedata *nodedata = get_node_private_data(c);
+	struct neighbor *neighbor = NULL, *n_hop = NULL;
+	uint64_t clock = get_time();
+	double dist = distance(get_node_position(c->node), dst);
+	double d = dist;
 
-    /* parse neighbors */
-    das_init_traverse(nodedata->neighbors_high);    
-    while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_high)) != NULL) {        
-        if ((nodedata->timeout > 0)
-            && (clock - neighbor->time) >= nodedata->timeout ) {
-            continue;
-        }
-        
-        /* choose next hop */
-        if ((d = distance(&(neighbor->position), dst)) < dist) {
-            dist = d;
-            n_hop = neighbor;
-        }
-    }    
-    
-    return n_hop;
+	PRINT_ROUTING("clock=%"PRId64", nodedata->timeout=%"PRId64"\n", clock, nodedata->timeout);
+	/* parse neighbors */
+	das_init_traverse(nodedata->neighbors_high);    
+	while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_high)) != NULL) {        
+		PRINT_ROUTING("neighbor->id=%d, neighbor->time=%"PRId64"\n", neighbor->id, neighbor->time);
+		if ((nodedata->timeout > 0)
+			&& (clock - neighbor->time) >= nodedata->timeout ) {
+			continue;
+		}
+
+		/* choose next hop */
+		d = distance(&(neighbor->position), dst);
+		PRINT_ROUTING("d=%f, dist=%f\n", d, dist);
+		if (d < dist) {
+			dist = d;
+			n_hop = neighbor;
+		}
+	}    
+
+	return n_hop;
 }
 
 void add_neighbor_low(call_t *c, struct routing_header *header) {
@@ -420,6 +428,7 @@ int advert_callback(call_t *c, void *args) {
 
 	/* check neighbors timeout  */
 	das_selective_delete(nodedata->neighbors_low, neighbor_timeout, (void *) c);
+	das_selective_delete(nodedata->neighbors_high, neighbor_timeout, (void *) c);
 
 	/* schedules hello */
 	scheduler_add_callback(get_time() + nodedata->period, c, advert_callback, NULL);
