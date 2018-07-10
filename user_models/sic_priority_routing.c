@@ -180,11 +180,14 @@ struct neighbor* get_nexthop_low(call_t *c, position_t *dst) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	struct neighbor *neighbor = NULL, *n_hop = NULL;
 	uint64_t clock = get_time();
-	double dist = distance(get_node_position(c->node), dst);
+	position_t* p_position = get_node_position(c->node);
+	double dist = distance(p_position, dst);
 	double d = dist;
 
 	/* parse neighbors */
 	PRINT_ROUTING("clock=%"PRId64", nodedata->timeout=%"PRId64"\n", clock, nodedata->timeout);
+	PRINT_ROUTING("dst->x=%f, dst->y=%f, dst->z=%f\n", dst->x, dst->y, dst->z);
+	PRINT_ROUTING("p_position->x=%f, p_position->y=%f, p_position->z=%f\n", p_position->x, p_position->y, p_position->z);
 	das_init_traverse(nodedata->neighbors_low);    
 	while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_low)) != NULL) {        
 		PRINT_ROUTING("neighbor->id=%d, neighbor->time=%"PRId64"\n", neighbor->id, neighbor->time);
@@ -196,7 +199,7 @@ struct neighbor* get_nexthop_low(call_t *c, position_t *dst) {
 		/* choose next hop */
 		d = distance(&(neighbor->position), dst);
 		PRINT_ROUTING("d=%f, dist=%f\n", d, dist);
-		if ((d = distance(&(neighbor->position), dst)) < dist) {
+		if (d < dist) {
 			dist = d;
 			n_hop = neighbor;
 		}
@@ -209,10 +212,13 @@ struct neighbor* get_nexthop_high(call_t *c, position_t *dst) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	struct neighbor *neighbor = NULL, *n_hop = NULL;
 	uint64_t clock = get_time();
-	double dist = distance(get_node_position(c->node), dst);
+	position_t* p_position = get_node_position(c->node);
+	double dist = distance(p_position, dst);
 	double d = dist;
 
 	PRINT_ROUTING("clock=%"PRId64", nodedata->timeout=%"PRId64"\n", clock, nodedata->timeout);
+	PRINT_ROUTING("dst->x=%f, dst->y=%f, dst->z=%f\n", dst->x, dst->y, dst->z);
+	PRINT_ROUTING("p_position->x=%f, p_position->y=%f, p_position->z=%f\n", p_position->x, p_position->y, p_position->z);
 	/* parse neighbors */
 	das_init_traverse(nodedata->neighbors_high);    
 	while ((neighbor = (struct neighbor *) das_traverse(nodedata->neighbors_high)) != NULL) {        
