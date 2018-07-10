@@ -610,7 +610,6 @@ int adam_Insert_SIgnal2Candidate_Time(call_t *c, sic_signal_t* sic_signal)
 			}
 //		}
 	}
-END:
 	if(NULL != p_sic_current->signal_next_endtime)
 	{
 		PRINT_RADIO("p_sic_current->signal_next_endtime->id=%d\n", p_sic_current->signal_next_endtime->id);
@@ -627,6 +626,7 @@ END:
 	{
 		PRINT_RADIO("sic_signal->signal_pre_endtime->id=%d\n", sic_signal->signal_pre_endtime->id);
 	}
+END:
 	if(ADAM_ERROR_NO_ERROR != error_id)
 	{
 		PRINT_RADIO("E: error_id=%d\n", error_id);
@@ -691,7 +691,6 @@ int adam_Insert_SIgnal2Candidate_Power(call_t *c, sic_signal_t* sic_signal)
 			}
 		}
 //	}
-END:
 	if(NULL != p_sic_current->signal_lower_power)
 	{
 		PRINT_RADIO("p_sic_current->signal_lower_power->id=%d\n", p_sic_current->signal_lower_power->id);
@@ -708,6 +707,7 @@ END:
 	{
 		PRINT_RADIO("sic_signal->signal_higher_power->id=%d\n", sic_signal->signal_higher_power->id);
 	}
+END:
 	if(ADAM_ERROR_NO_ERROR != error_id)
 	{
 		PRINT_RADIO("E: error_id=%d\n", error_id);
