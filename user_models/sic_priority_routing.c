@@ -238,6 +238,7 @@ void add_neighbor_low(call_t *c, struct routing_header *header) {
 			neighbor->position.y = header->src_pos.y;
 			neighbor->position.z = header->src_pos.z;
 			neighbor->time = get_time();
+			PRINT_ROUTING("neighbor exists: neighbor->id=%d\n", neighbor->id);
 			goto END;
 		}
 	}  
@@ -249,6 +250,7 @@ void add_neighbor_low(call_t *c, struct routing_header *header) {
 	neighbor->position.z = header->src_pos.z;
 	neighbor->time = get_time();
 	das_insert(nodedata->neighbors_low, (void *) neighbor);
+	PRINT_ROUTING("insert neighbor: neighbor->id=%d\n", neighbor->id);
 
 END:
 	return;
@@ -267,6 +269,7 @@ void add_neighbor_high(call_t *c, struct routing_header *header) {
 			neighbor->position.y = header->src_pos.y;
 			neighbor->position.z = header->src_pos.z;
 			neighbor->time = get_time();
+			PRINT_ROUTING("neighbor exists: neighbor->id=%d\n", neighbor->id);
 			goto END;
 		}
 	}  
@@ -278,6 +281,7 @@ void add_neighbor_high(call_t *c, struct routing_header *header) {
 	neighbor->position.z = header->src_pos.z;
 	neighbor->time = get_time();
 	das_insert(nodedata->neighbors_high, (void *) neighbor);
+	PRINT_ROUTING("insert neighbor: neighbor->id=%d\n", neighbor->id);
 
 END:
 	return;
