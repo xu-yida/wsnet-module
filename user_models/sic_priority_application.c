@@ -11,7 +11,7 @@
 #include <sic.h>
 
 // <-RF00000000-AdamXu-2018/07/06-test sic.
-#define ADAM_TEST
+//#define ADAM_TEST
 // ->RF00000000-AdamXu
 
 /* ************************************************** */
@@ -170,31 +170,27 @@ int callmeback(call_t *c, void *args) {
 /* ************************************************** */
 /* ************************************************** */
 void tx(call_t *c) {
-    struct _sic_private *nodedata = get_node_private_data(c);
-    array_t *down = get_entity_bindings_down(c);
-    packet_t *packet = packet_create(c, nodedata->size + nodedata->overhead, -1);
-    call_t c0 = {down->elts[0], c->node, c->entity};
-    destination_t destination = {nodedata->destination, 
-                                 {nodedata->position.x, 
-                                  nodedata->position.y, 
-                                  nodedata->position.z}};
+	struct _sic_private *nodedata = get_node_private_data(c);
+	array_t *down = get_entity_bindings_down(c);
+	packet_t *packet = packet_create(c, nodedata->size + nodedata->overhead, -1);
+	call_t c0 = {down->elts[0], c->node, c->entity};
+	destination_t destination = {nodedata->destination, 
+	                             {nodedata->position.x, 
+	                              nodedata->position.y, 
+	                              nodedata->position.z}};
         
-// <-RF00000000-AdamXu-2018/07/06-test sic.
 	printf("[SIC APP] node %d transmitted a data packet : desination id=%d  \n", c->node, destination.id);
-#ifdef ADAM_TEST
 	PRINT_APPLICATION("application B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
 	packet->type = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
 	PRINT_APPLICATION("packet->type=%d\n", packet->type);
-#endif
-// ->RF00000000-AdamXu
-    if (SET_HEADER(&c0, packet, &destination) == -1) {
-        packet_dealloc(packet);
-        return;
-    }
-    
-    TX(&c0, packet);
+	if (SET_HEADER(&c0, packet, &destination) == -1) {
+		packet_dealloc(packet);
+		return;
+	}
+
+	TX(&c0, packet);
 }
 
 
