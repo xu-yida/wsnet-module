@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="20" duration="60s" x="100" y="100" z="0"/>
+<simulation nodes="4" duration="60s" x="40" y="40" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -99,7 +99,7 @@
 </bundle>
 
 <!-- == Nodes ===================================================== -->
-<!--
+
 <node id="0" as="sensor">
   <for entity="static" x="0" y="0" z="0" /> 
   <for entity="app" start="100" /> 
@@ -119,6 +119,6 @@
   <for entity="static" x="40" y="0" z="0" /> 
   <for entity="app" destination="0" /> 
 </node>
--->
+
 
 </worldsens>
