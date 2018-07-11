@@ -526,7 +526,7 @@ int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, dou
 	{
 		PRINT_RADIO("NULL == p_sic_current?%d\n", NULL == p_sic_current);
 		PRINT_RADIO("p_sic_current->id=%d\n", p_sic_current->id);
-		PRINT_RADIO("p_sic_current->rxdBm=%f\n", p_sic_current->rxdBm);
+		PRINT_RADIO("p_sic_current->rxmW=%f\n", dBm2mW(p_sic_current->rxdBm));
 		sum_interf_noise_mw += dBm2mW(p_sic_current->rxdBm);
 		signal_count++;
 		PRINT_RADIO("sum_interf_noise1=%f, signal_count=%d\n", sum_interf_noise_mw, signal_count);

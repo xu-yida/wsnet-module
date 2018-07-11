@@ -101,7 +101,7 @@
 <!-- == Nodes ===================================================== -->
 <node id="0" as="sensor">
   <for entity="static" x="0" y="0" z="0" /> 
-  <for entity="app" start="1000" /> 
+  <for entity="app" start="1s" /> 
 </node>
 
 <node id="1" as="sensor">
