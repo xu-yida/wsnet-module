@@ -205,6 +205,10 @@ struct neighbor* get_nexthop_low(call_t *c, position_t *dst, nodeid_t dst_id) {
 			n_hop = neighbor;
 		}
 	}    
+	if(NULL != n_hop)
+	{
+		PRINT_ROUTING("n_hop->id=%d\n", n_hop->id);
+	}
 
 	return n_hop;
 }
@@ -238,6 +242,10 @@ struct neighbor* get_nexthop_high(call_t *c, position_t *dst, nodeid_t dst_id) {
 			n_hop = neighbor;
 		}
 	}    
+	if(NULL != n_hop)
+	{
+		PRINT_ROUTING("n_hop->id=%d\n", n_hop->id);
+	}
 
 	return n_hop;
 }
@@ -314,10 +322,6 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	int error_id = 0;
 	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	
-	// add priority here
-	packet->type = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
-	PRINT_ROUTING("packet->type=%d, dst->id=%d\n", packet->type, dst->id);
-
 	if(1 == packet->type)
 	{
 		n_hop = get_nexthop_high(c, &(dst->position), dst->id);

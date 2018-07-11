@@ -42,7 +42,7 @@
 
 <!-- == APPLICATION ===================================================== -->
 
-<entity name="cbr" library="application_cbr" >
+<entity name="app" library="application_sic" >
   <default period="1s" start="0" size="10000" destination-x="random" destination-y="random" destination-z="random"/>
 </entity>
 
@@ -89,11 +89,11 @@
   </with>
 
   <with entity="routing">
-    <up entity="cbr"/>
+    <up entity="app"/>
     <down entity="mac"/>
   </with>
 
-  <with entity="cbr">
+  <with entity="app">
     <down entity="routing"/>
   </with>
 </bundle>
@@ -101,17 +101,17 @@
 <!-- == Nodes ===================================================== -->
 <node id="0" as="sensor">
   <for entity="static" x="0" y="0" z="0" /> 
-  <for entity="cbr" start="10" /> 
+  <for entity="app" start="10" /> 
 </node>
 
 <node id="1" as="sensor">
   <for entity="static" x="10" y="0" z="0" /> 
-  <for entity="cbr" destination="0" /> 
+  <for entity="app" destination="0" /> 
 </node>
 
 <node id="2" as="sensor">
   <for entity="static" x="30" y="0" z="0" /> 
-  <for entity="cbr" destination="0" /> 
+  <for entity="app" destination="0" /> 
 </node>
 
 

@@ -1,10 +1,10 @@
-lib_LTLIBRARIES = libapplication_epidemic.la libradio_sic.la libmac_sic.la librouting_sic.la
+lib_LTLIBRARIES = libapplication_sic.la libradio_sic.la libmac_sic.la librouting_sic.la
 
-libapplication_epidemic_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
+libapplication_sic_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
 
-libapplication_epidemic_la_SOURCES = epidemic.c
+libapplication_sic_la_SOURCES = sic_priority_application.c
 
-libapplication_epidemic_la_LDFLAGS = -module
+libapplication_sic_la_LDFLAGS = -module
 
 libradio_sic_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
 
