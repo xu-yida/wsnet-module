@@ -324,40 +324,47 @@ END:
 void cs(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	sic_signal_t* sic_signal = NULL;
+	int error_id = 0;
 // <-RF00000000-AdamXu-2018/04/25-add log for radio
 	PRINT_RADIO("radio B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	PRINT_RADIO("nodedata->rxdBm=%f, packet->rxdBm=%f\n", nodedata->rxdBm, packet->rxdBm);
 // ->RF00000000-AdamXu
 
     /* radio sleep */
-    if (nodedata->sleep) {
-        goto END;
-    }
+	if (nodedata->sleep) {
+		error_id = 1;
+		goto END;
+	}
 
-    /* half-duplex */
-    if (nodedata->tx_busy != -1) {
-        goto END;
-    }
+	/* half-duplex */
+	if (nodedata->tx_busy != -1) {
+		error_id = 2;
+		goto END;
+	}
 
-    /* check sensibility */
-    if (packet->rxdBm < nodedata->mindBm) {
-        goto END;
-    }
+	/* check sensibility */
+	if (packet->rxdBm < nodedata->mindBm) {
+		error_id = 3;
+		goto END;
+	}
 
-    /* check channel */
-    if (nodedata->channel != packet->channel) {
-        goto END;
-    }
+	/* check channel */
+	if (nodedata->channel != packet->channel) {
+		error_id = 4;
+		goto END;
+	}
 
-    /* check Ts */
-    if (nodedata->Ts != (packet->Tb*radio_get_modulation_bit_per_symbol(c))) {
-        goto END;
-    }
+	/* check Ts */
+	if (nodedata->Ts != (packet->Tb*radio_get_modulation_bit_per_symbol(c))) {
+		error_id = 5;
+		goto END;
+	}
 
-    /* check channel */
-    if (packet->modulation != nodedata->modulation) {
-        goto END;
-    }
+	/* check channel */
+	if (packet->modulation != nodedata->modulation) {
+		error_id = 6;
+		goto END;
+	}
 
 	/* capture effect */
 	if (packet->rxdBm > nodedata->rxdBm) {
@@ -385,7 +392,11 @@ void cs(call_t *c, packet_t *packet) {
 	}
 	
 END:
-    return;
+	if(0 != error_id)
+	{
+		PRINT_RADIO("radio E: error_id=%d\n", error_id);
+	}
+	return;
 }
 
 
