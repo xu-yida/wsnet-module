@@ -320,7 +320,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	struct routing_header *header = (struct routing_header *) (packet->data + nodedata->overhead);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int error_id = 0;
-	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	
 	if(1 == packet->type)
 	{
@@ -361,7 +361,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	error_id =  SET_HEADER(&c0, packet, &destination);
 
 END:
-	PRINT_ROUTING("routing B: error_id=%d\n", error_id);
+	PRINT_ROUTING("B: error_id=%d\n", error_id);
 	return error_id;
 }
 
@@ -454,7 +454,7 @@ END:
 /* ************************************************** */
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
-	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
 	nodedata->data_tx++;
@@ -471,7 +471,7 @@ void forward(call_t *c, packet_t *packet) {
 	struct neighbor *n_hop;
 	destination_t destination; 
 	
-	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	if(1 == packet->type)
 	{
 		n_hop = get_nexthop_high(c, &(header->dst_pos), header->dst);
@@ -543,7 +543,7 @@ void rx(call_t *c, packet_t *packet) {
 	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c0.node, c0.entity};
 	double sensibility_mw, rx_mw, tx_mw, noise_mw;
 
-	PRINT_ROUTING("routing B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	switch(header->type) {
 	case HELLO_PACKET:
 		sensibility_mw = dBm2mW(radio_get_sensibility(&c1));

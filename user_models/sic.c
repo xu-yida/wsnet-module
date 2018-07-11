@@ -239,23 +239,25 @@ END:
 }
 
 void tx_end(call_t *c, packet_t *packet) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    
-    /* consume energy */
-    battery_consume_tx(c, packet->duration, nodedata->power);
-    
-    /* check wether the reception has killed us */
-    if (!is_node_alive(c->node)) {
-        return;
-    }
+	struct nodedata *nodedata = get_node_private_data(c);
+	PRINT_RADIO("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_RADIO("nodedata->tx_busy=%d\n", nodedata->tx_busy);
 
-    /* log tx */
-    if (nodedata->tx_busy == packet->id) {
-        PRINT_REPLAY("radio-tx1 %"PRId64", c->node=%d\n", get_time(), c->node);
-        nodedata->tx_busy = -1;
-    }
+	/* consume energy */
+	battery_consume_tx(c, packet->duration, nodedata->power);
 
-    return;
+	/* check wether the reception has killed us */
+	if (!is_node_alive(c->node)) {
+		goto END;
+	}
+
+	/* log tx */
+	if (nodedata->tx_busy == packet->id) {
+		PRINT_REPLAY("radio-tx1 %"PRId64", c->node=%d\n", get_time(), c->node);
+		nodedata->tx_busy = -1;
+	}
+END:
+	return;
 }
 
 
@@ -326,7 +328,7 @@ void cs(call_t *c, packet_t *packet) {
 	sic_signal_t* sic_signal = NULL;
 	int error_id = 0;
 // <-RF00000000-AdamXu-2018/04/25-add log for radio
-	PRINT_RADIO("radio B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_RADIO("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	PRINT_RADIO("nodedata->rxdBm=%f, packet->rxdBm=%f\n", nodedata->rxdBm, packet->rxdBm);
 // ->RF00000000-AdamXu
 
@@ -394,7 +396,7 @@ void cs(call_t *c, packet_t *packet) {
 END:
 	if(0 != error_id)
 	{
-		PRINT_RADIO("radio E: error_id=%d\n", error_id);
+		PRINT_RADIO("E: error_id=%d\n", error_id);
 	}
 	return;
 }

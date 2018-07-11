@@ -565,7 +565,7 @@ END:
 /* ************************************************** */
 void tx(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
-	PRINT_MAC("mac B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 
 	das_insert(nodedata->packets, (void*)packet);
 
@@ -784,7 +784,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	struct _sic_802_11_header *header = (struct _sic_802_11_header *) packet->data;
 	struct _sic_802_11_data_header *dheader = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
 
-	PRINT_MAC("mac B\n");
+	PRINT_MAC("B\n");
 	if ((header->dst = dst->id) == BROADCAST_ADDR) {
 		header->type =BROADCAST_TYPE;
 	} else {

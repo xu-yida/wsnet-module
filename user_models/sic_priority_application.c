@@ -11,7 +11,7 @@
 #include <sic.h>
 
 // <-RF00000000-AdamXu-2018/07/06-test sic.
-//#define ADAM_TEST
+#define ADAM_TEST
 // ->RF00000000-AdamXu
 
 /* ************************************************** */
@@ -180,7 +180,7 @@ void tx(call_t *c) {
 	                              nodedata->position.z}};
         
 	printf("[SIC APP] node %d transmitted a data packet : desination id=%d  \n", c->node, destination.id);
-	PRINT_APPLICATION("application B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
+	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
 	packet->type = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
