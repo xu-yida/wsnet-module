@@ -567,6 +567,7 @@ void rx(call_t *c, packet_t *packet) {
 	case DATA_PACKET : 
 		nodedata->data_rx++;
 
+		PRINT_ROUTING("DATA_PACKET header->dst=%d\n", header->dst);
 		if ((header->dst != BROADCAST_ADDR) && (header->dst != c->node) ) {
 			forward(c, packet);
 			return;
