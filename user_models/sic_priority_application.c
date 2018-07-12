@@ -197,7 +197,7 @@ void tx(call_t *c) {
 /* ************************************************** */
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {  
-  printf("[SIC APP] node %d received a data packet : packet_size=%d  rxdBm=%lf \n", c->node, packet->size, packet->rxdBm);
+  printf("[SIC APP] node %d received a data packet at %"PRId64": rxdBm=%lf \n", c->node, get_time(), packet->rxdBm);
   packet_dealloc(packet);
 }
 
