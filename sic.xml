@@ -43,7 +43,7 @@
 <!-- == APPLICATION ===================================================== -->
 
 <entity name="app" library="application_sic" >
-  <default period="1s" start="0" size="10000" destination-x="random" destination-y="random" destination-z="random"/>
+  <default period="random" start="random" size="10000" destination="random"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->
