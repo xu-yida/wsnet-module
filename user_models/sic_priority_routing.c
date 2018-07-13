@@ -483,6 +483,7 @@ void forward(call_t *c, packet_t *packet) {
 
 	/* delivers packet to application layer */
 	if (n_hop == NULL) {
+#if 0
 		array_t *up = get_entity_bindings_up(c);
 		int i = up->size;
 
@@ -498,6 +499,9 @@ void forward(call_t *c, packet_t *packet) {
 
 			RX(&c_up, packet_up);
 		}
+#else
+		packet_dealloc(packet);
+#endif
 		PRINT_ROUTING("n_hop == NULL\n");
 		goto END;
 	}
@@ -570,7 +574,7 @@ void rx(call_t *c, packet_t *packet) {
 		PRINT_ROUTING("DATA_PACKET header->dst=%d\n", header->dst);
 		if ((header->dst != BROADCAST_ADDR) && (header->dst != c->node) ) {
 			forward(c, packet);
-			return;
+			goto END;
 		}
 
 		while (i--) {
@@ -589,6 +593,7 @@ void rx(call_t *c, packet_t *packet) {
 		break;       
 	}
 
+END:
 	return;
 }
 
