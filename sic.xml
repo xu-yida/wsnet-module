@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="4" duration="60s" x="1000" y="1000" z="0"/>
+<simulation nodes="30" duration="60s" x="200" y="2000" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -61,7 +61,7 @@
 
 <!-- == Environment ===================================================== -->
 <environment>
-<propagation entity="free-space"/>
+<propagation entity="free-space" range="30"/>
 <interferences entity="interf"/>
 <modulation entity="none"/>
 </environment>
@@ -99,7 +99,7 @@
 </bundle>
 
 <!-- == Nodes ===================================================== -->
-
+<!--
 <node id="0" as="sensor">
   <for entity="static" x="0" y="0" z="0" /> 
   <for entity="app" start="1s" /> 
@@ -119,6 +119,129 @@
   <for entity="static" x="1000" y="0" z="0" /> 
   <for entity="app" destination="0" /> 
 </node>
+-->
+<!-- == First line === -->
+<node id="0" as="sensor">
+  <for entity="static" x="0" y="0" z="0" /> 
+</node>
 
+<node id="1" as="sensor">
+  <for entity="static" x="28" y="0" z="0" /> 
+</node>
+
+<node id="2" as="sensor">
+  <for entity="static" x="56" y="0" z="0" /> 
+</node>
+
+<node id="3" as="sensor">
+  <for entity="static" x="84" y="0" z="0" /> 
+</node>
+
+<node id="4" as="sensor">
+  <for entity="static" x="112" y="0" z="0" /> 
+</node>
+
+<node id="5" as="sensor">
+  <for entity="static" x="140" y="0" z="0" /> 
+</node>
+
+<node id="6" as="sensor">
+  <for entity="static" x="168" y="0" z="0" /> 
+</node>
+
+<node id="7" as="sensor">
+  <for entity="static" x="196" y="0" z="0" /> 
+</node>
+
+<!-- == Second line === -->
+<node id="8" as="sensor">
+  <for entity="static" x="14" y="24" z="0" /> 
+</node>
+
+<node id="9" as="sensor">
+  <for entity="static" x="42" y="24" z="0" /> 
+</node>
+
+<node id="10" as="sensor">
+  <for entity="static" x="70" y="24" z="0" /> 
+</node>
+
+<node id="11" as="sensor">
+  <for entity="static" x="98" y="24" z="0" /> 
+</node>
+
+<node id="12" as="sensor">
+  <for entity="static" x="126" y="24" z="0" /> 
+</node>
+
+<node id="13" as="sensor">
+  <for entity="static" x="154" y="24" z="0" /> 
+</node>
+
+<node id="14" as="sensor">
+  <for entity="static" x="182" y="24" z="0" /> 
+</node>
+
+<!-- == Third line === -->
+<node id="15" as="sensor">
+  <for entity="static" x="0" y="48" z="0" /> 
+</node>
+
+<node id="16" as="sensor">
+  <for entity="static" x="28" y="48" z="0" /> 
+</node>
+
+<node id="17" as="sensor">
+  <for entity="static" x="56" y="48" z="0" /> 
+</node>
+
+<node id="18" as="sensor">
+  <for entity="static" x="84" y="48" z="0" /> 
+</node>
+
+<node id="19" as="sensor">
+  <for entity="static" x="112" y="48" z="0" /> 
+</node>
+
+<node id="20" as="sensor">
+  <for entity="static" x="140" y="48" z="0" /> 
+</node>
+
+<node id="21" as="sensor">
+  <for entity="static" x="168" y="48" z="0" /> 
+</node>
+
+<node id="22" as="sensor">
+  <for entity="static" x="196" y="48" z="0" /> 
+</node>
+
+<!-- == Fourth line === -->
+<node id="23" as="sensor">
+  <for entity="static" x="14" y="72" z="0" /> 
+</node>
+
+<node id="24" as="sensor">
+  <for entity="static" x="42" y="72" z="0" /> 
+</node>
+
+<node id="25" as="sensor">
+  <for entity="static" x="70" y="72" z="0" /> 
+</node>
+
+<node id="26" as="sensor">
+  <for entity="static" x="98" y="72" z="0" /> 
+</node>
+
+<node id="27" as="sensor">
+  <for entity="static" x="126" y="72" z="0" /> 
+</node>
+
+<node id="28" as="sensor">
+  <for entity="static" x="154" y="72" z="0" /> 
+</node>
+
+<node id="29" as="sensor">
+  <for entity="static" x="182" y="72" z="0" /> 
+</node>
 
 </worldsens>
