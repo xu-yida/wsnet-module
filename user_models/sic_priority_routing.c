@@ -26,7 +26,7 @@ model_t model =  {
 #define HELLO_PACKET 0
 #define DATA_PACKET  1
 
-
+#define ADAM_DELAY_TEST
 /* ************************************************** */
 /* ************************************************** */
 struct routing_header {
@@ -37,6 +37,9 @@ struct routing_header {
 	int hop;
 	int type;
 	double txdBm;
+#ifdef ADAM_DELAY_TEST
+	uint64_t time_start;
+#endif//ADAM_DELAY_TEST
 };
 
 struct neighbor {
@@ -352,6 +355,9 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	header->src_pos.z = get_node_position(c->node)->z;
 	header->type = DATA_PACKET;
 	header->hop = nodedata->hop;
+#ifdef ADAM_DELAY_TEST
+	header->time_start = get_time();
+#endif//ADAM_DELAY_TEST
 
 	/* Set mac header */
 	destination.id = n_hop->id;
@@ -428,6 +434,9 @@ int advert_callback(call_t *c, void *args) {
 	header->src_pos.z = get_node_position(c->node)->z;
 	header->type = HELLO_PACKET;
 	header->hop = 1;
+#ifdef ADAM_DELAY_TEST
+	header->time_start = get_time();
+#endif//ADAM_DELAY_TEST
 	
 	// <-RF00000000-AdamXu-2018/06/25-use high power for neighour discovering.
 	//header->txdBm = ADAM_HIGH_POWER_DBM_GAIN+radio_get_power(&c1);
@@ -546,6 +555,9 @@ void rx(call_t *c, packet_t *packet) {
 	//get radio layer
 	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c0.node, c0.entity};
 	double sensibility_mw, rx_mw, tx_mw, noise_mw;
+#ifdef ADAM_DELAY_TEST
+	uint64_t delay=0;
+#endif//ADAM_DELAY_TEST
 
 	PRINT_ROUTING("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	switch(header->type) {
@@ -576,6 +588,10 @@ void rx(call_t *c, packet_t *packet) {
 			forward(c, packet);
 			goto END;
 		}
+#ifdef ADAM_DELAY_TEST
+			delay = get_time() - header->time_start;
+			PRINT_RESULT("node %d received packet, delay=%"PRId64"", c->node, delay);
+#endif//ADAM_DELAY_TEST
 
 		while (i--) {
 			call_t c_up = {up->elts[i], c->node, c->entity};
