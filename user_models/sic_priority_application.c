@@ -179,7 +179,7 @@ void tx(call_t *c) {
 	                              nodedata->position.y, 
 	                              nodedata->position.z}};
         
-	printf("[SIC APP] node %d transmitted a data packet : desination id=%d  \n", c->node, destination.id);
+	printf("[SIC APP] node %d transmitted a data packet at %"PRId64": desination id=%d  \n", c->node, get_time(), destination.id);
 	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
