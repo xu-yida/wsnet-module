@@ -589,8 +589,8 @@ void rx(call_t *c, packet_t *packet) {
 			goto END;
 		}
 #ifdef ADAM_DELAY_TEST
-			delay = get_time() - header->time_start;
-			PRINT_RESULT("node %d received packet, delay=%"PRId64"", c->node, delay);
+		delay = get_time() - header->time_start;
+		PRINT_RESULT("node %d received packet, delay=%"PRId64"\n", c->node, delay);
 #endif//ADAM_DELAY_TEST
 
 		while (i--) {

@@ -195,7 +195,7 @@ void tx(call_t *c) {
 	}
 
 	TX(&c0, packet);
-	PRINT_RESULT("%d packets transmitted", ++s_num_t);
+	PRINT_RESULT("%d packets transmitted\n", ++s_num_t);
 }
 
 
@@ -203,7 +203,7 @@ void tx(call_t *c) {
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {  
 	printf("[SIC APP] node %d received a data packet at %"PRId64": rxdBm=%lf \n", c->node, get_time(), packet->rxdBm);
-	PRINT_RESULT("%d packets received", ++s_num_r);
+	PRINT_RESULT("%d packets received\n", ++s_num_r);
 	packet_dealloc(packet);
 }
 
