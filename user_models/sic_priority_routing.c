@@ -67,7 +67,8 @@ struct nodedata {
 };
 
 #ifdef ADAM_TEST
-double g_delay;
+double g_delay = 0;
+int g_num_r = 0;
 #endif//ADAM_TEST
 
 
@@ -601,7 +602,7 @@ void rx(call_t *c, packet_t *packet) {
 
 		while (i--) {
 			call_t c_up = {up->elts[i], c->node, c->entity};
-			packet_t *packet_up;	     
+			packet_t *packet_up;
 			if (i > 0) {
 				packet_up = packet_clone(packet);         
 			} else {
