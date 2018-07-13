@@ -10,9 +10,6 @@
 
 #include <sic.h>
 
-// <-RF00000000-AdamXu-2018/07/06-test sic.
-//#define ADAM_TEST
-// ->RF00000000-AdamXu
 
 /* ************************************************** */
 /* ************************************************** */
@@ -38,8 +35,8 @@ struct _sic_private {
 
 /* ************************************************** */
 /* ************************************************** */
-static int s_num_t = 0;
-static int s_num_r = 0;
+static int g_num_t = 0;
+static int g_num_r = 0;
 
 /* ************************************************** */
 /* ************************************************** */
@@ -195,7 +192,7 @@ void tx(call_t *c) {
 	}
 
 	TX(&c0, packet);
-	PRINT_RESULT("%d packets transmitted\n", ++s_num_t);
+	PRINT_RESULT("%d packets transmitted\n", ++g_num_t);
 }
 
 
@@ -203,7 +200,6 @@ void tx(call_t *c) {
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {  
 	printf("[SIC APP] node %d received a data packet at %"PRId64": rxdBm=%lf \n", c->node, get_time(), packet->rxdBm);
-	PRINT_RESULT("%d packets received\n", ++s_num_r);
 	packet_dealloc(packet);
 }
 
