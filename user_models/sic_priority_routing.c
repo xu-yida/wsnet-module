@@ -332,6 +332,10 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 	if(1 == packet->type)
 	{
 		n_hop = get_nexthop_high(c, &(dst->position), dst->id);
+		if(NULL == n_hop)
+		{
+			n_hop = get_nexthop_low(c, &(dst->position), dst->id);
+		}
 	}
 	else
 	{
@@ -488,6 +492,10 @@ void forward(call_t *c, packet_t *packet) {
 	if(1 == packet->type)
 	{
 		n_hop = get_nexthop_high(c, &(header->dst_pos), header->dst);
+		if(NULL == n_hop)
+		{
+			n_hop = get_nexthop_low(c, &(dst->position), dst->id);
+		}
 	}
 	else
 	{
