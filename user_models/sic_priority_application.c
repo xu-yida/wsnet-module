@@ -194,7 +194,14 @@ void tx(call_t *c) {
 	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
-	packet->type = (get_random_integer()%nodedata->priority_ratio == 0)?1:0;
+	if(nodedata->priority_ratio > 0)
+	{
+		packet->type = (get_random_integer()%nodedata->priority_ratio == 0)?1:0;
+	}
+	else
+	{
+		packet->type = 0;
+	}
 	PRINT_APPLICATION("packet->type=%d\n", packet->type);
 	if (SET_HEADER(&c0, packet, &destination) == -1) {
 		packet_dealloc(packet);
