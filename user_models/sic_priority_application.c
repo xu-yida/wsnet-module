@@ -25,12 +25,13 @@ model_t model =  {
 /* ************************************************** */
 /* ************************************************** */
 struct _sic_private {
-    uint64_t start;
-    uint64_t period;
-    int size;
-    nodeid_t destination;
-    position_t position;
-    int overhead;
+	uint64_t start;
+	uint64_t period;
+	int size;
+	int priority_ratio;
+	nodeid_t destination;
+	position_t position;
+	int overhead;
 };
 
 /* ************************************************** */
@@ -70,6 +71,7 @@ int setnode(call_t *c, void *params) {
     nodedata->start = 0;
     nodedata->period = 1000000000;
     nodedata->size = 1000;
+    nodedata->priority_ratio = ADAM_HIGH_PRIOTITY_RATIO;
 
     /* get parameters */
     das_init_traverse(params);
@@ -107,6 +109,11 @@ int setnode(call_t *c, void *params) {
         }
         if (!strcmp(param->key, "size")) {
             if (get_param_integer(param->value, &(nodedata->size))) {
+                goto error;
+            }
+        }
+        if (!strcmp(param->key, "priority_ratio")) {
+            if (get_param_integer(param->value, &(nodedata->priority_ratio))) {
                 goto error;
             }
         }
@@ -185,7 +192,7 @@ void tx(call_t *c) {
 	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
-	packet->type = (get_random_integer()%ADAM_HIGH_PRIOTITY_RATIO == 0)?1:0;
+	packet->type = (get_random_integer()%nodedata->priority_ratio == 0)?1:0;
 	PRINT_APPLICATION("packet->type=%d\n", packet->type);
 	if (SET_HEADER(&c0, packet, &destination) == -1) {
 		packet_dealloc(packet);
