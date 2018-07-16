@@ -36,8 +36,10 @@
 
 
 <!-- == APPLICATION ===================================================== -->
-
+<!-- TEST
 <entity name="routing" library="routing_sic" >
+-->
+<entity name="routing" library="routing_greedy" >
 </entity>
 
 <!-- == APPLICATION ===================================================== -->
