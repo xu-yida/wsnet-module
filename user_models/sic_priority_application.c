@@ -187,8 +187,10 @@ void tx(call_t *c) {
 	                             {nodedata->position.x, 
 	                              nodedata->position.y, 
 	                              nodedata->position.z}};
-        
+
+#ifndef ADAM_RESULT_LOG
 	printf("[SIC APP] node %d transmitted a data packet at %"PRId64": desination id=%d  \n", c->node, get_time(), destination.id);
+#endif//ADAM_RESULT_LOG
 	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
@@ -207,7 +209,9 @@ void tx(call_t *c) {
 /* ************************************************** */
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {  
+#ifndef ADAM_RESULT_LOG
 	printf("[SIC APP] node %d received a data packet at %"PRId64": rxdBm=%lf \n", c->node, get_time(), packet->rxdBm);
+#endif//ADAM_RESULT_LOG
 	packet_dealloc(packet);
 }
 

@@ -47,7 +47,7 @@
 <!-- == APPLICATION ===================================================== -->
 
 <entity name="app" library="application_sic" >
-  <default period="random" start="random" size="10000" destination="random" priority_ratio="4"/>
+  <default period="random" start="random" size="10000" destination="random" priority_ratio="2"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->
