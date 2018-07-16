@@ -32,6 +32,10 @@
 <!-- == MAC ===================================================== -->
 
 <entity name="mac" library="mac_sic" >
+
+<!-- TEST
+<entity name="mac" library="mac_dcf_802_11" >
+-->
 </entity>
 
 
