@@ -494,7 +494,7 @@ void forward(call_t *c, packet_t *packet) {
 		n_hop = get_nexthop_high(c, &(header->dst_pos), header->dst);
 		if(NULL == n_hop)
 		{
-			n_hop = get_nexthop_low(c, &(dst->position), dst->id);
+			n_hop = get_nexthop_low(c, &(header->dst_pos), header->dst);
 		}
 	}
 	else
@@ -566,7 +566,7 @@ void rx(call_t *c, packet_t *packet) {
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	//get radio layer
 	call_t c1 = {get_entity_bindings_down(&c0)->elts[0], c0.node, c0.entity};
-	double sensibility_mw, rx_mw, tx_mw, noise_mw;
+	double sensibility_mw, rx_mw, noise_mw;
 #ifdef ADAM_TEST
 	uint64_t delay=0;
 #endif//ADAM_TEST
@@ -576,15 +576,16 @@ void rx(call_t *c, packet_t *packet) {
 	case HELLO_PACKET:
 		sensibility_mw = dBm2mW(radio_get_sensibility(&c1));
 		rx_mw = dBm2mW(packet->rxdBm);
-		tx_mw = dBm2mW(packet->txdBm);
+		//tx_mw = dBm2mW(packet->txdBm);
 		noise_mw = MEDIA_GET_WHITE_NOISE(&c0, packet->channel);
 		nodedata->hello_rx++;
 		// high channel gain neighbours contains low channel gain neighbours
-		PRINT_ROUTING("HELLO_PACKET rx_mw=%f, tx_mw=%f, sensibility_mw=%f, noise_mw=%f\n", rx_mw, tx_mw, sensibility_mw, noise_mw);
-		if(rx_mw > ADAM_HIGH_POWER_RATIO*(noise_mw+sensibility_mw))
-		{
+		PRINT_ROUTING("HELLO_PACKET rx_mw=%f, tx_mw=%f, sensibility_mw=%f, noise_mw=%f\n", rx_mw, dBm2mW(packet->txdBm), sensibility_mw, noise_mw);
+		// add neighbor for all received hello packets
+		//if(rx_mw > ADAM_HIGH_POWER_RATIO*(noise_mw+sensibility_mw))
+		//{
 			add_neighbor_low(c, header);
-		}
+		//}
 		if(rx_mw > (noise_mw+sensibility_mw+rx_mw/3)*DEFAULT_SIC_THRESHOLD)
 		{
 			add_neighbor_high(c, header);

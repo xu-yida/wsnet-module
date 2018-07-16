@@ -209,7 +209,6 @@ void tx(call_t *c, packet_t *packet) {
 	/* transmit to antenna */
 	while (i--) {
 		packet_t *packet_down;
-		double base_power_tx;
 
 		if (i > 0) {
 			packet_down = packet_clone(packet);         
@@ -218,8 +217,7 @@ void tx(call_t *c, packet_t *packet) {
 		}
 		c->from = down->elts[i];
 
-		base_power_tx = radio_get_power(c);
-		PRINT_RADIO("packet_down->type=%d, base_power_tx=%f\n", packet_down->type, base_power_tx);
+		PRINT_RADIO("packet_down->type=%d, radio_get_power=%f\n", packet_down->type, radio_get_power(c));
 		//if(1 == packet_down->type)
 		//{
 			//radio_set_power(c, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
