@@ -25,7 +25,7 @@
   <default loss="0" angle-xy="random" angle-z="random"/>
 </entity>
 
-<entity name="radio" library="radio_sic" >
+<entity name="radio" library="radio_half1d" >
   <default  sensibility="-92" T_s="727" dBm="10" channel="0" modulation="none"/>
 </entity>
 
