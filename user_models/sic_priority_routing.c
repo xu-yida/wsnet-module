@@ -582,10 +582,10 @@ void rx(call_t *c, packet_t *packet) {
 		// high channel gain neighbours contains low channel gain neighbours
 		PRINT_ROUTING("HELLO_PACKET rx_mw=%f, tx_mw=%f, sensibility_mw=%f, noise_mw=%f\n", rx_mw, dBm2mW(packet->txdBm), sensibility_mw, noise_mw);
 		// add neighbor for all received hello packets
-		//if(rx_mw > ADAM_HIGH_POWER_RATIO*(noise_mw+sensibility_mw))
-		//{
+		if(rx_mw > ADAM_HIGH_POWER_RATIO*(noise_mw+sensibility_mw))
+		{
 			add_neighbor_low(c, header);
-		//}
+		}
 		if(rx_mw > (noise_mw+sensibility_mw+rx_mw/3)*DEFAULT_SIC_THRESHOLD)
 		{
 			add_neighbor_high(c, header);
