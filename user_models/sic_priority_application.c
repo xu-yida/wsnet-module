@@ -115,7 +115,9 @@ int setnode(call_t *c, void *params) {
             }
         }
         if (!strcmp(param->key, "priority_ratio")) {
+		PRINT_RESULT("nodedata->priority_ratio1=%d\n", nodedata->priority_ratio);
             if (get_param_integer(param->value, &(nodedata->priority_ratio))) {
+			PRINT_RESULT("nodedata->priority_ratio2=%d\n", nodedata->priority_ratio);
                 goto error;
             }
         }
