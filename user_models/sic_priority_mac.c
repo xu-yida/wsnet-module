@@ -600,7 +600,7 @@ void rx(call_t *c, packet_t *packet) {
 	if(nodedata->HighThreshold_mw < 0)
 	{
 		nodedata->HighThreshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
-		//PRINT_RESULT("packet->txdBm=%f, packet->rxmW=%f\n", packet->txdBm, packet->rxmW);
+		PRINT_RESULT("nodedata->HighThreshold_mw=%f\n", nodedata->HighThreshold_mw);
 	}
 	
     switch (header->type) {
