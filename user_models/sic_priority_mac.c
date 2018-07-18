@@ -256,7 +256,7 @@ int adam_check_channel_busy(call_t *c) {
 			channel_state = 1;
 		}
 	}
-	//PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
+	PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
 	PRINT_MAC("E: noise_mw=%f\n", noise_mw);
 
 	return channel_state;
