@@ -223,16 +223,20 @@ int ioctl(call_t *c, int option, void *in, void **out) {
 int adam_check_channel_busy(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
+	packet_t *packet = nodedata->txbuf;
 	int channel_state = 0;
 	double noise_mw = 0;
 	double threshold_mw = dBm2mW(nodedata->EDThreshold);
-
+	double high_threshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
+	
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
+	PRINT_RESULT("high_threshold_mw=%f\n", high_threshold_mw);
+	
 	if (nodedata->cs)
 	{
 		noise_mw = dBm2mW(radio_get_cs(&c0));
-		if( noise_mw >= DEFAULT_SIC_THRESHOLD*threshold_mw)
+		if( noise_mw >= high_threshold_mw)
 		{
 			channel_state = 2;
 		}
@@ -243,7 +247,7 @@ int adam_check_channel_busy(call_t *c) {
 	}
 	else if (nodedata->cca) {
 		noise_mw = dBm2mW(radio_get_noise(&c0));
-		if(noise_mw >= DEFAULT_SIC_THRESHOLD*threshold_mw)
+		if(noise_mw >= high_threshold_mw)
 		{
 			channel_state = 2;
 		}

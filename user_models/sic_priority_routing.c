@@ -590,7 +590,7 @@ void rx(call_t *c, packet_t *packet) {
 		{
 			add_neighbor_low(c, header);
 		}
-		if(rx_mw > (noise_mw+sensibility_mw+rx_mw/3)*DEFAULT_SIC_THRESHOLD)
+		if(rx_mw > (noise_mw+sensibility_mw+rx_mw/ADAM_HIGH_POWER_RATIO)*DEFAULT_SIC_THRESHOLD)
 		{
 			add_neighbor_high(c, header);
 		}
