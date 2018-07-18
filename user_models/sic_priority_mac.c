@@ -225,7 +225,6 @@ int ioctl(call_t *c, int option, void *in, void **out) {
 int adam_check_channel_busy(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
-	packet_t *packet = nodedata->txbuf;
 	int channel_state = 0;
 	double noise_mw = 0;
 	double threshold_mw = dBm2mW(nodedata->EDThreshold);
