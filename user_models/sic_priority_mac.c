@@ -77,7 +77,7 @@ struct nodedata {
 	int cs;
 	int cca;
 	double EDThreshold;
-	//double HighThreshold_mw;
+	double HighThreshold_mw;
 //#ifdef ADAM_PRIORITY_TEST
 	// 0: low; 1: high
 	int priority;
@@ -148,7 +148,7 @@ int setnode(call_t *c, void *params) {
 	nodedata->cca = 1;
 	nodedata->cs = 1;
 	nodedata->EDThreshold = EDThresholdMin;
-	//nodedata->HighThreshold_mw = -1;
+	nodedata->HighThreshold_mw = -1;
 
 	/* Init packets buffer */
 	nodedata->packets = das_create();
