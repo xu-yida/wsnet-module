@@ -78,7 +78,6 @@ int setnode(call_t *c, void *params) {
     /* get parameters */
     das_init_traverse(params);
     while ((param = (param_t *) das_traverse(params)) != NULL) {
-		PRINT_RESULT("param->key=%s\n", param->key);
 
         if (!strcmp(param->key, "destination")) {
             if (get_param_nodeid(param->value, &(nodedata->destination), c->node)) {
@@ -221,7 +220,6 @@ void tx(call_t *c) {
 	}
 
 	TX(&c0, packet);
-	PRINT_RESULT("nodedata->priority_ratio=%d\n", nodedata->priority_ratio);
 	PRINT_RESULT("%d packets transmitted\n", g_num_t);
 	PRINT_RESULT("%d prioriy0 packets transmitted, %d prioriy1 packets transmitted\n", g_num_t_priority0, g_num_t_priority1);
 }
