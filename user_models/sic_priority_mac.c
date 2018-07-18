@@ -256,7 +256,7 @@ int adam_check_channel_busy(call_t *c) {
 			channel_state = 1;
 		}
 	}
-	PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
+	//PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
 	PRINT_MAC("E: noise_mw=%f\n", noise_mw);
 
 	return channel_state;
@@ -273,7 +273,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	//  struct _sic_802_11_ack_header *ack_header;
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
-	int priority;
+	int priority, channel_state;
 	double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 		
@@ -328,9 +328,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         /* Backoff */
         if (nodedata->backoff > 0) {
 		//low channel power blocks low priority; high channel power blocks high priority
+		channel_state = adam_check_channel_busy(c);
+		PRINT_RESULT("STATE_BACKOFF channel_state=%d, priority=%d\n", channel_state, priority);
 		if ((get_time() < nodedata->nav)
-			|| (0 == priority && 1 <= adam_check_channel_busy(c))
-			|| (1 == priority && 2 <= adam_check_channel_busy(c)))
+			|| (0 == priority && 1 <= channel_state)
+			|| (1 == priority && 2 <= channel_state))
 		{ 
                 if (nodedata->backoff_suspended == 0) {
                     /* Suspend backoff and add difs */
@@ -472,6 +474,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		}
 
 		PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
+		PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
 		
