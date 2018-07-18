@@ -231,7 +231,7 @@ int adam_check_channel_busy(call_t *c) {
 	
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
-	PRINT_RESULT("packet->node=%d, packet->rxmW=%f, c->node=%d\n", packet->node, packet->rxmW, c->node);
+	//PRINT_RESULT("packet->node=%d, packet->rxmW=%f, c->node=%d\n", packet->node, packet->rxmW, c->node);
 	
 	if (nodedata->cs)
 	{
@@ -294,6 +294,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
                 goto END;
             }
         }
+	packet= nodedata->txbuf;
+	PRINT_RESULT("STATE_IDLE packet->node=%d, packet->rxmW=%f, c->node=%d\n", packet->node, packet->rxmW, c->node);
         
         /* Initial backoff */
         nodedata->state = STATE_BACKOFF;
@@ -321,6 +323,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	{
 		goto END;
 	}
+	packet= nodedata->txbuf;
+	PRINT_RESULT("STATE_BACKOFF packet->node=%d, packet->rxmW=%f, c->node=%d\n", packet->node, packet->rxmW, c->node);
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
 	priority = nodedata->txbuf->type;
 	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
