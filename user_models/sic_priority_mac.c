@@ -231,7 +231,7 @@ int adam_check_channel_busy(call_t *c) {
 	
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
-	PRINT_RESULT("high_threshold_mw=%f\n", high_threshold_mw);
+	PRINT_RESULT("packet->txdBm=%f, packet->rxmW=%f, radio_get_power(&c0)=%f\n", packet->txdBm, packet->rxmW, radio_get_power(&c0));
 	
 	if (nodedata->cs)
 	{
