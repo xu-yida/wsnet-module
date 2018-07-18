@@ -220,6 +220,7 @@ void tx(call_t *c) {
 	}
 
 	TX(&c0, packet);
+	PRINT_RESULT("nodedata->priority_ratio=%d\n", nodedata->priority_ratio);
 	PRINT_RESULT("%d packets transmitted\n", g_num_t);
 	PRINT_RESULT("%d prioriy0 packets transmitted, %d prioriy1 packets transmitted\n", g_num_t_priority0, g_num_t_priority1);
 }
