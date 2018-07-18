@@ -77,6 +77,7 @@ struct nodedata {
 	int cs;
 	int cca;
 	double EDThreshold;
+	double HighThreshold;
 //#ifdef ADAM_PRIORITY_TEST
 	// 0: low; 1: high
 	int priority;
@@ -147,6 +148,7 @@ int setnode(call_t *c, void *params) {
 	nodedata->cca = 1;
 	nodedata->cs = 1;
 	nodedata->EDThreshold = EDThresholdMin;
+	nodedata->HighThreshold = MIN_DBM;
 
 	/* Init packets buffer */
 	nodedata->packets = das_create();
@@ -227,7 +229,7 @@ int adam_check_channel_busy(call_t *c) {
 	int channel_state = 0;
 	double noise_mw = 0;
 	double threshold_mw = dBm2mW(nodedata->EDThreshold);
-	double high_threshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
+	double high_threshold_mw = dBm2mW(nodedata->HighThreshold);
 	
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
@@ -294,8 +296,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
                 goto END;
             }
         }
-	packet= nodedata->txbuf;
-	PRINT_RESULT("STATE_IDLE packet->node=%d, packet->rxmW=%f, c->node=%d\n", packet->node, packet->rxmW, c->node);
         
         /* Initial backoff */
         nodedata->state = STATE_BACKOFF;
@@ -323,8 +323,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	{
 		goto END;
 	}
-	packet= nodedata->txbuf;
-	PRINT_RESULT("STATE_BACKOFF packet->node=%d, packet->rxmW=%f, c->node=%d\n", packet->node, packet->rxmW, c->node);
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
 	priority = nodedata->txbuf->type;
 	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
@@ -587,15 +585,22 @@ void tx(call_t *c, packet_t *packet) {
 /* ************************************************** */
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    struct _sic_802_11_header *header = (struct _sic_802_11_header *) packet->data;
-    struct _sic_802_11_rts_header *rts_header;
-    struct _sic_802_11_cts_header *cts_header;
-    struct _sic_802_11_data_header *data_header;
-    // struct _sic_802_11_ack_header *ack_header;
-    array_t *up = get_entity_bindings_up(c);
-    int i = up->size;
+	struct nodedata *nodedata = get_node_private_data(c);
+	struct _sic_802_11_header *header = (struct _sic_802_11_header *) packet->data;
+	struct _sic_802_11_rts_header *rts_header;
+	struct _sic_802_11_cts_header *cts_header;
+	struct _sic_802_11_data_header *data_header;
+	// struct _sic_802_11_ack_header *ack_header;
+	array_t *up = get_entity_bindings_up(c);
+	int i = up->size;
+	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
+	if(MIN_DBM == nodedata->HighThreshold)
+	{
+		nodedata->HighThreshold = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
+		PRINT_RESULT("packet->txdBm=%f, packet->rxmW=%f\n", packet->node, packet->rxmW);
+	}
+	
     switch (header->type) {
 		
     case RTS_TYPE:
