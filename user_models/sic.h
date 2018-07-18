@@ -15,7 +15,7 @@
 /* ************************************************** */
 /* ************************************************** */
 //#define ADAM_PRIORITY_TEST
-#define ADAM_HIGH_PRIOTITY_RATIO 2
+#define ADAM_HIGH_PRIOTITY_RATIO 4
 #define ADAM_HIGH_POWER_RATIO 3
 #define ADAM_HIGH_POWER_DBM_GAIN (log10(ADAM_HIGH_POWER_RATIO))
 
