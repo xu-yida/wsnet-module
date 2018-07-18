@@ -77,7 +77,7 @@ struct nodedata {
 	int cs;
 	int cca;
 	double EDThreshold;
-	double HighThreshold;
+	double HighThreshold_mw;
 //#ifdef ADAM_PRIORITY_TEST
 	// 0: low; 1: high
 	int priority;
@@ -148,7 +148,7 @@ int setnode(call_t *c, void *params) {
 	nodedata->cca = 1;
 	nodedata->cs = 1;
 	nodedata->EDThreshold = EDThresholdMin;
-	nodedata->HighThreshold = MIN_DBM;
+	nodedata->HighThreshold_mw = -1;
 
 	/* Init packets buffer */
 	nodedata->packets = das_create();
@@ -228,7 +228,7 @@ int adam_check_channel_busy(call_t *c) {
 	int channel_state = 0;
 	double noise_mw = 0;
 	double threshold_mw = dBm2mW(nodedata->EDThreshold);
-	double high_threshold_mw = dBm2mW(nodedata->HighThreshold);
+	double high_threshold_mw = nodedata->HighThreshold_mw;
 	
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
@@ -594,9 +594,9 @@ void rx(call_t *c, packet_t *packet) {
 	int i = up->size;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
-	if(MIN_DBM == nodedata->HighThreshold)
+	if(nodedata->HighThreshold_mw < 0)
 	{
-		nodedata->HighThreshold = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
+		nodedata->HighThreshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
 		PRINT_RESULT("packet->txdBm=%f, packet->rxmW=%f\n", packet->txdBm, packet->rxmW);
 	}
 	
