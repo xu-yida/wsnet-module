@@ -592,13 +592,13 @@ void rx(call_t *c, packet_t *packet) {
 	// struct _sic_802_11_ack_header *ack_header;
 	array_t *up = get_entity_bindings_up(c);
 	int i = up->size;
-//	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
+	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
-//	if(nodedata->HighThreshold_mw < 0)
-//	{
-//		nodedata->HighThreshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
+	if(nodedata->HighThreshold_mw < 0)
+	{
+		nodedata->HighThreshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
 //		PRINT_RESULT("packet->txdBm=%f, packet->rxmW=%f\n", packet->txdBm, packet->rxmW);
-//	}
+	}
 	
     switch (header->type) {
 		
