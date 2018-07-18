@@ -228,7 +228,7 @@ int adam_check_channel_busy(call_t *c) {
 	int channel_state = 0;
 	double noise_mw = 0;
 	double threshold_mw = dBm2mW(nodedata->EDThreshold);
-	double high_threshold_mw = nodedata->HighThreshold_mw;
+	double high_threshold_mw = nodedata->HighThreshold_mw>=0?nodedata->HighThreshold_mw:threshold_mw;
 	
 	PRINT_MAC("B: threshold_mw=%f\n", threshold_mw);
 	PRINT_MAC("B: nodedata->EDThreshold=%f\n", nodedata->EDThreshold);
@@ -236,27 +236,27 @@ int adam_check_channel_busy(call_t *c) {
 	if (nodedata->cs)
 	{
 		noise_mw = dBm2mW(radio_get_cs(&c0));
-		if( noise_mw >= high_threshold_mw)
+		if( noise_mw > high_threshold_mw)
 		{
 			channel_state = 2;
 		}
-		else if(noise_mw >= threshold_mw)
+		else if(noise_mw > threshold_mw)
 		{
 			channel_state = 1;
 		}
 	}
 	else if (nodedata->cca) {
 		noise_mw = dBm2mW(radio_get_noise(&c0));
-		if(noise_mw >= high_threshold_mw)
+		if(noise_mw > high_threshold_mw)
 		{
 			channel_state = 2;
 		}
-		else if(noise_mw >= threshold_mw)
+		else if(noise_mw > threshold_mw)
 		{
 			channel_state = 1;
 		}
 	}
-	PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
+	//PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
 	PRINT_MAC("E: noise_mw=%f\n", noise_mw);
 
 	return channel_state;
@@ -329,7 +329,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         if (nodedata->backoff > 0) {
 		//low channel power blocks low priority; high channel power blocks high priority
 		channel_state = adam_check_channel_busy(c);
-		PRINT_RESULT("STATE_BACKOFF channel_state=%d, priority=%d\n", channel_state, priority);
+		//PRINT_RESULT("STATE_BACKOFF channel_state=%d, priority=%d\n", channel_state, priority);
 		if ((get_time() < nodedata->nav)
 			|| (0 == priority && 1 <= channel_state)
 			|| (1 == priority && 2 <= channel_state))
@@ -474,7 +474,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		}
 
 		PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
-		PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
+		//PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
 		
