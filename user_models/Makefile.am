@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libapplication_sic.la libradio_sic.la libmac_sic.la librouting_sic.la
+lib_LTLIBRARIES = libapplication_sic.la libradio_sic.la libmac_sic.la librouting_sic.la libmobility_sway.la
 
 libapplication_sic_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
 
@@ -23,3 +23,9 @@ librouting_sic_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
 librouting_sic_la_SOURCES = sic_priority_routing.c
 
 librouting_sic_la_LDFLAGS = -module
+
+libmobility_sway_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
+
+libmobility_sway_la_SOURCES = sway.c
+
+libmobility_sway_la_LDFLAGS = -module
