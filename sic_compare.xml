@@ -42,8 +42,8 @@
 
 <!-- == APPLICATION ===================================================== -->
 
-<entity name="app" library="application_cbr" >
-  <default period="1s" start="0" size="100" destination-x="random" destination-y="random" destination-z="random"/>
+<entity name="app" library="application_sic" >
+  <default period="random" start="random" size="10000" destination="random" priority_ratio="2"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->
