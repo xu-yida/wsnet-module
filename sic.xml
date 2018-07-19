@@ -56,7 +56,7 @@
 
 <!-- == MOBILITY ===================================================== -->
 
-<entity name="mobility" library="mobility_sway" >
+<entity name="mobility" library="mobility_static" >
 </entity>
 
 
@@ -130,155 +130,155 @@
 -->
 <!-- == First line === -->
 <node id="0" as="sensor">
-  <for entity="mobility" x="0" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="0" y="0" z="0"  /> 
   <for entity="app" destination="22" destination-x="196" destination-y="48" destination-z="0"/> 
 </node>
 
 <node id="1" as="sensor">
-  <for entity="mobility" x="28" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" />
+  <for entity="mobility" x="28" y="0" z="0"  />
   <for entity="app" destination="21" destination-x="168" destination-y="48" destination-z="0"/>  
 </node>
 
 <node id="2" as="sensor">
-  <for entity="mobility" x="56" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="56" y="0" z="0"  /> 
   <for entity="app" destination="20" destination-x="140" destination-y="48" destination-z="0"/> 
 </node>
 
 <node id="3" as="sensor">
-  <for entity="mobility" x="84" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="84" y="0" z="0"  /> 
   <for entity="app" destination="19" destination-x="112" destination-y="48" destination-z="0"/> 
 </node>
 
 <node id="4" as="sensor">
-  <for entity="mobility" x="112" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="112" y="0" z="0"  /> 
   <for entity="app" destination="18" destination-x="84" destination-y="48" destination-z="0"/> 
 </node>
 
 <node id="5" as="sensor">
-  <for entity="mobility" x="140" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="140" y="0" z="0"  /> 
   <for entity="app" destination="17" destination-x="56" destination-y="48" destination-z="0"/> 
 </node>
 
 <node id="6" as="sensor">
-  <for entity="mobility" x="168" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="168" y="0" z="0"  /> 
   <for entity="app" destination="16" destination-x="28" destination-y="48" destination-z="0"/> 
 </node>
 
 <node id="7" as="sensor">
-  <for entity="mobility" x="196" y="0" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="196" y="0" z="0"  /> 
   <for entity="app" destination="15" destination-x="0" destination-y="48" destination-z="0"/> 
 </node>
 
 <!-- == Second line === -->
 <node id="8" as="sensor">
-  <for entity="mobility" x="14" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="14" y="24" z="0"  /> 
   <for entity="app" destination="29" destination-x="182" destination-y="72" destination-z="0"/> 
 </node>
 
 <node id="9" as="sensor">
-  <for entity="mobility" x="42" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="42" y="24" z="0"  /> 
   <for entity="app" destination="28" destination-x="154" destination-y="72" destination-z="0"/> 
 </node>
 
 <node id="10" as="sensor">
-  <for entity="mobility" x="70" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="70" y="24" z="0"  /> 
   <for entity="app" destination="27" destination-x="126" destination-y="72" destination-z="0"/> 
 </node>
 
 <node id="11" as="sensor">
-  <for entity="mobility" x="98" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="98" y="24" z="0"  /> 
   <for entity="app" destination="26" destination-x="98" destination-y="72" destination-z="0"/> 
 </node>
 
 <node id="12" as="sensor">
-  <for entity="mobility" x="126" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="126" y="24" z="0"  /> 
   <for entity="app" destination="25" destination-x="70" destination-y="72" destination-z="0"/> 
 </node>
 
 <node id="13" as="sensor">
-  <for entity="mobility" x="154" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="154" y="24" z="0"  /> 
   <for entity="app" destination="24" destination-x="42" destination-y="72" destination-z="0"/> 
 </node>
 
 <node id="14" as="sensor">
-  <for entity="mobility" x="182" y="24" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="182" y="24" z="0"  /> 
   <for entity="app" destination="23" destination-x="14" destination-y="72" destination-z="0"/> 
 </node>
 
 <!-- == Third line === -->
 <node id="15" as="sensor">
-  <for entity="mobility" x="0" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="0" y="48" z="0"  /> 
   <for entity="app" destination="7" destination-x="196" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="16" as="sensor">
-  <for entity="mobility" x="28" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="28" y="48" z="0"  /> 
   <for entity="app" destination="6" destination-x="168" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="17" as="sensor">
-  <for entity="mobility" x="56" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="56" y="48" z="0"  /> 
   <for entity="app" destination="5" destination-x="140" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="18" as="sensor">
-  <for entity="mobility" x="84" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="84" y="48" z="0"  /> 
   <for entity="app" destination="4" destination-x="112" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="19" as="sensor">
-  <for entity="mobility" x="112" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="112" y="48" z="0"  /> 
   <for entity="app" destination="3" destination-x="84" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="20" as="sensor">
-  <for entity="mobility" x="140" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="140" y="48" z="0"  /> 
   <for entity="app" destination="2" destination-x="56" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="21" as="sensor">
-  <for entity="mobility" x="168" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="168" y="48" z="0"  /> 
   <for entity="app" destination="1" destination-x="28" destination-y="0" destination-z="0"/> 
 </node>
 
 <node id="22" as="sensor">
-  <for entity="mobility" x="196" y="48" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="196" y="48" z="0"  /> 
   <for entity="app" destination="0" destination-x="0" destination-y="0" destination-z="0"/> 
 </node>
 
 <!-- == Fourth line === -->
 <node id="23" as="sensor">
-  <for entity="mobility" x="14" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="14" y="72" z="0"  /> 
   <for entity="app" destination="14" destination-x="182" destination-y="24" destination-z="0"/> 
 </node>
 
 <node id="24" as="sensor">
-  <for entity="mobility" x="42" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="42" y="72" z="0"  /> 
   <for entity="app" destination="13" destination-x="154" destination-y="24" destination-z="0"/> 
 </node>
 
 <node id="25" as="sensor">
-  <for entity="mobility" x="70" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="70" y="72" z="0"  /> 
   <for entity="app" destination="12" destination-x="126" destination-y="24" destination-z="0"/> 
 </node>
 
 <node id="26" as="sensor">
-  <for entity="mobility" x="98" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="98" y="72" z="0"  /> 
   <for entity="app" destination="11" destination-x="98" destination-y="24" destination-z="0"/> 
 </node>
 
 <node id="27" as="sensor">
-  <for entity="mobility" x="126" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="126" y="72" z="0"  /> 
   <for entity="app" destination="10" destination-x="70" destination-y="24" destination-z="0"/> 
 </node>
 
 <node id="28" as="sensor">
-  <for entity="mobility" x="154" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="154" y="72" z="0"  /> 
   <for entity="app" destination="9" destination-x="42" destination-y="24" destination-z="0"/> 
 </node>
 
 <node id="29" as="sensor">
-  <for entity="mobility" x="182" y="72" z="0" max-speed="10" range-x="0.5" range-y="0.5" range-z="0" /> 
+  <for entity="mobility" x="182" y="72" z="0"  /> 
   <for entity="app" destination="8" destination-x="14" destination-y="24" destination-z="0"/> 
 </node>
 
