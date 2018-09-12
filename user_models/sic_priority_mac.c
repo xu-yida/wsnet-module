@@ -288,13 +288,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	double base_power_tx;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 		
-    
-    /* Drop unscheduled events */
-    if (nodedata->clock != get_time()) {
-        error_id = ADAM_ERROR_DEFAULT;
-	goto END;
-    }
-    
+	PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+	/* Drop unscheduled events */
+	if (nodedata->clock != get_time()) {
+		error_id = ADAM_ERROR_DEFAULT;
+		goto END;
+	}
+
     /* State machine */
     switch (nodedata->state) {
 		
@@ -644,6 +644,7 @@ void rx(call_t *c, packet_t *packet) {
 // ->RF00000000-AdamXu
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
+	PRINT_MAC("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	if(nodedata->HighThreshold_mw < 0)
 	{
 		nodedata->HighThreshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
