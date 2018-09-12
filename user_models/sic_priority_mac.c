@@ -677,7 +677,7 @@ void rx(call_t *c, packet_t *packet) {
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
 	channel_state = adam_check_channel_busy(c);
-	rts_header->priority_type = nodedata->txbuf->type;
+	//rts_header->priority_type = nodedata->txbuf->type;
 	//channel busy
 	if ((0 == rts_header->priority_type && 1 <= channel_state) || (1 == rts_header->priority_type && 2 <= channel_state))
 	{
