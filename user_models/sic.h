@@ -14,8 +14,11 @@
 
 /* ************************************************** */
 /* ************************************************** */
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#define ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 //#define ADAM_PRIORITY_TEST
-#define ADAM_HIGH_PRIOTITY_RATIO 2
+#define ADAM_HIGH_PRIOTITY_RATIO 4
 #define ADAM_HIGH_POWER_RATIO 3
 #define ADAM_HIGH_POWER_DBM_GAIN (log10(ADAM_HIGH_POWER_RATIO))
 
@@ -55,10 +58,20 @@ struct _sic_802_11_header {
 struct _sic_802_11_rts_header {
 	uint64_t nav;
 	int size;
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	int priority_type;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 	char padding[8];
 };
 struct _sic_802_11_cts_header {
 	uint64_t nav;
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	int power_type;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 	char padding[6];
 };
 struct _sic_802_11_data_header {

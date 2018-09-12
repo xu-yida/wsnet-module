@@ -53,7 +53,6 @@
 #define ACK_TYPE			4
 #define BROADCAST_TYPE      5
 
-
 /* ************************************************** */
 /* ************************************************** */
 struct nodedata {
@@ -82,6 +81,12 @@ struct nodedata {
 	// 0: low; 1: high
 	int priority;
 //#endif//ADAM_PRIORITY_TEST
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	int power_type_cts;
+	int power_type_data;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 ;
 };
 
@@ -156,6 +161,12 @@ int setnode(call_t *c, void *params) {
 //#ifdef ADAM_PRIORITY_TEST
 	nodedata->priority = 0;
 //#endif//ADAM_PRIORITY_TEST
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	nodedata->power_type_cts = 0;
+	nodedata->power_type_data = 0;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 
     /* get params */
     das_init_traverse(params);
@@ -327,9 +338,16 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
         /* Backoff */
         if (nodedata->backoff > 0) {
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifndef ADAM_NO_SENSING
 		//low channel power blocks low priority; high channel power blocks high priority
 		channel_state = adam_check_channel_busy(c);
 		//PRINT_RESULT("STATE_BACKOFF channel_state=%d, priority=%d\n", channel_state, priority);
+#else//ADAM_NO_SENSING
+		// always decrease backoff
+		channel_state = 0;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 		if ((get_time() < nodedata->nav)
 			|| (0 == priority && 1 <= channel_state)
 			|| (1 == priority && 2 <= channel_state))
@@ -383,7 +401,12 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         rts_header->size = nodedata->txbuf->size;
         rts_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * radio_get_Tb(&c0) * 8 + macMinSIFSPeriod + nodedata->txbuf->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);				
         timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT; 			
-        
+
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	rts_header->priority_type = nodedata->txbuf->type;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
         /* Send RTS */
         TX(&c0, packet); 
         
@@ -436,6 +459,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         cts_header->nav = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0); 						
         timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	cts_header->power_type = nodedata->power_type_cts;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
         /* Send CTS */
         TX(&c0, packet); 
         
@@ -468,7 +496,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 		// adjust power for high priority
 		base_power_tx = radio_get_power(&c0);
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+		if(2 == nodedata->power_type_data)
+#else
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 		{
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
 		}
@@ -495,7 +529,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 		// adjust power for high priority
 		base_power_tx = radio_get_power(&c0);
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+		if(2 == nodedata->power_type_data)
+#else
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 		{
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
 		}
@@ -595,6 +635,11 @@ void rx(call_t *c, packet_t *packet) {
 	// struct _sic_802_11_ack_header *ack_header;
 	array_t *up = get_entity_bindings_up(c);
 	int i = up->size;
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	int channel_state = 0;;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
 	if(nodedata->HighThreshold_mw < 0)
@@ -628,6 +673,28 @@ void rx(call_t *c, packet_t *packet) {
         /* Record RTS info */
         nodedata->dst = header->src;
         nodedata->size = rts_header->size;
+		
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	channel_state = adam_check_channel_busy(c);
+	rts_header->priority_type = nodedata->txbuf->type;
+	//channel busy
+	if ((0 == rts_header->priority_type && 1 <= channel_state) || (1 == rts_header->priority_type && 2 <= channel_state))
+	{
+		nodedata->power_type_cts = 0;
+	}
+	// allow high power
+	else if(1 == rts_header->priority_type && 2 > channel_state)
+	{
+		nodedata->power_type_cts = 2;
+	}
+	// allow low power
+	else if (0 == channel_state)
+	{
+		nodedata->power_type_cts = 1;
+	}
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
         packet_dealloc(packet);
 			
         /* Send CTS */
@@ -667,6 +734,11 @@ void rx(call_t *c, packet_t *packet) {
         }
 
         /* Record CTS info */
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_NO_SENSING
+	nodedata->power_type_data = cts_header->power_type;
+#endif//ADAM_NO_SENSING
+// ->RF00000000-AdamXu
         packet_dealloc(packet);
 			
         /* Send DATA */
