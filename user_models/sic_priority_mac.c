@@ -268,7 +268,7 @@ int adam_check_channel_busy(call_t *c) {
 		}
 	}
 	//PRINT_RESULT("noise_mw=%f, threshold_mw=%f, high_threshold_mw=%f\n", noise_mw, threshold_mw, high_threshold_mw);
-	PRINT_MAC("E: noise_mw=%f\n", noise_mw);
+	PRINT_MAC("E: noise_mw=%f, channel_state=%d\n", noise_mw, channel_state);
 
 	return channel_state;
 }
@@ -404,6 +404,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
+	PRINT_MAC("STATE_RTS: nodedata->txbuf->type=%d\n", nodedata->txbuf->type);
 	rts_header->priority_type = nodedata->txbuf->type;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
@@ -461,6 +462,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
+	PRINT_MAC("STATE_CTS: nodedata->power_type_cts=%d\n", nodedata->power_type_cts);
 	cts_header->power_type = nodedata->power_type_cts;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
@@ -676,6 +678,7 @@ void rx(call_t *c, packet_t *packet) {
 		
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
+	PRINT_MAC("RTS_TYPE: rts_header->priority_type=%d\n", rts_header->priority_type);
 	channel_state = adam_check_channel_busy(c);
 	//rts_header->priority_type = nodedata->txbuf->type;
 	//channel busy
@@ -693,6 +696,7 @@ void rx(call_t *c, packet_t *packet) {
 	{
 		nodedata->power_type_cts = 1;
 	}
+	PRINT_MAC("RTS_TYPE: nodedata->power_type_cts=%d\n", nodedata->power_type_cts);
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
         packet_dealloc(packet);
@@ -736,6 +740,7 @@ void rx(call_t *c, packet_t *packet) {
         /* Record CTS info */
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
+	PRINT_MAC("CTS_TYPE: cts_header->power_type=%d\n", cts_header->power_type);
 	nodedata->power_type_data = cts_header->power_type;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
