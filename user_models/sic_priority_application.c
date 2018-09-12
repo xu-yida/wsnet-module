@@ -145,7 +145,7 @@ int bootstrap(call_t *c) {
     array_t *down = get_entity_bindings_down(c);
     call_t c0 = {down->elts[0], c->node, c->entity};
 // <-RF00000000-AdamXu-2018/07/06-test sic.
-#if 0//def ADAM_TEST
+#if 1//def ADAM_TEST
     uint64_t start = get_time() + nodedata->start + nodedata->period;
 #else
     uint64_t start = get_time() + nodedata->start + get_random_double() * nodedata->period;
