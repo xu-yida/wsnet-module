@@ -205,6 +205,7 @@ void tx(call_t *c) {
 		packet->type = 0;
 	}
 	PRINT_APPLICATION("packet->type=%d\n", packet->type);
+#ifdef ADAM_TEST
 	if(0 == packet->type)
 	{
 		g_num_t_priority0++;
@@ -214,14 +215,17 @@ void tx(call_t *c) {
 		g_num_t_priority1++;
 	}
 	g_num_t++;
+#endif//ADAM_TEST
 	if (SET_HEADER(&c0, packet, &destination) == -1) {
 		packet_dealloc(packet);
 		return;
 	}
 
 	TX(&c0, packet);
+#ifdef ADAM_TEST
 	PRINT_RESULT("%d packets transmitted\n", g_num_t);
 	PRINT_RESULT("%d prioriy0 packets transmitted, %d prioriy1 packets transmitted\n", g_num_t_priority0, g_num_t_priority1);
+#endif//ADAM_TEST
 }
 
 
