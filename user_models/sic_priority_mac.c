@@ -407,7 +407,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
-	PRINT_MAC("STATE_RTS: nodedata->txbuf->type=%d\n", nodedata->txbuf->type);
+	PRINT_MAC("STATE_RTS: packet->id=%d, nodedata->txbuf->type=%d\n", packet->id, nodedata->txbuf->type);
 	rts_header->priority_type = nodedata->txbuf->type;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
