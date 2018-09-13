@@ -422,6 +422,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
         
     case STATE_TIMEOUT:			
+		PRINT_MAC("STATE_TIMEOUT: nodedata->NB=%d\n", nodedata->NB);
         if ((++nodedata->NB) >= entitydata->maxCSMARetries) {
             /* Transmit retry limit reached */
             packet_dealloc(nodedata->txbuf);            
@@ -450,6 +451,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             * aUnitBackoffPeriod;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
+	PRINT_MAC("STATE_TIMEOUT: nodedata->BE=%d, nodedata->backoff=%"PRId64"\n", nodedata->BE, nodedata->backoff);
         nodedata->backoff_suspended = 0;
         nodedata->state = STATE_BACKOFF;
         nodedata->state_pending = STATE_BACKOFF;				
