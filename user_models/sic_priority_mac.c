@@ -380,6 +380,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             /* RTS or Data */
             if (nodedata->txbuf->size < nodedata->rts_threshold) {
 			nodedata->state = STATE_DATA;
+#ifdef ADAM_NO_SENSING
+			nodedata->power_type_data=-1;
+#endif//ADAM_NO_SENSING
             } else {
 			nodedata->state = STATE_RTS;
             }
@@ -513,7 +516,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		base_power_tx = radio_get_power(&c0);
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
-		if(2 == nodedata->power_type_data)
+		if(2 == nodedata->power_type_data || (-1 == nodedata->power_type_data && 1 == packet->type))
 #else
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 #endif//ADAM_NO_SENSING
@@ -546,7 +549,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		base_power_tx = radio_get_power(&c0);
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
-		if(2 == nodedata->power_type_data)
+		if(2 == nodedata->power_type_data || (-1 == nodedata->power_type_data && 1 == packet->type))
 #else
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 #endif//ADAM_NO_SENSING
