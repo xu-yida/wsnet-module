@@ -262,21 +262,24 @@ END:
 /* ************************************************** */
 /* ************************************************** */
 void rx(call_t *c, packet_t *packet) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    array_t *up = get_entity_bindings_up(c);
-    int i = up->size;
+	struct nodedata *nodedata = get_node_private_data(c);
+	array_t *up = get_entity_bindings_up(c);
+	int i = up->size;
+	int error_id = 0;
 
-    /* radio sleep */
-    if (nodedata->sleep) {
-        packet_dealloc(packet);
-        goto END;
-    }
+	/* radio sleep */
+	if (nodedata->sleep) {
+		packet_dealloc(packet);
+		error_id = 1;
+		goto END;
+	}
 
-    /* half-duplex */
-    if (nodedata->tx_busy != -1) {
-        packet_dealloc(packet);
-        goto END;
-    }
+	/* half-duplex */
+	if (nodedata->tx_busy != -1) {
+		packet_dealloc(packet);
+		error_id = 2;
+		goto END;
+	}
         
     /* handle carrier sense */
 	adam_Update_Candidate(c);
@@ -289,20 +292,23 @@ void rx(call_t *c, packet_t *packet) {
 		battery_consume_rx(c, packet->duration);
 	} else {
 		packet_dealloc(packet);
+		error_id = 3;
 		goto END;
 	}
 
-    /* check wether the reception has killed us */
-    if (!is_node_alive(c->node)) {
-        packet_dealloc(packet);
-        goto END;
-    }
+	/* check wether the reception has killed us */
+	if (!is_node_alive(c->node)) {
+		packet_dealloc(packet);
+		error_id = 4;
+		goto END;
+	}
 
-    /* drop packet depending on the FER */
-    if (get_random_double() < packet->PER) {
-        packet_dealloc(packet);
-        goto END;
-    }    
+	/* drop packet depending on the FER */
+	if (get_random_double() < packet->PER) {
+		packet_dealloc(packet);
+		error_id = 5;
+		goto END;
+	}    
 
     /* forward to upper layers */
     while (i--) {
@@ -318,7 +324,8 @@ void rx(call_t *c, packet_t *packet) {
     }
 
 END:
-    return;
+	PRINT_RADIO("E: error_id=%d\n", error_id);
+	return;
 }
 
 void cs(call_t *c, packet_t *packet) {
