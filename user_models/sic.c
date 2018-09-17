@@ -392,7 +392,7 @@ void cs(call_t *c, packet_t *packet) {
 		sic_signal->signal_next_endtime = NULL;
 		sic_signal->signal_higher_power = NULL;
 		sic_signal->signal_lower_power = NULL;
-		PRINT_RADIO("malloc(%d), packet->duration=%"PRId64"\n", sic_signal->id, packet->duration);
+		PRINT_RADIO("malloc(%d), packet->duration=%"PRId64", packet->real_size=%d\n", sic_signal->id, packet->duration, packet->real_size);
 		adam_Insert_SIgnal2Candidate_Time(c, sic_signal);
 		adam_Insert_SIgnal2Candidate_Power(c, sic_signal);
 		
