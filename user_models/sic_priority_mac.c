@@ -44,7 +44,8 @@
 #define macMaxBE              9    /* 512 slots */
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
 #define macMaxCSMARetries     9     /* 9 trials before dropping */
-#define aUnitBackoffPeriod    20000
+//#define aUnitBackoffPeriod    20000
+#define aUnitBackoffPeriod    100000
 #define EDThresholdMin        -74
 
 
