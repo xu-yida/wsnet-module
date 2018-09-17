@@ -525,7 +525,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
 		}
 
-		PRINT_MAC("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
+		PRINT_MAC("STATE_DATA radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
 		//PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
@@ -558,7 +558,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
 		}
 		
-		PRINT_MAC("STATE_BROADCAST radio_get_power=%f\n", radio_get_power(&c0));
+		PRINT_MAC("STATE_BROADCAST radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
 		/* Send data */
 		TX(&c0, packet);
 		

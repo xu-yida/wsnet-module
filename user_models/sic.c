@@ -267,6 +267,8 @@ void rx(call_t *c, packet_t *packet) {
 	int i = up->size;
 	int error_id = 0;
 
+	PRINT_RADIO("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
+
 	/* radio sleep */
 	if (nodedata->sleep) {
 		packet_dealloc(packet);
