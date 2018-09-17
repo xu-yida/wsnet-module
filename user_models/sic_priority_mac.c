@@ -450,8 +450,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             * aUnitBackoffPeriod 
             + macMinDIFSPeriod;
 #else //ADAM_NO_SENSING
-        nodedata->backoff = ((int)(10*get_random_double() ))
-            * (pow(2, nodedata->BE) - 1) 
+        nodedata->backoff = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1)))
             * aUnitBackoffPeriod;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
