@@ -39,11 +39,11 @@
 #define macMinDIFSPeriod      50000   
 #define macMinSIFSPeriod      10000
 //#define macMinBE              5     /* 32 slots */
-#define macMinBE              1     /* 2 slots */
+#define macMinBE              3     /* 8 slots */
 //#define macMaxBE              10    /* 1024 slots */
 #define macMaxBE              9    /* 512 slots */
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
-#define macMaxCSMARetries     9     /* 9 trials before dropping */
+#define macMaxCSMARetries     7     /* 7 trials before dropping */
 //#define aUnitBackoffPeriod    20000
 #define aUnitBackoffPeriod    100000
 #define EDThresholdMin        -74
@@ -450,7 +450,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             * aUnitBackoffPeriod 
             + macMinDIFSPeriod;
 #else //ADAM_NO_SENSING
-        nodedata->backoff = get_random_double() 
+        nodedata->backoff = ((int)(10*get_random_double() ))
             * (pow(2, nodedata->BE) - 1) 
             * aUnitBackoffPeriod;
 #endif//ADAM_NO_SENSING
