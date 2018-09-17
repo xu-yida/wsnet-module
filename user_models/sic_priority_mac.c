@@ -39,11 +39,11 @@
 #define macMinDIFSPeriod      50000   
 #define macMinSIFSPeriod      10000
 //#define macMinBE              5     /* 32 slots */
-#define macMinBE              2     /* 8 slots */
+#define macMinBE              2     /* 4 slots */
 //#define macMaxBE              10    /* 1024 slots */
 #define macMaxBE              9    /* 512 slots */
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
-#define macMaxCSMARetries     7     /* 7 trials before dropping */
+#define macMaxCSMARetries     (macMaxBE-macMinBE+1)     /* 7 trials before dropping */
 //#define aUnitBackoffPeriod    20000
 #define aUnitBackoffPeriod    20000
 #define EDThresholdMin        -74
