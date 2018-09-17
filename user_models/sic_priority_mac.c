@@ -87,7 +87,11 @@ struct nodedata {
 //#endif//ADAM_PRIORITY_TEST
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
+	// 0: deactive; 1: low; 2: high
+	int power_type_rts;
+	// 0: prohibit; 1: low; 2: high
 	int power_type_cts;
+	// 0: prohibit; 1: low; 2: high
 	int power_type_data;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
@@ -167,6 +171,7 @@ int setnode(call_t *c, void *params) {
 //#endif//ADAM_PRIORITY_TEST
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
+	nodedata->power_type_rts = 0;
 	nodedata->power_type_cts = 0;
 	nodedata->power_type_data = 0;
 #endif//ADAM_NO_SENSING
@@ -379,14 +384,19 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             nodedata->state = STATE_BROADCAST;
         } else {
             /* RTS or Data */
-            if (nodedata->txbuf->size < nodedata->rts_threshold) {
+#ifdef ADAM_NO_SENSING
+		// high priority packets are transmitted without rts
+		if (nodedata->txbuf->size < nodedata->rts_threshold || 1 == priority) {
+#else//ADAM_NO_SENSING
+		if (nodedata->txbuf->size < nodedata->rts_threshold) {
+#endif//ADAM_NO_SENSING
 			nodedata->state = STATE_DATA;
 #ifdef ADAM_NO_SENSING
 			nodedata->power_type_data=-1;
 #endif//ADAM_NO_SENSING
-            } else {
+		} else {
 			nodedata->state = STATE_RTS;
-            }
+		}
         }
         nodedata->state_pending = STATE_IDLE;
         nodedata->dst = header->dst;
