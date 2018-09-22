@@ -354,16 +354,21 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	}
         
         /* Initial backoff */
-        nodedata->state = STATE_BACKOFF;
-        nodedata->state_pending = STATE_BACKOFF;				        
         nodedata->BE = macMinBE - 1;
         nodedata->NB = 0;
         nodedata->backoff = macMinDIFSPeriod;
         nodedata->backoff_suspended = 0;
-					
+					  
+#ifdef ADAM_NO_SENSING
+	nodedata->state = STATE_IDLE;
+#else// ADAM_NO_SENSING
+        nodedata->state = STATE_BACKOFF;
+        nodedata->state_pending = STATE_BACKOFF;
+		
         /* Backoff */
-        nodedata->clock = get_time();  
+        nodedata->clock = get_time();
         dcf_802_11_state_machine(c,NULL);
+#endif// ADAM_NO_SENSING
 	 goto END;
         
     case STATE_BACKOFF:
