@@ -58,18 +58,19 @@ struct _sic_802_11_header {
 struct _sic_802_11_rts_header {
 	uint64_t nav;
 	int size;
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
-	int priority_type;
+	// 0: low; 1: high
+	//int priority_type;
 #endif//ADAM_NO_SENSING
-// ->RF00000000-AdamXu
 	char padding[8];
 };
 struct _sic_802_11_cts_header {
 	uint64_t nav;
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
-	int power_type;
+	// 0: disabled; 1: high; 2: low; 3:data;
+	int priority_type;
+	int node_allowed;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
 	char padding[6];

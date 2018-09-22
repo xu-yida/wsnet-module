@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="30" duration="3600s" x="200" y="100" z="0"/>
+<simulation nodes="3" duration="600s" x="200" y="100" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -39,7 +39,7 @@
 </entity>
 
 
-<!-- == APPLICATION ===================================================== -->
+<!-- == ROUTING ===================================================== -->
 
 <entity name="routing" library="routing_sic" >
 
@@ -299,9 +299,9 @@
 
 <node id="2" as="sensor">
   <for entity="mobility" x="10" y="10" z="0"  />
-  <for entity="app" start="10000s" destination="0" destination-x="10" destination-y="0" destination-z="0"/>  
+  <for entity="app" start="10000s" destination="0" destination-x="10" destination-y="0" destination-z="0" is-sink="1"/>  
 </node>
-
+<!--
 <node id="3" as="sensor">
   <for entity="mobility" x="10" y="20" z="0"  />
   <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
@@ -311,5 +311,5 @@
   <for entity="mobility" x="20" y="10" z="0"  />
   <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
-
+-->
 </worldsens>
