@@ -56,7 +56,7 @@
 #define MAX_CONTENTION_WINDOW_HIGH	5	/* 32 slots */
 #define MAX_CONTENTION_WINDOW_LOW	(MAX_CONTENTION_WINDOW_HIGH + ADAM_HIGH_PRIOTITY_RATIO)
 
-#define MIN_RTS_BACKOFF_PERIOD ( ((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
+#define MIN_RTS_BACKOFF_PERIOD  ((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
 /* ************************************************** */
 /* ************************************************** */
 #define RTS_TYPE			1
@@ -809,7 +809,6 @@ void rx(call_t *c, packet_t *packet) {
 	int i = up->size;
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
-	int channel_state = 0;;
 	uint64_t timeout;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
@@ -1112,7 +1111,6 @@ END:
 	{
 		PRINT_MAC("E: error_id=%d\n", error_id);
 	}
-	return error_id;
 }
 
 
