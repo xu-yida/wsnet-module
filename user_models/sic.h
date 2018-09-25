@@ -60,7 +60,7 @@ struct _sic_802_11_rts_header {
 	int size;
 #ifdef ADAM_NO_SENSING
 	// 0: low; 1: high
-	//int priority_type;
+	int priority_type;
 #endif//ADAM_NO_SENSING
 	char padding[8];
 };

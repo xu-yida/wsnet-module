@@ -299,7 +299,7 @@
 
 <node id="2" as="sensor">
   <for entity="mobility" x="10" y="10" z="0"  />
-  <for entity="app" start="10000s" destination="0" destination-x="10" destination-y="0" destination-z="0" is-sink="1"/>  
+  <for entity="app" start="10000s" destination="0" destination-x="10" destination-y="0" destination-z="0"/>  
 </node>
 <!--
 <node id="3" as="sensor">
