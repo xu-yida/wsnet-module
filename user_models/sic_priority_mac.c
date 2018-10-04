@@ -472,7 +472,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #ifdef ADAM_NO_SENSING
 	PRINT_MAC("STATE_RTS: packet->id=%d, nodedata->txbuf->type=%d\n", packet->id, nodedata->txbuf->type);
 	// high priority rts
-	if(1 == nodedata->nodedata->txbuf->type)
+	if(1 == nodedata->txbuf->type)
 	{
 		rts_header->priority_type = 1;
 	}
