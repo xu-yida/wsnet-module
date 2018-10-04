@@ -1108,8 +1108,7 @@ void rx(call_t *c, packet_t *packet) {
 #ifdef ADAM_NO_SENSING
 	case CONTENTION_BEGIN_TYPE:
 	        /* Receive CTS */
-	        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
-			
+	        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));			
 		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state))
 		{
 			/* If not expecting request, do nothing */
@@ -1183,6 +1182,8 @@ void rx(call_t *c, packet_t *packet) {
 		break;
 
 	case CONTENTION_END_TYPE:
+	        /* Receive CTS */
+	        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
 		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state))
 		{
 			/* If not expecting request, do nothing */
