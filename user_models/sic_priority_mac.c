@@ -34,9 +34,8 @@
 #define STATE_BROAD_DONE	11
 
 #define STATE_CONTENTION_BEGIN			12
-#define STATE_CONTENTION_WAITING_HIGH	13
-#define STATE_CONTENTION_WAITING_LOW	14
-#define STATE_CONTENTION_WAITING_DATA	15
+#define STATE_CONTENTION					13
+#define STATE_CONTENTION_WAITING_DATA	14
 
 
 /* ************************************************** */
@@ -56,7 +55,9 @@
 #define MAX_CONTENTION_WINDOW_HIGH	4	/* 16 slots */
 #define MAX_CONTENTION_WINDOW_LOW	(MAX_CONTENTION_WINDOW_HIGH - (int)(ADAM_HIGH_PRIOTITY_RATIO/4))
 
-#define MIN_CONTENTION_BACKOFF_PERIOD  ((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header) + sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0))
+#define RTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
+#define CTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0))
+#define MIN_CONTENTION_BACKOFF_PERIOD  	(RTS_TIME + CTS_TIME)
 /* ************************************************** */
 /* ************************************************** */
 #define RTS_TYPE			1
@@ -66,7 +67,8 @@
 #define BROADCAST_TYPE      5
 
 #define CONTENTION_BEGIN_TYPE	6
-#define CONTENTION_TYPE		7
+#define CONTENTION_END_TYPE	7
+#define CONTENTION_TYPE		8
 
 /* ************************************************** */
 /* ************************************************** */
@@ -307,7 +309,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	struct _sic_802_11_rts_header *rts_header;
 	struct _sic_802_11_cts_header *cts_header;
 	struct _sic_802_11_data_header *data_header;
-	//  struct _sic_802_11_ack_header *ack_header;
+#if 0//def ADAM_NO_SENSING
+	struct _sic_802_11_ack_header *ack_header;
+#endif// ADAM_NO_SENSING
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 	int priority, channel_state;
@@ -470,13 +474,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	// high priority rts
 	if(1 == nodedata->nodedata->txbuf->type)
 	{
-		//timeout = MIN_CONTENTION_BACKOFF_PERIOD * MAX_CONTENTION_WINDOW_HIGH;
 		rts_header->priority_type = 1;
 	}
 	// low priority rts
-	else// if(0 == nodedata->txbuf->type)
+	else
 	{
-		//timeout = MIN_CONTENTION_BACKOFF_PERIOD * MAX_CONTENTION_WINDOW_LOW;
 		rts_header->priority_type = 0;
 	}
 #endif//ADAM_NO_SENSING
@@ -484,11 +486,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         TX(&c0, packet); 
         
         /* Wait for timeout or CTS */
-#if 0//def ADAM_NO_SENSING
-        nodedata->state = STATE_IDLE;
-#else// ADAM_NO_SENSING
         nodedata->state = STATE_TIMEOUT;
-#endif// ADAM_NO_SENSING
         nodedata->clock = get_time() + timeout;
         scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);			
         goto END;
@@ -496,6 +494,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_TIMEOUT:			
 		PRINT_MAC("STATE_TIMEOUT: nodedata->NB=%d\n", nodedata->NB);
+#ifdef ADAM_NO_SENSING
+		nodedata->power_type_data = 0;
+#endif// ADAM_NO_SENSING
         if ((++nodedata->NB) >= entitydata->maxCSMARetries) {
             /* Transmit retry limit reached */
             packet_dealloc(nodedata->txbuf);            
@@ -508,17 +509,37 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             goto END;
         }
 			
+// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifndef ADAM_NO_SENSING
         /* Update backoff */
         if ((++nodedata->BE) > macMaxBE) {
             nodedata->BE = macMaxBE;
         }
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
-#ifndef ADAM_NO_SENSING
+		
         nodedata->backoff = get_random_double() 
             * (pow(2, nodedata->BE) - 1) 
             * aUnitBackoffPeriod 
             + macMinDIFSPeriod;
 #else //ADAM_NO_SENSING
+        /* Update backoff */
+	if(NULL != nodedata->txbuf)
+	{
+		if(1 == nodedata->txbuf->type)
+		{
+			if ((++nodedata->BE) > MAX_CONTENTION_WINDOW_HIGH) 
+			{
+				nodedata->BE = MAX_CONTENTION_WINDOW_HIGH;
+			}
+		}
+		else
+		{
+			if ((++nodedata->BE) > MAX_CONTENTION_WINDOW_LOW)
+			{
+				nodedata->BE = MAX_CONTENTION_WINDOW_LOW;
+			}
+		}
+	}
+		
         nodedata->backoff = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * aUnitBackoffPeriod;
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
@@ -585,6 +606,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
 		}
 
+#ifdef ADAM_NO_SENSING
+		nodedata->power_type_data = 0;
+#endif// ADAM_NO_SENSING
 		PRINT_MAC("STATE_DATA radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
 		//PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
@@ -593,13 +617,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// recover power
 		radio_set_power(&c0, base_power_tx);
 
-#if 0//def ADAM_NO_SENSING
+#ifdef ADAM_NO_SENSING
 		/* No ACK */
 		nodedata->state = STATE_IDLE;
 #else// ADAM_NO_SENSING
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_TIMEOUT;
-#endif// ADAM_NO_SENSING
+#endif//ADAM_NO_SENSING
 		nodedata->clock = get_time() + timeout;
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 		goto END;
@@ -623,7 +647,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+base_power_tx);
 		}
 		
-		PRINT_MAC("STATE_BROADCAST radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
+		//PRINT_MAC("STATE_BROADCAST radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
 		/* Send data */
 		TX(&c0, packet);
 		
@@ -642,8 +666,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         header = (struct _sic_802_11_header *) packet->data;
         header->type = ACK_TYPE; 
         header->src = c->node;
+#if 0//def ADAM_NO_SENSING
+		header->dst = BROADCAST_ADDR;
+		ack_header = (struct _sic_802_11_ack_header *) (packet->data + sizeof(struct _sic_802_11_header));
+		ack_header->received_high
+#else // ADAM_NO_SENSING
         header->dst = nodedata->dst;
-        // ack_header = (struct _sic_802_11_ack_header *) (packet->data + sizeof(struct _sic_802_11_header));
+#endif // ADAM_NO_SENSING
         timeout =  packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
         
         /* Send ack */
@@ -681,13 +710,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #ifdef ADAM_NO_SENSING
 	// sink nodes broadcast cts for contentions
 	case STATE_CONTENTION_BEGIN:
-		// not reach backoff time
-		//if(STATE_CONTENTION_BEGIN == nodedata->state_pending && (get_time() < nodedata->clock + nodedata->backoff))
-		//{
-			//PRINT_MAC("STATE_CONTENTION_BEGIN nodedata->clock=%"PRId64", nodedata->backoff=%"PRId64"\n", nodedata->clock, nodedata->backoff);
-			//error_id = 1;
-			//goto END;
-		//}
 		/* Build contention begin packets: similar to cts */
 		packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header), -1);
 		header = (struct _sic_802_11_header *) packet->data;
@@ -696,34 +718,32 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		header->type = CONTENTION_BEGIN_TYPE; 
 		cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
 		cts_header->node_allowed = nodedata->dst;
+		PRINT_MAC("STATE_CONTENTION_BEGIN nodedata->sink_state=%d, nodedata->dst=%d\n", nodedata->sink_state, nodedata->dst);
+		nodedata->dst = -1;
 		// CTS for high priority RTS
 		if(-1 == nodedata->sink_state)
 		{
 			// Timeout
-			nodedata->backoff = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + SPEED_LIGHT + pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
-			timeout = nodedata->backoff;
-
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			cts_header->priority_type = 1;
-			/* Wait for timeout or RTS */
-			nodedata->state = STATE_CONTENTION_WAITING_HIGH;
 		}
 		// CTS for low priority RTS
 		else if(-2 == nodedata->sink_state)
 		{
 			// Timeout
-			nodedata->backoff = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + SPEED_LIGHT + pow(2, MAX_CONTENTION_WINDOW_LOW) * MIN_CONTENTION_BACKOFF_PERIOD;
-			timeout = nodedata->backoff;
-
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + pow(2, MAX_CONTENTION_WINDOW_LOW) * MIN_CONTENTION_BACKOFF_PERIOD;
 			cts_header->priority_type = 2;
-			/* Wait for timeout or RTS */
-			nodedata->state = STATE_CONTENTION_WAITING_LOW;
 		}
 		// no situation fit
 		else
 		{
+			nodedata->sink_state = 0;
 			error_id = 2;
 			goto END;
 		}
+		nodedata->sink_state = 0;
+		/* Wait for Data request */
+		nodedata->state = STATE_CONTENTION_WAITING_DATA;
 		nodedata->dst = -1;
 		/* Send CTS */
 		TX(&c0, packet); 
@@ -732,14 +752,84 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 		goto END;
 
-	case STATE_CONTENTION_WAITING_HIGH:
-	case STATE_CONTENTION_WAITING_LOW:
 	case STATE_CONTENTION_WAITING_DATA:
-		timeout = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
+		/* Build Data request */
+		packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header), -1);
+		header= (struct _sic_802_11_header *) packet->data;
+		header->dst = BROADCAST_ADDR;
+		header->src = c->node;
+		header->type = CONTENTION_END_TYPE; 
+		cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+		cts_header->nav = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
+		cts_header->node_allowed = nodedata->dst;
+		PRINT_MAC("STATE_CONTENTION_WAITING_DATA nodedata->sink_state=%d, nodedata->dst=%d\n", nodedata->sink_state, nodedata->dst);
+		nodedata->dst = -1;
+		timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
+		// CTS for high priority RTS
+		if(-1 == nodedata->sink_state)
+		{
+			cts_header->priority_type = 1;
+		}
+		// CTS for low priority RTS
+		else if(-2 == nodedata->sink_state)
+		{
+			cts_header->priority_type = 2;
+		}
+		// no situation fit
+		else
+		{
+			nodedata->sink_state = 0;
+			error_id = 2;
+			goto END;
+		}
+		nodedata->sink_state = 0;
+
+		/* Send Data request */
+		TX(&c0, packet); 
+
 		/* Wait for timeout or DATA */
 		nodedata->state = STATE_CTS_TIMEOUT;
 		nodedata->clock = get_time() + timeout;
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+		goto END;
+
+	case STATE_CONTENTION:
+		/* Build Contention packets */
+		packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header), -1);
+		header = (struct _sic_802_11_header *) packet->data;
+		header->dst = nodedata->dst;
+		header->src = c->node;
+		header->type = CONTENTION_TYPE; 
+		rts_header = (struct _sic_802_11_rts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+		rts_header->size = nodedata->txbuf->size;
+		rts_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * radio_get_Tb(&c0) * 8 + macMinSIFSPeriod + nodedata->txbuf->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
+		timeout = RTS_TIME+ macMinSIFSPeriod + CTS_TIME + macMinSIFSPeriod + SPEED_LIGHT;
+		// high priority
+		if(-1 == nodedata->source_state)
+		{
+			rts_header->priority_type = 1;
+		}
+		// low priority
+		else if(-2 == nodedata->source_state)
+		{
+			rts_header->priority_type = 0;
+		}
+		// other
+		else
+		{
+			nodedata->source_state = 0;
+			error_id = 1;
+			goto END;
+		}
+		nodedata->source_state = 0;
+
+		/* Send Contention */
+		TX(&c0, packet); 
+
+		/* Wait for timeout or Contention end */
+		nodedata->state = STATE_TIMEOUT;
+		nodedata->clock = get_time() + timeout;
+		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);			
 		goto END;
 #endif//ADAM_NO_SENSING
 
@@ -814,37 +904,47 @@ void rx(call_t *c, packet_t *packet) {
 		goto END;
         }
         
-#ifndef ADAM_NO_SENSING
+#if 1//ndef ADAM_NO_SENSING
         if ((nodedata->state != STATE_IDLE) 
             && (nodedata->state != STATE_BACKOFF))
 #else// ADAM_NO_SENSING
         if ((STATE_CONTENTION_WAITING_HIGH !=  nodedata->state) && (STATE_CONTENTION_WAITING_LOW !=  nodedata->state))
+#endif//ADAM_NO_SENSING
 	{
 		/* If not expecting rts, do nothing */
 		packet_dealloc(packet);
 		error_id = 2;
 		goto END;
 	}
-#endif//ADAM_NO_SENSING
 
         /* Record RTS info */
         nodedata->dst = header->src;
         nodedata->size = rts_header->size;
+#ifdef ADAM_NO_SENSING
+	// received high RTS, begin low Contention
+	if(1 == rts_header->priority_type)
+	{
+	        nodedata->sink_state = -2;
+	}
+	// received low RTS, begin high Contention
+	else
+	{
+	        nodedata->sink_state = -1;
+	}
+#endif// ADAM_NO_SENSING
 
         packet_dealloc(packet);
 			
-#ifndef ADAM_NO_SENSING
         /* Send CTS */
         if (nodedata->state == STATE_BACKOFF) {
             nodedata->state_pending = nodedata->state;
         } else {
             nodedata->state_pending = STATE_IDLE;
         }
+#ifndef ADAM_NO_SENSING
         nodedata->state = STATE_CTS;
 #else// ADAM_NO_SENSING
 	nodedata->state = STATE_CONTENTION_BEGIN;
-	nodedata->state_pending = STATE_IDLE;
-	nodedata->backoff = 0;
 #endif// ADAM_NO_SENSING
         nodedata->clock = get_time() + macMinSIFSPeriod;
         scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
@@ -853,79 +953,7 @@ void rx(call_t *c, packet_t *packet) {
     case CTS_TYPE:
         /* Receive CTS */
         cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
-		
-#ifdef ADAM_NO_SENSING
-		if (nodedata->state != STATE_IDLE) {
-			/* If not expecting cts, do nothing */
-			packet_dealloc(packet);
-			error_id = 2;
-			goto END;
-		}
-		// high priority contention begin
-		if(1 == cts_header->priority_type && NULL != nodedata->txbuf)
-		{
-			// has high priority packet
-			if(1 == nodedata->txbuf->type)
-			{
-				nodedata->source_state = -1;
-				if(nodedata->BE < MAX_CONTENTION_WINDOW_HIGH)
-				{
-					nodedata->BE++;
-				}
-				timeout = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
-				nodedata->state = STATE_RTS;
-				nodedata->clock = get_time() + timeout;
-				scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
-			}
-		}
-		// high priority contention end, low priority contention begin
-		else if(2 == cts_header->priority_type && NULL != nodedata->txbuf)
-		{
-			// win contention
-			if(c->node == cts_header->node_allowed)
-			{
-				nodedata->power_type_data = 2;
-			}
-			// low priority packets and remained high priority packet
-			if(0 == nodedata->txbuf->type || (1 == nodedata->txbuf->type && 2 != nodedata->power_type_data))
-			{
-				nodedata->source_state = -2;
-				// high priority nodes do not increase BE here
-				if(nodedata->BE < MAX_CONTENTION_WINDOW_LOW && 1 != nodedata->txbuf->type)
-				{
-					nodedata->BE++;
-				}
-				timeout = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
-				nodedata->state = STATE_RTS;
-				nodedata->clock = get_time() + timeout;
-				scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
-			}
-		}
-		// low priority contention end, data transmission begin
-		else if(3 == cts_header->priority_type && NULL != nodedata->txbuf)
-		{
-			// win contention
-			if(c->node == cts_header->node_allowed)
-			{
-				nodedata->power_type_data = 1;
-			}
-			// transmission allowed
-			if(0 < nodedata->power_type_data)
-			{
-				nodedata->source_state = -3;
-				nodedata->state = STATE_DATA;
-			}
-			else
-			{
-				nodedata->source_state = 0;
-				nodedata->state = STATE_IDLE;
-			}
-			nodedata->clock = get_time() + macMinSIFSPeriod;
-			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
-		}
-		goto END;
-#endif// ADAM_NO_SENSING
-			
+					
         if (header->dst != c->node) {
             /* Packet not for us */
             if (nodedata->nav < (get_time() + cts_header->nav)) {
@@ -1077,9 +1105,172 @@ void rx(call_t *c, packet_t *packet) {
         dcf_802_11_state_machine(c,NULL);
         break;
         
+#ifdef ADAM_NO_SENSING
+	case CONTENTION_BEGIN_TYPE:
+		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state))
+		{
+			/* If not expecting request, do nothing */
+			packet_dealloc(packet);
+			error_id = 2;
+			goto END;
+		}
+		if(NULL == nodedata->txbuf)
+		{
+			/* If no packet, do nothing */
+			packet_dealloc(packet);
+			error_id = 3;
+			goto END;
+		}
+		if(header->src != nodedata->dst)
+		{
+			/* If not request from destination, do nothing */
+			packet_dealloc(packet);
+			error_id = 4;
+			goto END;
+		}
+		// win RTS, wait for contention end
+		if(c->node == cts_header->node_allowed)
+		{
+			// high
+			if(1 == cts_header->priority_type)
+			{
+				nodedata->power_type_data = 2;
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;;
+			}
+			// low
+			else if(2 == cts_header->priority_type)
+			{
+				nodedata->power_type_data = 1;
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;;
+			}
+			nodedata->state = STATE_TIMEOUT;
+			nodedata->clock = get_time() + timeout;
+			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+			goto END;
+		}
+		// high priority contention begin
+		if(1 == cts_header->priority_type)
+		{
+			// has high priority packet
+			if(1 == nodedata->txbuf->type)
+			{
+				nodedata->source_state = -1;
+			}
+			else
+			{
+				packet_dealloc(packet);
+				error_id = 4;
+				goto END;
+			}
+		}
+		// low priority contention begin
+		else
+		{
+			// low priority packets and high priority packets
+			nodedata->source_state = -2;
+		}
+		packet_dealloc(packet);
+		
+		//random backoff contention
+		timeout = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+		nodedata->state_pending = nodedata->state;
+		nodedata->state = STATE_CONTENTION;
+		nodedata->clock = get_time() + timeout;
+		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+		break;
+
+	case CONTENTION_END_TYPE:
+		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state))
+		{
+			/* If not expecting request, do nothing */
+			packet_dealloc(packet);
+			error_id = 2;
+			goto END;
+		}
+		if(NULL == nodedata->txbuf)
+		{
+			/* If no packet, do nothing */
+			packet_dealloc(packet);
+			error_id = 3;
+			goto END;
+		}
+		if(header->src != nodedata->dst)
+		{
+			/* If not request from destination, do nothing */
+			packet_dealloc(packet);
+			error_id = 4;
+			goto END;
+		}
+		// win contention, prepare for transmission
+		if(c->node == cts_header->node_allowed)
+		{
+			// high
+			if(1 == cts_header->priority_type)
+			{
+				nodedata->power_type_data = 2;
+			}
+			//low
+			else (2 == cts_header->priority_type)
+			{
+				nodedata->power_type_data = 1;
+			}
+		}
+		if(0 != nodedata->power_type_data)
+		{
+			nodedata->state = STATE_DATA;
+			nodedata->clock = get_time() + macMinSIFSPeriod;
+			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+		}
+		packet_dealloc(packet);
+		break;
+		
+    case CONTENTION_TYPE:
+	/* Receive Contention*/
+	rts_header = (struct _sic_802_11_rts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+
+	if (header->dst != c->node)
+	{
+		/* Packet not for us */
+		if (nodedata->nav < (get_time() + rts_header->nav))
+		{
+			nodedata->nav = get_time() + rts_header->nav;
+		}
+		packet_dealloc(packet);
+		error_id = 1;
+		goto END;
+	}
+
+	if (nodedata->state != STATE_CONTENTION_WAITING_DATA)
+	{
+		/* If not expecting contention, do nothing */
+		packet_dealloc(packet);
+		error_id = 2;
+		goto END;
+	}
+
+	/* Record RTS info */
+	nodedata->dst = header->src;
+	nodedata->size = rts_header->size;
+	if(1 == rts_header->priority_type)
+	{
+		nodedata->sink_state = -1;
+	}
+	else
+	{
+		nodedata->sink_state = -2;
+	}
+
+	packet_dealloc(packet);
+
+	/* Send Contention end */
+	nodedata->state = STATE_CONTENTION_WAITING_DATA;
+	nodedata->clock = get_time() + macMinSIFSPeriod;
+	scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+	break;
+#endif// ADAM_NO_SENSING
     default:
 		packet_dealloc(packet);
-		error_id = 4;
+		error_id = 5;
 		goto END;
     }
 END:

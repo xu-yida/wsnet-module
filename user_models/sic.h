@@ -66,13 +66,11 @@ struct _sic_802_11_rts_header {
 };
 struct _sic_802_11_cts_header {
 	uint64_t nav;
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
 	// 0: disabled; 1: high; 2: low; 3:data;
 	int priority_type;
 	int node_allowed;
 #endif//ADAM_NO_SENSING
-// ->RF00000000-AdamXu
 	char padding[6];
 };
 struct _sic_802_11_data_header {
@@ -83,6 +81,10 @@ struct _sic_802_11_data_header {
 };
 struct _sic_802_11_ack_header {
 	char padding[14];
+#ifdef ADAM_NO_SENSING
+	int received_high;
+	int received_low;
+#endif//ADAM_NO_SENSING
 };
 
 // <-RF00000000-AdamXu-2018/05/22-if a packet is decodable.
