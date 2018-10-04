@@ -1107,6 +1107,9 @@ void rx(call_t *c, packet_t *packet) {
         
 #ifdef ADAM_NO_SENSING
 	case CONTENTION_BEGIN_TYPE:
+	        /* Receive CTS */
+	        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+			
 		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state))
 		{
 			/* If not expecting request, do nothing */
@@ -1138,7 +1141,7 @@ void rx(call_t *c, packet_t *packet) {
 				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;;
 			}
 			// low
-			else if(2 == cts_header->priority_type)
+			else
 			{
 				nodedata->power_type_data = 1;
 				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;;
