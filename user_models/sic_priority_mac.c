@@ -1210,7 +1210,7 @@ void rx(call_t *c, packet_t *packet) {
 				nodedata->power_type_data = 2;
 			}
 			//low
-			else (2 == cts_header->priority_type)
+			else if(2 == cts_header->priority_type)
 			{
 				nodedata->power_type_data = 1;
 			}
