@@ -632,8 +632,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 
 #ifdef ADAM_NO_SENSING
 		/* No ACK */
-		packet_dealloc(nodedata->txbuf);
-		nodedata->state = STATE_IDLE;
+		nodedata->state = STATE_BROAD_DONE;
 #else// ADAM_NO_SENSING
 		/* Wait for timeout or ACK */
 		nodedata->state = STATE_TIMEOUT;
