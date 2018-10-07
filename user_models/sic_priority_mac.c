@@ -49,7 +49,7 @@
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
 #define macMaxCSMARetries     (macMaxBE-macMinBE+1)     /* 7 trials before dropping */
 //#define aUnitBackoffPeriod    20000
-#define aUnitBackoffPeriod    20000
+#define aUnitBackoffPeriod    200000
 #define EDThresholdMin        -74
 
 #define MAX_CONTENTION_WINDOW_HIGH	4	/* 16 slots */
