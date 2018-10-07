@@ -107,6 +107,8 @@ struct nodedata {
 	int source_state;
 	// 0: prohibit; 1: low; 2: high
 	int power_type_data;
+	int allowed_high;
+	int allowed_low;
 #endif//ADAM_NO_SENSING
 ;
 };
@@ -187,6 +189,8 @@ int setnode(call_t *c, void *params) {
 	nodedata->sink_state = 0;
 	nodedata->source_state = 0;
 	nodedata->power_type_data = 0;
+	nodedata->allowed_high = -1;
+	nodedata->allowed_low = -1;
 #endif//ADAM_NO_SENSING
 
     /* get params */
@@ -378,6 +382,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 					  
         nodedata->state = STATE_BACKOFF;
         nodedata->state_pending = STATE_BACKOFF;
+
+#ifdef ADAM_NO_SENSING
+        nodedata->allowed_high = -1;
+        nodedata->allowed_low = -1;
+#endif//ADAM_NO_SENSING
 		
         /* Backoff */
         nodedata->clock = get_time();
@@ -725,6 +734,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// CTS for high priority RTS
 		if(-1 == nodedata->sink_state)
 		{
+			nodedata->allowed_low = cts_header->node_allowed;
 			// Timeout
 			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			cts_header->priority_type = 1;
@@ -732,6 +742,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// CTS for low priority RTS
 		else if(-2 == nodedata->sink_state)
 		{
+			nodedata->allowed_high = cts_header->node_allowed;
 			// Timeout
 			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + pow(2, MAX_CONTENTION_WINDOW_LOW) * MIN_CONTENTION_BACKOFF_PERIOD;
 			cts_header->priority_type = 2;
@@ -770,11 +781,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// CTS for high priority RTS
 		if(-1 == nodedata->sink_state)
 		{
+			nodedata->allowed_low = cts_header->node_allowed;
 			cts_header->priority_type = 1;
 		}
 		// CTS for low priority RTS
 		else if(-2 == nodedata->sink_state)
 		{
+			nodedata->allowed_high = cts_header->node_allowed;
 			cts_header->priority_type = 2;
 		}
 		// no situation fit
@@ -924,6 +937,8 @@ void rx(call_t *c, packet_t *packet) {
         nodedata->dst = header->src;
         nodedata->size = rts_header->size;
 #ifdef ADAM_NO_SENSING
+	nodedata->allowed_high = -1;
+	nodedata->allowed_low = -1;
 	// received high RTS, begin low Contention
 	if(1 == rts_header->priority_type)
 	{
@@ -1012,8 +1027,13 @@ void rx(call_t *c, packet_t *packet) {
 		error_id = 2;
 		goto END;
         }
-			
-        if ((nodedata->state == STATE_CTS_TIMEOUT) && (nodedata->dst != header->src)) {
+
+#ifdef ADAM_NO_SENSING
+        if ((nodedata->state == STATE_CTS_TIMEOUT) && ((nodedata->allowed_high != header->src) && (nodedata->allowed_low != header->src)))
+#else// ADAM_NO_SENSING
+        if ((nodedata->state == STATE_CTS_TIMEOUT) && (nodedata->dst != header->src)) 
+#endif// ADAM_NO_SENSING
+		{
             /* Expecting data, but not from this node */
             packet_dealloc(packet);
 		error_id = 3;
