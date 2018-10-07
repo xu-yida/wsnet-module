@@ -385,6 +385,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	 goto END;
         
     case STATE_BACKOFF:
+	PRINT_MAC("STATE_BACKOFF: nodedata->backoff=%"PRId64"\n", nodedata->backoff);
         /* If the backoff is over, set to 0 */
         if ((nodedata->backoff > 0) && (nodedata->backoff < aUnitBackoffPeriod)) {
             nodedata->backoff = 0;
@@ -399,7 +400,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	}
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
 	priority = nodedata->txbuf->type;
-	//PRINT_MAC("STATE_BACKOFF: priority=%d\n", priority);
         /* Backoff */
         if (nodedata->backoff > 0) {
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
