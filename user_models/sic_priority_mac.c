@@ -897,7 +897,8 @@ void rx(call_t *c, packet_t *packet) {
 	int error_id = 0;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
-	PRINT_MAC("B: c->node=%d, header->type=%d, header->dst=%d\n", c->node, header->type, header->dst);
+	PRINT_MAC("B: c->node=%d, packet->id=%d, packet->type=%d\n", c->node, packet->id, packet->type);
+	PRINT_MAC("header->type=%d, header->dst=%d\n", header->type, header->dst);
 	if(nodedata->HighThreshold_mw < 0)
 	{
 		nodedata->HighThreshold_mw = (1+ADAM_HIGH_PRIOTITY_RATIO)*packet->rxmW*dBm2mW(radio_get_power(&c0))/dBm2mW(packet->txdBm);
