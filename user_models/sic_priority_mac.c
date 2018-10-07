@@ -764,6 +764,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		TX(&c0, packet); 
 
 		nodedata->clock = get_time() + timeout;
+		PRINT_MAC("timeout=%"PRId64"\n", timeout);
 		PRINT_MAC("nodedata->clock=%"PRId64"\n", nodedata->clock);
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 		goto END;
@@ -1164,17 +1165,20 @@ void rx(call_t *c, packet_t *packet) {
 			if(1 == cts_header->priority_type)
 			{
 				nodedata->power_type_data = 2;
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
+				// wait for low
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			}
 			// low
 			else
 			{
 				nodedata->power_type_data = 1;
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;
+				// wait for high
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			}
 			nodedata->state = STATE_TIMEOUT;
 			nodedata->clock = get_time() + timeout;
 			PRINT_MAC("nodedata->clock=%"PRId64"\n", nodedata->clock);
+			PRINT_MAC("timeout=%"PRId64"\n", timeout);
 			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 			goto END;
 		}
