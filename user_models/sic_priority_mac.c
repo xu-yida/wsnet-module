@@ -780,9 +780,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// no situation fit
 		else
 		{
-			nodedata->sink_state = 0;
-			error_id = 2;
-			goto END;
+			cts_header->priority_type = 0;
+			//nodedata->sink_state = 0;
+			//error_id = 2;
+			//goto END;
 		}
 		nodedata->sink_state = 0;
 
