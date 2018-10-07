@@ -506,19 +506,20 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_TIMEOUT:			
 		PRINT_MAC("STATE_TIMEOUT: nodedata->NB=%d\n", nodedata->NB);
+		PRINT_MAC("get_time()=%"PRId64"\n", get_time());
 #ifdef ADAM_NO_SENSING
 		nodedata->power_type_data = 0;
 #endif// ADAM_NO_SENSING
         if ((++nodedata->NB) >= entitydata->maxCSMARetries) {
-            /* Transmit retry limit reached */
-            packet_dealloc(nodedata->txbuf);            
-            nodedata->txbuf = NULL;
+		/* Transmit retry limit reached */
+		packet_dealloc(nodedata->txbuf);            
+		nodedata->txbuf = NULL;
 			
-            /* Return to idle */
-            nodedata->state = STATE_IDLE;
-            nodedata->clock = get_time();
-            dcf_802_11_state_machine(c,NULL);
-            goto END;
+		/* Return to idle */
+		nodedata->state = STATE_IDLE;
+		nodedata->clock = get_time();
+		dcf_802_11_state_machine(c,NULL);
+		goto END;
         }
 			
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
@@ -1162,16 +1163,17 @@ void rx(call_t *c, packet_t *packet) {
 			if(1 == cts_header->priority_type)
 			{
 				nodedata->power_type_data = 2;
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;;
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			}
 			// low
 			else
 			{
 				nodedata->power_type_data = 1;
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;;
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			}
 			nodedata->state = STATE_TIMEOUT;
 			nodedata->clock = get_time() + timeout;
+			PRINT_MAC("nodedata->clock=%"PRId64"\n", nodedata->clock);
 			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 			goto END;
 		}
