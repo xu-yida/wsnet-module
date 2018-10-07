@@ -49,7 +49,7 @@
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
 #define macMaxCSMARetries     (macMaxBE-macMinBE+1)     /* 7 trials before dropping */
 //#define aUnitBackoffPeriod    20000
-#define aUnitBackoffPeriod    200000
+#define aUnitBackoffPeriod    20000
 #define EDThresholdMin        -74
 
 #define MAX_CONTENTION_WINDOW_HIGH	4	/* 16 slots */
@@ -402,8 +402,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	priority = nodedata->txbuf->type;
         /* Backoff */
         if (nodedata->backoff > 0) {
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
-#ifndef ADAM_NO_SENSING
+#if 1//ndef ADAM_NO_SENSING
 		//low channel power blocks low priority; high channel power blocks high priority
 		channel_state = adam_check_channel_busy(c);
 		//PRINT_RESULT("STATE_BACKOFF channel_state=%d, priority=%d\n", channel_state, priority);
@@ -411,10 +410,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// always decrease backoff
 		channel_state = 0;
 #endif//ADAM_NO_SENSING
-// ->RF00000000-AdamXu
+#ifdef ADAM_NO_SENSING
+		if ((get_time() < nodedata->nav) || (0 != channel_state))
+#else// ADAM_NO_SENSING
 		if ((get_time() < nodedata->nav)
 			|| (0 == priority && 1 <= channel_state)
 			|| (1 == priority && 2 <= channel_state))
+#endif// ADAM_NO_SENSING
 		{ 
                 if (nodedata->backoff_suspended == 0) {
                     /* Suspend backoff and add difs */
