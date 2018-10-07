@@ -732,21 +732,21 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		cts_header->node_allowed = nodedata->dst;
 		PRINT_MAC("STATE_CONTENTION_BEGIN nodedata->sink_state=%d, nodedata->dst=%d\n", nodedata->sink_state, nodedata->dst);
 		nodedata->dst = -1;
-		// CTS for high priority RTS
+		// CTS for low priority RTS, begin high contention
 		if(-1 == nodedata->sink_state)
 		{
 			nodedata->allowed_low = cts_header->node_allowed;
 			// Timeout
 			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
-			cts_header->priority_type = 1;
+			cts_header->priority_type = 2;
 		}
-		// CTS for low priority RTS
+		// CTS for high priority RTS, begin low contention
 		else if(-2 == nodedata->sink_state)
 		{
 			nodedata->allowed_high = cts_header->node_allowed;
 			// Timeout
 			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + pow(2, MAX_CONTENTION_WINDOW_LOW) * MIN_CONTENTION_BACKOFF_PERIOD;
-			cts_header->priority_type = 2;
+			cts_header->priority_type = 1;
 		}
 		// no situation fit
 		else
@@ -782,13 +782,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// CTS for high priority RTS
 		if(-1 == nodedata->sink_state)
 		{
-			nodedata->allowed_low = cts_header->node_allowed;
+			nodedata->allowed_high = cts_header->node_allowed;
 			cts_header->priority_type = 1;
 		}
 		// CTS for low priority RTS
 		else if(-2 == nodedata->sink_state)
 		{
-			nodedata->allowed_high = cts_header->node_allowed;
+			nodedata->allowed_low = cts_header->node_allowed;
 			cts_header->priority_type = 2;
 		}
 		// no situation fit
@@ -1176,7 +1176,7 @@ void rx(call_t *c, packet_t *packet) {
 			goto END;
 		}
 		// high priority contention begin
-		if(1 == cts_header->priority_type)
+		if(2 == cts_header->priority_type)
 		{
 			// has high priority packet
 			if(1 == nodedata->txbuf->type)
