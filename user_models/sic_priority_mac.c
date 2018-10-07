@@ -764,6 +764,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		TX(&c0, packet); 
 
 		nodedata->clock = get_time() + timeout;
+		PRINT_MAC("nodedata->clock=%"PRId64"\n", nodedata->clock);
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 		goto END;
 
