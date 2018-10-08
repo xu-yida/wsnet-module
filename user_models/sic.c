@@ -379,7 +379,7 @@ void cs(call_t *c, packet_t *packet) {
 	}
 
 	/* capture effect */
-	if (packet->rxdBm > nodedata->rxdBm) {
+	if (1 || packet->rxdBm > nodedata->rxdBm) {
 		//nodedata->rxdBm = packet->rxdBm;
 		sic_signal = malloc(sizeof(sic_signal_t));
 		if(NULL == sic_signal)
