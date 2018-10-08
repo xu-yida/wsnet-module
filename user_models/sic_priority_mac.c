@@ -132,6 +132,7 @@ model_t model =  {
 /* ************************************************** */
 /* ************************************************** */
 static int s_sent_mac = 0;
+static int s_received_mac = 0;
 
 /* ************************************************** */
 /* ************************************************** */
@@ -1050,7 +1051,9 @@ void rx(call_t *c, packet_t *packet) {
 		error_id = 3;
 		goto END;
         }
-							
+
+		PRINT_MAC("s_received_mac=%d, s_sent_mac=%d\n", ++s_received_mac, s_sent_mac);
+		
         /* Send ACK */
         if (nodedata->state == STATE_BACKOFF) {
             nodedata->state_pending = nodedata->state;
