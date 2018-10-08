@@ -397,6 +397,9 @@ void cs(call_t *c, packet_t *packet) {
 		PRINT_RADIO("malloc(%d), packet->duration=%"PRId64", packet->real_size=%d\n", sic_signal->id, packet->duration, packet->real_size);
 		adam_Insert_SIgnal2Candidate_Time(c, sic_signal);
 		adam_Insert_SIgnal2Candidate_Power(c, sic_signal);
+
+		adam_Update_Candidate(c);
+		nodedata->rxdBm = mW2dBm(adam_Get_IN_MW(c, MEDIA_GET_WHITE_NOISE(c, packet->channel)));
 		
 		nodedata->rx_busy = packet->id;
 		/* log cs */
