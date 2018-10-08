@@ -532,7 +532,7 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 
 /* ************************************************** */
 /* ************************************************** */
-double adam_Get_IN_MW(call_t *c, double base_noise)
+double adam_Get_IN_MW(call_t *c, double base_noise_mw)
 {
 	double sum_interf_noise_mw = base_noise_mw;
 	sic_signal_t* p_sic_current = NULL;
