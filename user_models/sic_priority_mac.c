@@ -830,7 +830,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		rts_header = (struct _sic_802_11_rts_header *) (packet->data + sizeof(struct _sic_802_11_header));
 		rts_header->size = nodedata->txbuf->size;
 		rts_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * radio_get_Tb(&c0) * 8 + macMinSIFSPeriod + nodedata->txbuf->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
-		timeout = RTS_TIME+ macMinSIFSPeriod + CTS_TIME + macMinSIFSPeriod + SPEED_LIGHT;
+		timeout = RTS_TIME+ macMinSIFSPeriod + CTS_TIME + macMinSIFSPeriod + SPEED_LIGHT + packet->size * 8 * radio_get_Tb(&c0);
+
 		// high priority
 		if(-1 == nodedata->source_state)
 		{
@@ -1185,6 +1186,10 @@ void rx(call_t *c, packet_t *packet) {
 				nodedata->power_type_data = 1;
 				// wait for high
 				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
+			}
+			if(NULL != nodedata->txbuf)
+			{
+				timeout += nodedata->txbuf->size*8*radio_get_Tb(&c0);
 			}
 			nodedata->state = STATE_TIMEOUT;
 			nodedata->clock = get_time() + timeout;
