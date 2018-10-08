@@ -1053,7 +1053,8 @@ void rx(call_t *c, packet_t *packet) {
         }
 
 		PRINT_MAC("s_received_mac=%d, s_sent_mac=%d\n", ++s_received_mac, s_sent_mac);
-		
+
+#ifndef ADAM_NO_SENSING
         /* Send ACK */
         if (nodedata->state == STATE_BACKOFF) {
             nodedata->state_pending = nodedata->state;
@@ -1064,6 +1065,7 @@ void rx(call_t *c, packet_t *packet) {
         nodedata->state = STATE_ACK;
         nodedata->clock = get_time() + macMinSIFSPeriod;
         scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+#endif// ADAM_NO_SENSING
 
         /* forward to upper layer */
         while (i--) {
