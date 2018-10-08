@@ -88,6 +88,12 @@ struct _sic_802_11_ack_header {
 };
 
 // <-RF00000000-AdamXu-2018/05/22-if a packet is decodable.
+// base_noise: environment noise
+// return: interference plus noise by mw
+double adam_Get_IN_MW(call_t *c, double base_noise);
+// ->RF00000000-AdamXu
+
+// <-RF00000000-AdamXu-2018/05/22-if a packet is decodable.
 // packet_id: id of packet
 // base_noise: environment noise
 // sic_threshold: SINR threshold

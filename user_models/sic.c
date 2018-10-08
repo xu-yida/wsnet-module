@@ -421,8 +421,9 @@ double get_noise(call_t *c) {
 }
 
 double get_cs(call_t *c) {
-    struct nodedata *nodedata = get_node_private_data(c);
-    return nodedata->rxdBm;
+	struct nodedata *nodedata = get_node_private_data(c);
+	PRINT_RADIO("nodedata->rxdBm=%f\n", nodedata->rxdBm);
+	return nodedata->rxdBm;
 }
 
 double get_power(call_t *c) {
@@ -531,6 +532,20 @@ int set_header(call_t *c, packet_t *packet, destination_t *dst) {
 
 /* ************************************************** */
 /* ************************************************** */
+double adam_Get_IN_MW(call_t *c, double base_noise)
+{
+	double sum_interf_noise_mw = base_noise_mw;
+	sic_signal_t* p_sic_current = NULL;
+	
+	// get total interference and noise
+	for(p_sic_current = nodedata->sic_signal_power_first; NULL != p_sic_current; p_sic_current = p_sic_current->signal_lower_power)
+	{
+		sum_interf_noise_mw += dBm2mW(p_sic_current->rxdBm);
+	}
+
+	return sum_interf_noise_mw;
+}
+
 int adam_Is_Packet_Decodable(call_t *c, packetid_t id, double base_noise_mw, double sic_threshold)
 {
 	struct nodedata *nodedata = get_node_private_data(c);
