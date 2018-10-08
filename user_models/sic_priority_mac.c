@@ -52,8 +52,8 @@
 #define aUnitBackoffPeriod    20000
 #define EDThresholdMin        -74
 
-#define MAX_CONTENTION_WINDOW_HIGH	4	/* 16 slots */
-#define MAX_CONTENTION_WINDOW_LOW	(MAX_CONTENTION_WINDOW_HIGH - (int)(ADAM_HIGH_PRIOTITY_RATIO/4))
+#define MAX_CONTENTION_WINDOW_HIGH	2	/* 4 slots */
+#define MAX_CONTENTION_WINDOW_LOW	(MAX_CONTENTION_WINDOW_HIGH + (int)(ADAM_HIGH_PRIOTITY_RATIO/4))
 
 #define RTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
 #define CTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0))
