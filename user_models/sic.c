@@ -305,13 +305,15 @@ void rx(call_t *c, packet_t *packet) {
 		goto END;
 	}
 
+#ifndef ADAM_NO_SENSING
 	/* drop packet depending on the FER */
 	if (get_random_double() < packet->PER) {
 		PRINT_RADIO("packet->PER=%f\n", packet->PER);
 		packet_dealloc(packet);
 		error_id = 5;
 		goto END;
-	}    
+	}
+#endif// ADAM_NO_SENSING
 
     /* forward to upper layers */
     while (i--) {
