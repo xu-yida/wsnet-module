@@ -329,7 +329,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 		
 	PRINT_MAC("B: c->node=%d, nodedata->state=%d\n", c->node, nodedata->state);
-	PRINT_MAC("nodedata->power_type_data=%d\n", nodedata->power_type_data);
+	PRINT_MAC("nodedata->power_type_data=%d, nodedata->priority=%d\n", nodedata->power_type_data, nodedata->priority);
 	/* Drop unscheduled events */
 	if (nodedata->clock != get_time()) {
 		error_id = ADAM_ERROR_DEFAULT;
