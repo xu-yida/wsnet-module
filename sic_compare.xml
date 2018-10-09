@@ -61,7 +61,7 @@
 
 <!-- == Environment ===================================================== -->
 <environment>
-<propagation entity="free-space" range="11e"/>
+<propagation entity="free-space" range="11"/>
 <interferences entity="interf"/>
 <modulation entity="none"/>
 </environment>
