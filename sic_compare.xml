@@ -61,7 +61,7 @@
 
 <!-- == Environment ===================================================== -->
 <environment>
-<propagation entity="free-space" range="11"/>
+<propagation entity="free-space" range="11e"/>
 <interferences entity="interf"/>
 <modulation entity="none"/>
 </environment>
@@ -279,47 +279,27 @@
 -->
 <!-- == Single Hop Configuration === -->
 <node id="0" as="sensor">
-  <for entity="mobility" x="0" y="0" z="0"  />
-  <for entity="app" destination="1" destination-x="10" destination-y="0" destination-z="0"/>  
+  <for entity="mobility" x="10" y="0" z="0"  />
+  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 
 <node id="1" as="sensor">
-  <for entity="mobility" x="10" y="0" z="0"  />
-  <for entity="app" destination="2" destination-x="20" destination-y="0" destination-z="0"/>  
+  <for entity="mobility" x="0" y="10" z="0"  />
+  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 
 <node id="2" as="sensor">
-  <for entity="mobility" x="20" y="0" z="0"  />
-  <for entity="app" destination="5" destination-x="20" destination-y="10" destination-z="0"/>  
+  <for entity="mobility" x="10" y="10" z="0"  />
+  <for entity="app" destination="1" destination-x="10" destination-y="0" destination-z="0"/>  
 </node>
 
 <node id="3" as="sensor">
-  <for entity="mobility" x="0" y="10" z="0"  />
-  <for entity="app" destination="4" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="mobility" x="20" y="10" z="0"  />
+  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 
 <node id="4" as="sensor">
-  <for entity="mobility" x="10" y="10" z="0"  />
-  <for entity="app" destination="5" destination-x="20" destination-y="10" destination-z="0"/>  
-</node>
-
-<node id="5" as="sensor">
-  <for entity="mobility" x="20" y="10" z="0"  />
-  <for entity="app" destination="8" destination-x="20" destination-y="20" destination-z="0"/>  
-</node>
-
-<node id="6" as="sensor">
-  <for entity="mobility" x="0" y="20" z="0"  />
-  <for entity="app" destination="7" destination-x="10" destination-y="20" destination-z="0"/>  
-</node>
-
-<node id="7" as="sensor">
   <for entity="mobility" x="10" y="20" z="0"  />
-  <for entity="app" destination="8" destination-x="20" destination-y="20" destination-z="0"/>  
-</node>
-
-<node id="8" as="sensor">
-  <for entity="mobility" x="20" y="20" z="0"  />
-  <for entity="app" destination="7" destination-x="10" destination-y="20" destination-z="0"/>  
+  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 </worldsens>
