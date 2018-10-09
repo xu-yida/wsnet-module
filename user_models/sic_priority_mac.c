@@ -416,6 +416,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	}
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
 	priority = nodedata->txbuf->type;
+	nodedata->priority = priority;
         /* Backoff */
         if (nodedata->backoff > 0) {
 #if 1//ndef ADAM_NO_SENSING
@@ -512,7 +513,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_TIMEOUT:			
 		PRINT_MAC("STATE_TIMEOUT: nodedata->NB=%d\n", nodedata->NB);
-		PRINT_MAC("get_time()=%"PRId64"\n", get_time());
 #ifdef ADAM_NO_SENSING
 		nodedata->power_type_data = 0;
 #endif// ADAM_NO_SENSING
