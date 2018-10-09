@@ -612,7 +612,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		header = (struct _sic_802_11_header *) packet->data;
 		data_header = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
 		data_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
+#ifdef ADAM_NO_SENSING
+		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + SPEED_LIGHT;
+#else// ADAM_NO_SENSING
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
+#endif// ADAM_NO_SENSING
 
 		// adjust power for high priority
 		base_power_tx = radio_get_power(&c0);
@@ -1187,10 +1191,7 @@ void rx(call_t *c, packet_t *packet) {
 				// wait for high
 				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
 			}
-			if(NULL != nodedata->txbuf)
-			{
-				timeout += nodedata->txbuf->size*8*radio_get_Tb(&c0);
-			}
+			timeout += nodedata->txbuf->size*8*radio_get_Tb(&c0);
 			nodedata->state = STATE_TIMEOUT;
 			nodedata->clock = get_time() + timeout;
 			PRINT_MAC("nodedata->clock=%"PRId64"\n", nodedata->clock);
@@ -1209,6 +1210,10 @@ void rx(call_t *c, packet_t *packet) {
 			else
 			{
 				packet_dealloc(packet);
+				// wait for period end
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD + nodedata->txbuf->size*8*radio_get_Tb(&c0);
+				nodedata->clock = get_time() + timeout;
+				scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 				error_id = 4;
 				goto END;
 			}
@@ -1271,6 +1276,16 @@ void rx(call_t *c, packet_t *packet) {
 		{
 			nodedata->state = STATE_DATA;
 			nodedata->clock = get_time() + macMinSIFSPeriod;
+			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+		}
+		else
+		{
+			timeout = nodedata->txbuf->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod +  SPEED_LIGHT;
+			if(STATE_CONTENTION == nodedata->state)
+			{
+				nodedata->state = nodedata->state_pending;
+			}
+			nodedata->clock = get_time() + timeout;
 			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 		}
 		packet_dealloc(packet);
