@@ -48,14 +48,14 @@
 
 <!-- == MOBILITY ===================================================== -->
 
-<entity name="mobility" library="mobility_sway" >
+<entity name="mobility" library="mobility_static" >
 </entity>
 
 
 <!-- == BATTERY ======================================================== -->
 
 <entity name="battery" library="energy_linear" >
-  <default energy="2000000000000" tx="2" rx="1"/>
+  <default energy="2000000000000" tx="21" rx="7"/>
 </entity>
 
 

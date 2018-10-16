@@ -51,7 +51,7 @@
 <!-- == APPLICATION ===================================================== -->
 
 <entity name="app" library="application_sic" >
-  <default period="random" start="random" size="10000" destination="random" priority_ratio="2"/>
+  <default period="10000" start="random" size="10000" destination="random" priority_ratio="2"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->
@@ -63,7 +63,7 @@
 <!-- == BATTERY ======================================================== -->
 
 <entity name="battery" library="energy_linear" >
-  <default energy="2000000000000" tx="2" rx="1"/>
+  <default energy="2000000000000" tx="21" rx="7"/>
 </entity>
 
 
