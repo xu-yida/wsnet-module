@@ -341,7 +341,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif// ADAM_NO_SENSING
 	if(0 == nodedata->base_power_tx)
 	{
-		nodedata->base_power_tx = get_power(&c0);
+		nodedata->base_power_tx = radio_get_power(&c0);
 	}
         /* Next packet to send */
 	if (nodedata->txbuf == NULL) {
