@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="5" duration="100s" x="200" y="100" z="0"/>
+<simulation nodes="5" duration="3600s" x="200" y="100" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -55,7 +55,7 @@
 <!-- == BATTERY ======================================================== -->
 
 <entity name="battery" library="energy_linear" >
-  <default energy="2000000000000" tx="21" rx="7"/>
+  <default energy="9000000000000" tx="3" rx="1"/>
 </entity>
 
 
