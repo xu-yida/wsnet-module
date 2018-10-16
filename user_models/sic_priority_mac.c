@@ -94,13 +94,8 @@ struct nodedata {
 	int cca;
 	double EDThreshold;
 	double HighThreshold_mw;
-//#ifdef ADAM_PRIORITY_TEST
-	// 0: low; 1: high
 	double base_power_tx;
-//#endif//ADAM_PRIORITY_TEST
 #ifdef ADAM_NO_SENSING
-	// 0: no; 1: yes;
-	int is_sink;
 	// 0: idle; -1: wait for high; -2: wait for low; -3: wait for data;
 	int sink_state;
 	// 0: idle; -1: sent high rts; -2: sent low rts; -3: sent data;
@@ -191,7 +186,6 @@ int setnode(call_t *c, void *params) {
 	nodedata->base_power_tx = 0;
 //#endif//ADAM_PRIORITY_TEST
 #ifdef ADAM_NO_SENSING
-	nodedata->is_sink = 0;
 	nodedata->sink_state = 0;
 	nodedata->source_state = 0;
 	nodedata->power_type_data = 0;
@@ -222,13 +216,6 @@ int setnode(call_t *c, void *params) {
                 goto error;
             }
         }
-#ifdef ADAM_NO_SENSING
-        if (!strcmp(param->key, "is-sink")) {
-            if (get_param_integer(param->value, &(nodedata->is_sink))) {
-                goto error;
-            }
-        }
-#endif//ADAM_NO_SENSING
     }
 
 	set_node_private_data(c, nodedata);
@@ -352,22 +339,14 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
             goto END;
         }
 #endif// ADAM_NO_SENSING
+	if(0 == nodedata->base_power_tx)
+	{
+		nodedata->base_power_tx = get_power(&c0);
+	}
         /* Next packet to send */
 	if (nodedata->txbuf == NULL) {
 		nodedata->txbuf = (packet_t *) das_pop_FIFO(nodedata->packets);
 		if (nodedata->txbuf == NULL) {
-#if 0//def ADAM_NO_SENSING
-			// when sinks are idle, broadcast cts for high priority packets
-			if(0 != nodedata->is_sink)
-			{
-			        //timeout = macMinSIFSPeriod;
-				/* Next state */
-				nodedata->state = STATE_CONTENTION_BEGIN;
-				nodedata->clock = get_time();
-				dcf_802_11_state_machine(c,NULL);
-				goto END;
-			}
-#endif//ADAM_NO_SENSING
 			goto END;
 		}
 	}
@@ -380,24 +359,24 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		goto END;
 	}
 #endif// ADAM_NO_SENSING
-        /* Initial backoff */
-        nodedata->BE = macMinBE - 1;
-        nodedata->NB = 0;
-        nodedata->backoff = macMinDIFSPeriod;
-        nodedata->backoff_suspended = 0;
+		/* Initial backoff */
+		nodedata->BE = macMinBE - 1;
+		nodedata->NB = 0;
+		nodedata->backoff = macMinDIFSPeriod;
+		nodedata->backoff_suspended = 0;
 					  
-        nodedata->state = STATE_BACKOFF;
-        nodedata->state_pending = STATE_BACKOFF;
+		nodedata->state = STATE_BACKOFF;
+		nodedata->state_pending = STATE_BACKOFF;
 
 #ifdef ADAM_NO_SENSING
-        nodedata->allowed_high = -1;
-        nodedata->allowed_low = -1;
+		nodedata->allowed_high = -1;
+		nodedata->allowed_low = -1;
 #endif//ADAM_NO_SENSING
 		
-        /* Backoff */
-        nodedata->clock = get_time();
-        dcf_802_11_state_machine(c,NULL);
-	 goto END;
+		/* Backoff */
+		nodedata->clock = get_time();
+		dcf_802_11_state_machine(c,NULL);
+		goto END;
         
     case STATE_BACKOFF:
 	PRINT_MAC("STATE_BACKOFF: nodedata->backoff=%"PRId64"\n", nodedata->backoff);
@@ -499,8 +478,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		rts_header->priority_type = 0;
 	}
 #endif//ADAM_NO_SENSING
-        /* Send RTS */
-        TX(&c0, packet); 
+		// recover power
+		radio_set_power(&c0, nodedata->base_power_tx);
+		/* Send RTS */
+		TX(&c0, packet); 
         
         /* Wait for timeout or CTS */
         nodedata->state = STATE_TIMEOUT;
@@ -511,8 +492,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
     case STATE_TIMEOUT:			
 		PRINT_MAC("STATE_TIMEOUT: nodedata->NB=%d\n", nodedata->NB);
-		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
 #ifdef ADAM_NO_SENSING
 		nodedata->power_type_data = 0;
 #endif// ADAM_NO_SENSING
@@ -619,7 +598,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif// ADAM_NO_SENSING
 
 		// adjust power for high priority
-		nodedata->base_power_tx = radio_get_power(&c0);
+		//nodedata->base_power_tx = radio_get_power(&c0);
 #ifdef ADAM_NO_SENSING
 		if(2 == nodedata->power_type_data)
 #else
@@ -627,6 +606,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif//ADAM_NO_SENSING
 		{
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+		}
+		else
+		{
+			// recover power
+			radio_set_power(&c0, nodedata->base_power_tx);
 		}
 
 #ifdef ADAM_NO_SENSING
@@ -659,7 +643,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
 
 		// adjust power for high priority
-		nodedata->base_power_tx = radio_get_power(&c0);
+		//nodedata->base_power_tx = radio_get_power(&c0);
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #ifdef ADAM_NO_SENSING
 		if(0)
@@ -669,6 +653,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 // ->RF00000000-AdamXu
 		{
 			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+		}
+		else
+		{
+			// recover power
+			radio_set_power(&c0, nodedata->base_power_tx);
 		}
 		
 		//PRINT_MAC("STATE_BROADCAST radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
@@ -721,9 +710,6 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         
         
     case STATE_BROAD_DONE:
-		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
-		
 		/* Destroy txbuf */
 		packet_dealloc(nodedata->txbuf);
 		nodedata->txbuf = NULL;
