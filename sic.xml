@@ -51,7 +51,7 @@
 <!-- == APPLICATION ===================================================== -->
 
 <entity name="app" library="application_sic" >
-  <default period="10000" start="random" size="10000" destination="random" priority_ratio="2"/>
+  <default period="10000" start="random" size="10000" destination="random" priority_ratio="4"/>
 </entity>
 
 <!-- == MOBILITY ===================================================== -->
@@ -289,26 +289,26 @@
 <!-- == Single Hop Configuration === -->
 <node id="0" as="sensor">
   <for entity="mobility" x="10" y="0" z="0"  />
-  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="4"/>  
 </node>
 
 <node id="1" as="sensor">
   <for entity="mobility" x="0" y="10" z="0"  />
-  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="4"/>  
 </node>
 
 <node id="2" as="sensor">
   <for entity="mobility" x="10" y="10" z="0"  />
-  <for entity="app" period="1000000000" destination="1" destination-x="10" destination-y="0" destination-z="0"/>  
+  <for entity="app" period="1000000000" destination="1" destination-x="10" destination-y="0" destination-z="0" priority_ratio="4"/>  
 </node>
 
 <node id="3" as="sensor">
   <for entity="mobility" x="20" y="10" z="0"  />
-  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="4"/>  
 </node>
 
 <node id="4" as="sensor">
   <for entity="mobility" x="10" y="20" z="0"  />
-  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="1000000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="4"/>  
 </node>
 </worldsens>
