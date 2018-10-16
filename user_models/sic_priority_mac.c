@@ -553,24 +553,27 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			
         
     case STATE_CTS:
-        /* Build CTS */
-        packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header), -1);
-        header= (struct _sic_802_11_header *) packet->data;
-        header->dst = nodedata->dst;
-        header->src = c->node;
-        header->type = CTS_TYPE; 
-        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
-        cts_header->nav = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0); 						
-        timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
+		/* Build CTS */
+		packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header), -1);
+		header= (struct _sic_802_11_header *) packet->data;
+		header->dst = nodedata->dst;
+		header->src = c->node;
+		header->type = CTS_TYPE; 
+		cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+		cts_header->nav = macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0); 						
+		timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
-        /* Send CTS */
-        TX(&c0, packet); 
-        
-        /* Wait for timeout or DATA */
-        nodedata->state = STATE_CTS_TIMEOUT;
-        nodedata->clock = get_time() + timeout;
-        scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
-        goto END;
+		// recover power
+		radio_set_power(&c0, nodedata->base_power_tx);
+
+		/* Send CTS */
+		TX(&c0, packet); 
+
+		/* Wait for timeout or DATA */
+		nodedata->state = STATE_CTS_TIMEOUT;
+		nodedata->clock = get_time() + timeout;
+		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+		goto END;
         
         
     case STATE_CTS_TIMEOUT:
@@ -674,28 +677,25 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		goto END;
         
     case STATE_ACK:
-        /* Build ack packet */	
-        packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header), -1);
-        header = (struct _sic_802_11_header *) packet->data;
-        header->type = ACK_TYPE; 
-        header->src = c->node;
-#if 0//def ADAM_NO_SENSING
-		header->dst = BROADCAST_ADDR;
-		ack_header = (struct _sic_802_11_ack_header *) (packet->data + sizeof(struct _sic_802_11_header));
-		ack_header->received_high
-#else // ADAM_NO_SENSING
-        header->dst = nodedata->dst;
-#endif // ADAM_NO_SENSING
-        timeout =  packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
-        
-        /* Send ack */
-        TX(&c0, packet);
-        
-        /* Wait for end of transmission */
-        nodedata->state = STATE_DONE;
-        nodedata->clock = get_time() + timeout;
-        scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
-        goto END;
+		/* Build ack packet */	
+		packet = packet_create(c, sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header), -1);
+		header = (struct _sic_802_11_header *) packet->data;
+		header->type = ACK_TYPE; 
+		header->src = c->node;
+		header->dst = nodedata->dst;
+		timeout =  packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
+
+		// recover power
+		radio_set_power(&c0, nodedata->base_power_tx);
+
+		/* Send ack */
+		TX(&c0, packet);
+
+		/* Wait for end of transmission */
+		nodedata->state = STATE_DONE;
+		nodedata->clock = get_time() + timeout;
+		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+		goto END;
         
     case STATE_DONE:
         /* Return to pending state */
@@ -760,6 +760,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		/* Wait for Data request */
 		nodedata->state = STATE_CONTENTION_WAITING_DATA;
 		nodedata->dst = -1;
+		
+		// recover power
+		radio_set_power(&c0, nodedata->base_power_tx);
+		
 		/* Send CTS */
 		TX(&c0, packet); 
 
@@ -804,6 +808,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		}
 		nodedata->sink_state = 0;
 
+		// recover power
+		radio_set_power(&c0, nodedata->base_power_tx);
+		
 		/* Send Data request */
 		TX(&c0, packet); 
 
@@ -844,6 +851,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		}
 		nodedata->source_state = 0;
 
+		// recover power
+		radio_set_power(&c0, nodedata->base_power_tx);
+		
 		/* Send Contention */
 		TX(&c0, packet); 
 
