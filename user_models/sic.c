@@ -240,6 +240,7 @@ void tx_end(call_t *c, packet_t *packet) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	PRINT_RADIO("B: packet->id=%d, c->node=%d\n", packet->id, c->node);
 	PRINT_RADIO("nodedata->tx_busy=%d\n", nodedata->tx_busy);
+	PRINT_RADIO("nodedata->power=%f\n", nodedata->power);
 
 	/* consume energy */
 	battery_consume_tx(c, packet->duration, nodedata->power);
