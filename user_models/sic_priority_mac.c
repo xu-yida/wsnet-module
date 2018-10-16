@@ -609,7 +609,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif//ADAM_NO_SENSING
 		{
 			//radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
-			radio_set_power(&c0, ADAM_HIGH_POWER_RATIO);
+			radio_set_power(&c0, 0-ADAM_HIGH_POWER_RATIO);
 		}
 		else
 		{
@@ -656,7 +656,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
 		{
-			radio_set_power(&c0, ADAM_HIGH_POWER_RATIO);
+			radio_set_power(&c0, 0-ADAM_HIGH_POWER_RATIO);
 		}
 		else
 		{
