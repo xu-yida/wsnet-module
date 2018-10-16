@@ -479,7 +479,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	}
 #endif//ADAM_NO_SENSING
 		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
+		radio_set_power(&c0, 1);
 		/* Send RTS */
 		TX(&c0, packet); 
         
@@ -564,7 +564,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
 		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
+		radio_set_power(&c0, 1);
 
 		/* Send CTS */
 		TX(&c0, packet); 
@@ -608,12 +608,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 #endif//ADAM_NO_SENSING
 		{
-			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+			//radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+			radio_set_power(&c0, ADAM_HIGH_POWER_RATIO);
 		}
 		else
 		{
 			// recover power
-			radio_set_power(&c0, nodedata->base_power_tx);
+			radio_set_power(&c0, 1);
 		}
 
 #ifdef ADAM_NO_SENSING
@@ -655,12 +656,12 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
 		{
-			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+			radio_set_power(&c0, ADAM_HIGH_POWER_RATIO);
 		}
 		else
 		{
 			// recover power
-			radio_set_power(&c0, nodedata->base_power_tx);
+			radio_set_power(&c0, 1);
 		}
 		
 		//PRINT_MAC("STATE_BROADCAST radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
@@ -686,7 +687,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout =  packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
 
 		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
+		radio_set_power(&c0, 1);
 
 		/* Send ack */
 		TX(&c0, packet);
@@ -762,7 +763,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->dst = -1;
 		
 		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
+		radio_set_power(&c0, 1);
 		
 		/* Send CTS */
 		TX(&c0, packet); 
@@ -809,7 +810,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->sink_state = 0;
 
 		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
+		radio_set_power(&c0, 1);
 		
 		/* Send Data request */
 		TX(&c0, packet); 
@@ -852,7 +853,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->source_state = 0;
 
 		// recover power
-		radio_set_power(&c0, nodedata->base_power_tx);
+		radio_set_power(&c0, 1);
 		
 		/* Send Contention */
 		TX(&c0, packet); 
