@@ -280,26 +280,26 @@
 <!-- == Single Hop Configuration === -->
 <node id="0" as="sensor">
   <for entity="mobility" x="10" y="0" z="0"  />
-  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="10000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 
 <node id="1" as="sensor">
   <for entity="mobility" x="0" y="10" z="0"  />
-  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="10000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 
 <node id="2" as="sensor">
   <for entity="mobility" x="10" y="10" z="0"  />
-  <for entity="app" destination="1" destination-x="10" destination-y="0" destination-z="0"/>  
+  <for entity="app" period="10000" destination="1" destination-x="10" destination-y="0" destination-z="0"/>  
 </node>
 
 <node id="3" as="sensor">
   <for entity="mobility" x="20" y="10" z="0"  />
-  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="10000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 
 <node id="4" as="sensor">
   <for entity="mobility" x="10" y="20" z="0"  />
-  <for entity="app" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
+  <for entity="app" period="10000" destination="2" destination-x="10" destination-y="10" destination-z="0"/>  
 </node>
 </worldsens>
