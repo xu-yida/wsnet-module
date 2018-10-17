@@ -272,7 +272,6 @@ int adam_check_channel_busy(call_t *c) {
 	if (nodedata->cs)
 	{
 		noise_mw = dBm2mW(radio_get_cs(&c0));
-		noise_mw = adam_Get_IN_MW(&c0, noise_mw);
 		if( noise_mw >= high_threshold_mw)
 		{
 			channel_state = 2;
@@ -284,7 +283,6 @@ int adam_check_channel_busy(call_t *c) {
 	}
 	else if (nodedata->cca) {
 		noise_mw = dBm2mW(radio_get_noise(&c0));
-		noise_mw = adam_Get_IN_MW(&c0, noise_mw);
 		if(noise_mw >= high_threshold_mw)
 		{
 			channel_state = 2;
