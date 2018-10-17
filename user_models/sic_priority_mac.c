@@ -858,6 +858,12 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		/* Send Contention */
 		TX(&c0, packet); 
 
+		// contention does not count in
+		if(0 < nodedata->BE)
+		{
+			nodedata->BE--;
+		}
+		
 		/* Wait for timeout or Contention end */
 		nodedata->state = STATE_TIMEOUT;
 		nodedata->clock = get_time() + timeout;
