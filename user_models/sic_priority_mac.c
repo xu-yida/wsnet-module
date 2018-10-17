@@ -272,6 +272,7 @@ int adam_check_channel_busy(call_t *c) {
 	if (nodedata->cs)
 	{
 		noise_mw = dBm2mW(radio_get_cs(&c0));
+		noise_mw = adam_Get_IN_MW(&c0, noise_mw);
 		if( noise_mw >= high_threshold_mw)
 		{
 			channel_state = 2;
@@ -283,6 +284,7 @@ int adam_check_channel_busy(call_t *c) {
 	}
 	else if (nodedata->cca) {
 		noise_mw = dBm2mW(radio_get_noise(&c0));
+		noise_mw = adam_Get_IN_MW(&c0, noise_mw);
 		if(noise_mw >= high_threshold_mw)
 		{
 			channel_state = 2;
@@ -483,10 +485,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		rts_header->priority_type = 0;
 	}
 #endif//ADAM_NO_SENSING
-		// recover power
-		radio_set_power(&c0, 1);
-		/* Send RTS */
-		TX(&c0, packet); 
+	// recover power
+	radio_set_power(&c0, 1);
+	/* Send RTS */
+	TX(&c0, packet); 
         
         /* Wait for timeout or CTS */
         nodedata->state = STATE_TIMEOUT;

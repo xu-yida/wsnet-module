@@ -200,11 +200,13 @@ void tx(call_t *c, packet_t *packet) {
 	}
 	
     /* radio sleep */
+#if 0
 	if (0 < nodedata->rx_busy) {
 		PRINT_RADIO("nodedata->rx_busy=%d\n", nodedata->rx_busy);
 		packet_dealloc(packet);
 		goto END;
 	}
+#endif
 
 	/* radio activity */
 	cs_init(c);
