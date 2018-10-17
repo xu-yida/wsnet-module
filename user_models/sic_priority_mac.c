@@ -331,39 +331,18 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
     switch (nodedata->state) {
 		
 	case STATE_IDLE:
-#if 0//def ADAM_NO_SENSING
-        if (nodedata->BE >= entitydata->maxCSMARetries) {
-            /* Transmit retry limit reached */
-            packet_dealloc(nodedata->txbuf);            
-            nodedata->txbuf = NULL;
-			
-            /* Return to idle */
-            nodedata->state = STATE_IDLE;
-            nodedata->clock = get_time();
-            dcf_802_11_state_machine(c,NULL);
-            goto END;
-        }
-#endif// ADAM_NO_SENSING
-	if(0 == nodedata->base_power_tx)
-	{
-		nodedata->base_power_tx = radio_get_power(&c0);
-	}
-        /* Next packet to send */
-	if (nodedata->txbuf == NULL) {
-		nodedata->txbuf = (packet_t *) das_pop_FIFO(nodedata->packets);
-		if (nodedata->txbuf == NULL) {
-			goto END;
+		if(0 == nodedata->base_power_tx)
+		{
+			nodedata->base_power_tx = radio_get_power(&c0);
 		}
-	}
+		    /* Next packet to send */
+		if (nodedata->txbuf == NULL) {
+			nodedata->txbuf = (packet_t *) das_pop_FIFO(nodedata->packets);
+			if (nodedata->txbuf == NULL) {
+				goto END;
+			}
+		}
 
-#if 0//def ADAM_NO_SENSING
-	header = (struct _sic_802_11_header *) nodedata->txbuf->data;
-	if(BROADCAST_TYPE != header->type)
-	{
-		nodedata->state = STATE_IDLE;
-		goto END;
-	}
-#endif// ADAM_NO_SENSING
 		/* Initial backoff */
 		nodedata->BE = macMinBE - 1;
 		nodedata->NB = 0;
@@ -399,16 +378,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	}
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
 	priority = nodedata->txbuf->type;
-        /* Backoff */
-        if (nodedata->backoff > 0) {
-#if 1//ndef ADAM_NO_SENSING
-		//low channel power blocks low priority; high channel power blocks high priority
-		channel_state = adam_check_channel_busy(c);
-		//PRINT_RESULT("STATE_BACKOFF channel_state=%d, priority=%d\n", channel_state, priority);
-#else//ADAM_NO_SENSING
-		// always decrease backoff
-		channel_state = 0;
-#endif//ADAM_NO_SENSING
+	//low channel power blocks low priority; high channel power blocks high priority
+	channel_state = adam_check_channel_busy(c);
+        /* Backoff or channel busy*/
+        if (nodedata->backoff > 0 || 0 != channel_state) {
 #ifdef ADAM_NO_SENSING
 		if ((get_time() < nodedata->nav) || (0 != channel_state))
 #else// ADAM_NO_SENSING
