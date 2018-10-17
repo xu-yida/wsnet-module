@@ -196,13 +196,13 @@ void tx(call_t *c) {
 	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
-	if(nodedata->priority_ratio > 0)
+	if(0 < nodedata->priority_ratio)
 	{
 		packet->type = (get_random_integer()%nodedata->priority_ratio == 0)?1:0;
 	}
 	else
 	{
-		packet->type = 0;
+		packet->type = 1;
 	}
 	PRINT_APPLICATION("packet->type=%d\n", packet->type);
 #ifdef ADAM_TEST
