@@ -70,6 +70,7 @@ struct nodedata {
 double g_delay = 0;
 double g_delay_priority0 = 0;
 double g_delay_priority1 = 0;
+double g_delay_max = 0;
 int g_num_r = 0;
 int g_num_r_priority0 = 0;
 int g_num_r_priority1 = 0;
@@ -610,6 +611,10 @@ void rx(call_t *c, packet_t *packet) {
 		}
 #ifdef ADAM_TEST
 		delay = get_time() - header->time_start;
+		if(delay > g_delay_max)
+		{
+			g_delay_max = delay;
+		}
 		g_delay += delay;
 		if(0 == packet->type)
 		{
@@ -625,7 +630,7 @@ void rx(call_t *c, packet_t *packet) {
 		PRINT_RESULT("node %d received packet, delay=%"PRId64"\n", c->node, delay);
 		PRINT_RESULT("%d packets received\n", g_num_r);
 		PRINT_RESULT("%d priority0 packets received, %d priority1 packets received\n", g_num_r_priority0, g_num_r_priority1);
-		PRINT_RESULT("average delay is %f\n", g_delay/g_num_r);
+		PRINT_RESULT("average delay is %f, maximal delay is %f\n", g_delay/g_num_r, g_delay_max);
 		PRINT_RESULT("average delay of priority0 packets is %f, average delay of priority1 packets is %f\n", g_delay_priority0/g_num_r_priority0, g_delay_priority1/g_num_r_priority1);
 #endif//ADAM_TEST
 
