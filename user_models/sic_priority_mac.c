@@ -859,9 +859,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		TX(&c0, packet); 
 
 		// contention does not count in
-		if(0 < nodedata->BE)
+		if(0 < nodedata->NB)
 		{
-			nodedata->BE--;
+			nodedata->NB--;
 		}
 		
 		/* Wait for timeout or Contention end */
