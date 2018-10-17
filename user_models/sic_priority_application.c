@@ -141,24 +141,24 @@ int unsetnode(call_t *c) {
 /* ************************************************** */
 /* ************************************************** */
 int bootstrap(call_t *c) {
-    struct _sic_private *nodedata = get_node_private_data(c);
-    array_t *down = get_entity_bindings_down(c);
-    call_t c0 = {down->elts[0], c->node, c->entity};
-// <-RF00000000-AdamXu-2018/07/06-test sic.
+	struct _sic_private *nodedata = get_node_private_data(c);
+	array_t *down = get_entity_bindings_down(c);
+	call_t c0 = {down->elts[0], c->node, c->entity};
+	// <-RF00000000-AdamXu-2018/07/06-test sic.
 #if 1//def ADAM_TEST
-    uint64_t start = get_time() + nodedata->start + nodedata->period;
+	uint64_t start = get_time() + nodedata->start + nodedata->period;
 #else
-    uint64_t start = get_time() + nodedata->start + get_random_double() * nodedata->period;
+	uint64_t start = get_time() + nodedata->start + get_random_double() * nodedata->period;
 #endif
-// ->RF00000000-AdamXu
-  
-    /* get overhead */
-    nodedata->overhead = GET_HEADER_SIZE(&c0);
-    
-    /* eventually schedule callback */
-    scheduler_add_callback(start, c, callmeback, NULL);
-    
-    return 0;
+	// ->RF00000000-AdamXu
+
+	/* get overhead */
+	nodedata->overhead = GET_HEADER_SIZE(&c0);
+
+	/* eventually schedule callback */
+	scheduler_add_callback(start, c, callmeback, NULL);
+
+	return 0;
 }
 
 int ioctl(call_t *c, int option, void *in, void **out) {
