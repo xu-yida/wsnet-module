@@ -316,6 +316,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		
 	PRINT_MAC("B: c->node=%d, nodedata->state=%d\n", c->node, nodedata->state);
 	PRINT_MAC("nodedata->power_type_data=%d\n", nodedata->power_type_data);
+        /* Next packet to send */
+	if (NULL != nodedata->txbuf)
+	{
+		PRINT_MAC("nodedata->txbuf->type=%d\n", nodedata->txbuf->type);
+	}
 	/* Drop unscheduled events */
 	if (nodedata->clock != get_time()) {
 		error_id = ADAM_ERROR_DEFAULT;
