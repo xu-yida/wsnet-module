@@ -515,8 +515,12 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			}
 		}
 	}
-		
-        nodedata->backoff = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * aUnitBackoffPeriod;
+	{
+		double d_random = get_random_double();
+		int i_pow = pow(2, nodedata->BE);
+		nodedata->backoff = ((int)(d_random * (i_pow - 1))) * aUnitBackoffPeriod;
+		PRINT_MAC("d_random=%f, i_pow=%d\n", d_random, i_pow);
+	}
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
 	PRINT_MAC("STATE_TIMEOUT: nodedata->BE=%d, nodedata->backoff=%"PRId64"\n", nodedata->BE, nodedata->backoff);
