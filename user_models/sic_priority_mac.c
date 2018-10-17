@@ -49,7 +49,7 @@
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
 #define macMaxCSMARetries     (macMaxBE-macMinBE+1)     /* 7 trials before dropping */
 //#define aUnitBackoffPeriod    20000
-#define aUnitBackoffPeriod    20000
+#define aUnitBackoffPeriod    200000
 #define EDThresholdMin        -74
 
 #define MAX_CONTENTION_WINDOW_HIGH	2	/* 4 slots */
@@ -502,16 +502,16 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	{
 		if(1 == nodedata->txbuf->type)
 		{
-			if ((++nodedata->BE) > MAX_CONTENTION_WINDOW_HIGH) 
+			if ((++nodedata->BE) > macMaxBE) 
 			{
-				nodedata->BE = MAX_CONTENTION_WINDOW_HIGH;
+				nodedata->BE = macMaxBE;
 			}
 		}
 		else
 		{
-			if ((++nodedata->BE) > MAX_CONTENTION_WINDOW_LOW)
+			if ((++nodedata->BE) > macMaxBE)
 			{
-				nodedata->BE = MAX_CONTENTION_WINDOW_LOW;
+				nodedata->BE = macMaxBE;
 			}
 		}
 	}
@@ -839,6 +839,10 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(0 < nodedata->NB)
 		{
 			nodedata->NB--;
+		}
+		if(0 < nodedata->BE)
+		{
+			nodedata->BE--;
 		}
 		
 		/* Wait for timeout or Contention end */
