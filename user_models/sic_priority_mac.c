@@ -42,14 +42,10 @@
 /* ************************************************** */
 #define macMinDIFSPeriod      50000   
 #define macMinSIFSPeriod      10000
-//#define macMinBE              5     /* 32 slots */
-#define macMinBE              3     /* 8 slots */
-//#define macMaxBE              10    /* 1024 slots */
-#define macMaxBE              9    /* 512 slots */
-//#define macMaxCSMARetries     7     /* 7 trials before dropping */
-#define macMaxCSMARetries     (macMaxBE-macMinBE+1)     /* 7 trials before dropping */
-//#define aUnitBackoffPeriod    20000
-#define aUnitBackoffPeriod    200000
+#define macMinBE              5     /* 32 slots */
+#define macMaxBE              10    /* 1024 slots */
+#define macMaxCSMARetries     7     /* 7 trials before dropping */
+#define aUnitBackoffPeriod    20000
 #define EDThresholdMin        -74
 
 #define MAX_CONTENTION_WINDOW_HIGH	2	/* 4 slots */
@@ -385,9 +381,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #ifdef ADAM_NO_SENSING
 		if ((get_time() < nodedata->nav) || (0 != channel_state))
 #else// ADAM_NO_SENSING
-		if ((get_time() < nodedata->nav)
-			|| (0 == priority && 1 <= channel_state)
-			|| (1 == priority && 2 <= channel_state))
+		if ((get_time() < nodedata->nav) || (0 != channel_state))
 #endif// ADAM_NO_SENSING
 		{ 
                 if (nodedata->backoff_suspended == 0) {
@@ -486,7 +480,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
         }
 			
 // <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
-#ifndef ADAM_NO_SENSING
+#if 1//ndef ADAM_NO_SENSING
         /* Update backoff */
         if ((++nodedata->BE) > macMaxBE) {
             nodedata->BE = macMaxBE;
