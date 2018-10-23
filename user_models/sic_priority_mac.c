@@ -43,17 +43,17 @@
 #define macMinDIFSPeriod      50000   
 #define macMinSIFSPeriod      10000
 //#define macMinBE              5     /* 32 slots */
-#define macMinBE              2     /* 4 slots */
+#define macMinBE              5     /* 32 slots */
 //#define macMaxBE              10    /* 1024 slots */
-#define macMaxBE              9    /* 512 slots */
+#define macMaxBE              10    /* 1024 slots */
 //#define macMaxCSMARetries     7     /* 7 trials before dropping */
-#define macMaxCSMARetries     (macMaxBE-macMinBE+1)     /* 7 trials before dropping */
+#define macMaxCSMARetries     7     /* 7 trials before dropping */
 //#define aUnitBackoffPeriod    20000
 #define aUnitBackoffPeriod    200000
 #define EDThresholdMin        -74
 
 #define MAX_CONTENTION_WINDOW_HIGH	2	/* 4 slots */
-#define MAX_CONTENTION_WINDOW_LOW	(MAX_CONTENTION_WINDOW_HIGH + (int)(ADAM_HIGH_PRIOTITY_RATIO/4))
+#define MAX_CONTENTION_WINDOW_LOW	3	/*(MAX_CONTENTION_WINDOW_HIGH + (int)(ADAM_HIGH_PRIOTITY_RATIO/4))*/
 
 #define RTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
 #define CTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0))
