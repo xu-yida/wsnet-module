@@ -1180,7 +1180,7 @@ void rx(call_t *c, packet_t *packet) {
 			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 			goto END;
 		}
-		// high priority contention begin
+		// high power contention begin
 		if(2 == cts_header->priority_type)
 		{
 			// has high priority packet
@@ -1199,16 +1199,24 @@ void rx(call_t *c, packet_t *packet) {
 				goto END;
 			}
 		}
-		// low priority contention begin
+		// low power contention begin
 		else
 		{
 			// low priority packets and high priority packets
 			nodedata->source_state = -2;
 		}
-		packet_dealloc(packet);
 		
-		//random backoff contention
-		timeout = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+		//high power contention random backoff contention
+		if(2 == cts_header->priority_type)
+		{
+			timeout = ((int)(get_random_double() * (pow(2, MAX_CONTENTION_WINDOW_HIGH) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+		}
+		else
+		{
+			timeout = ((int)(get_random_double() * (pow(2, MAX_CONTENTION_WINDOW_LOW) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+		}
+		
+		packet_dealloc(packet);
 		nodedata->state_pending = nodedata->state;
 		nodedata->state = STATE_CONTENTION;
 		nodedata->clock = get_time() + timeout;
