@@ -602,7 +602,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->power_type_data = 0;
 #endif// ADAM_NO_SENSING
 		PRINT_MAC("STATE_DATA radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
-		PRINT_MAC("s_sent_mac=%d\n", ++s_sent_mac);
+		++s_sent_mac;
+		PRINT_MAC("s_sent_mac=%d\n", s_sent_mac);
 		if(1 == packet->type)
 		{
 			s_sent_mac1++;
