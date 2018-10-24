@@ -124,6 +124,8 @@ model_t model =  {
 /* ************************************************** */
 /* ************************************************** */
 static int s_sent_mac = 0;
+static int s_sent_mac0 = 0;
+static int s_sent_mac1 = 0;
 static int s_received_mac = 0;
 
 /* ************************************************** */
@@ -233,6 +235,7 @@ int setnode(call_t *c, void *params) {
 int unsetnode(call_t *c) {
     struct nodedata *nodedata = get_node_private_data(c);
     packet_t *packet;
+	PRINT_RESULT("%d", s_sent_mac);
     while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
         packet_dealloc(packet);
     }
@@ -600,6 +603,14 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif// ADAM_NO_SENSING
 		PRINT_MAC("STATE_DATA radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
 		PRINT_MAC("s_sent_mac=%d\n", ++s_sent_mac);
+		if(1 == packet->type)
+		{
+			s_sent_mac1++;
+		}
+		else
+		{
+			s_sent_mac0++;
+		}
 		//PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
