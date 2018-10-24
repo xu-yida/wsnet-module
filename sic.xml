@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="7" duration="3000s" x="200" y="100" z="0"/>
+<simulation nodes="5" duration="3000s" x="200" y="100" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -64,7 +64,7 @@
 <!-- == BATTERY ======================================================== -->
 
 <entity name="battery" library="energy_linear" >
-  <default energy="90000000000000" tx="0.03" rx="0.01"/>
+  <default energy="9000000000000000" tx="3" rx="1"/>
 </entity>
 
 
@@ -288,7 +288,7 @@
 </node>
 -->
 <!-- == Single Hop Configuration === -->
-<!--
+
 <node id="0" as="sensor">
   <for entity="mobility" x="10" y="0" z="0"  />
   <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
@@ -313,7 +313,7 @@
   <for entity="mobility" x="10" y="10" z="0"  />
   <for entity="app" period="300000000" start='5000s' destination="1" destination-x="10" destination-y="0" destination-z="0" priority_ratio="0.8"/>  
 </node>
--->
+<!--
 <node id="0" as="sensor">
   <for entity="mobility" x="10" y="10" z="0"  />
   <for entity="app" period="300000000" start='3000s' destination="1" destination-x="10" destination-y="0" destination-z="0" priority_ratio="0.8"/>  
@@ -348,4 +348,5 @@
   <for entity="mobility" x="1.34" y="15" z="0"  />
   <for entity="app" period="300000000" destination="0" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
 </node>
+-->
 </worldsens>
