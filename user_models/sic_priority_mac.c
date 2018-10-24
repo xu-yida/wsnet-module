@@ -235,7 +235,7 @@ int setnode(call_t *c, void *params) {
 int unsetnode(call_t *c) {
     struct nodedata *nodedata = get_node_private_data(c);
     packet_t *packet;
-	PRINT_RESULT("%d", s_sent_mac);
+	PRINT_RESULT("%d, ", s_sent_mac);
     while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
         packet_dealloc(packet);
     }
