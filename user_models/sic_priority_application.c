@@ -28,7 +28,7 @@ struct _sic_private {
 	uint64_t start;
 	uint64_t period;
 	int size;
-	int priority_ratio;
+	double priority_ratio;
 	nodeid_t destination;
 	position_t position;
 	int overhead;
@@ -115,7 +115,7 @@ int setnode(call_t *c, void *params) {
             }
         }
         if (!strcmp(param->key, "priority_ratio")) {
-            if (get_param_integer(param->value, &(nodedata->priority_ratio))) {
+            if (get_param_double(param->value, &(nodedata->priority_ratio))) {
                 goto error;
             }
         }
@@ -196,9 +196,13 @@ void tx(call_t *c) {
 	PRINT_APPLICATION("B: packet->id=%d, c->node=%d, destination.id=%d\n", packet->id, c->node, destination.id);
 	PRINT_APPLICATION("get_time()=%"PRId64"\n", get_time());
 	// add priority here
-	if(0 < nodedata->priority_ratio)
+	if(1 > nodedata->priority_ratio)
 	{
-		packet->type = (get_random_integer()%nodedata->priority_ratio == 0)?1:0;
+		packet->type = (get_random_double()<nodedata->priority_ratio)?1:0;
+	}
+	else if(0 <= nodedata->priority_ratio)
+	{
+		packet->type = 0;
 	}
 	else
 	{

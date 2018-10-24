@@ -48,8 +48,8 @@
 #define aUnitBackoffPeriod    20000
 #define EDThresholdMin        -74
 
-#define MAX_CONTENTION_WINDOW_HIGH	2	/* 4 slots */
-#define MAX_CONTENTION_WINDOW_LOW	(MAX_CONTENTION_WINDOW_HIGH + (int)(ADAM_HIGH_PRIOTITY_RATIO/4))
+#define MAX_CONTENTION_WINDOW_HIGH	3	/* 4 slots */
+#define MAX_CONTENTION_WINDOW_LOW	3	/* 8 slots */
 
 #define RTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
 #define CTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0))
@@ -92,6 +92,7 @@ struct nodedata {
 	double HighThreshold_mw;
 	double base_power_tx;
 #ifdef ADAM_NO_SENSING
+	double priority_ratio;
 	// 0: idle; -1: wait for high; -2: wait for low; -3: wait for data;
 	int sink_state;
 	// 0: idle; -1: sent high rts; -2: sent low rts; -3: sent data;
@@ -182,6 +183,7 @@ int setnode(call_t *c, void *params) {
 	nodedata->base_power_tx = 0;
 //#endif//ADAM_PRIORITY_TEST
 #ifdef ADAM_NO_SENSING
+	nodedata->priority_ratio = ADAM_HIGH_PRIOTITY_RATIO;
 	nodedata->sink_state = 0;
 	nodedata->source_state = 0;
 	nodedata->power_type_data = 0;
@@ -209,6 +211,11 @@ int setnode(call_t *c, void *params) {
         }
         if (!strcmp(param->key, "rts-threshold")) {
             if (get_param_integer(param->value, &(nodedata->rts_threshold))) {
+                goto error;
+            }
+        }
+        if (!strcmp(param->key, "priority-ratio")) {
+            if (get_param_double(param->value, &(nodedata->priority_ratio))) {
                 goto error;
             }
         }
@@ -710,7 +717,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		{
 			nodedata->allowed_low = cts_header->node_allowed;
 			// Timeout
-			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio)))  * MIN_CONTENTION_BACKOFF_PERIOD;
 			cts_header->priority_type = 2;
 		}
 		// CTS for high priority RTS, begin low contention
@@ -1170,7 +1177,7 @@ void rx(call_t *c, packet_t *packet) {
 			{
 				nodedata->power_type_data = 1;
 				// wait for high
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD;
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio)))  * MIN_CONTENTION_BACKOFF_PERIOD;
 			}
 			timeout += nodedata->txbuf->size*8*radio_get_Tb(&c0);
 			nodedata->state = STATE_TIMEOUT;
@@ -1192,7 +1199,7 @@ void rx(call_t *c, packet_t *packet) {
 			{
 				packet_dealloc(packet);
 				// wait for period end
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_HIGH)  * MIN_CONTENTION_BACKOFF_PERIOD + nodedata->txbuf->size*8*radio_get_Tb(&c0);
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio)))  * MIN_CONTENTION_BACKOFF_PERIOD + nodedata->txbuf->size*8*radio_get_Tb(&c0);
 				nodedata->clock = get_time() + timeout;
 				scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 				error_id = 4;
@@ -1209,7 +1216,7 @@ void rx(call_t *c, packet_t *packet) {
 		//high power contention random backoff contention
 		if(2 == cts_header->priority_type)
 		{
-			timeout = ((int)(get_random_double() * (pow(2, MAX_CONTENTION_WINDOW_HIGH) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+			timeout = ((int)(get_random_double() * (pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio))) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
 		}
 		else
 		{
