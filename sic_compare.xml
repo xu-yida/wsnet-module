@@ -55,7 +55,7 @@
 <!-- == BATTERY ======================================================== -->
 
 <entity name="battery" library="energy_linear" >
-  <default energy="90000000000000" tx="3" rx="1"/>
+  <default energy="90000000000000" tx="0.03" rx="0.01"/>
 </entity>
 
 
