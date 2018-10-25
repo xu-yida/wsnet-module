@@ -238,6 +238,7 @@ int unsetnode(call_t *c) {
 	//if(0 < battery_remaining(c))
 	{
 		PRINT_RESULT("%d, %d, %d, ", s_sent_mac, s_sent_mac0, s_sent_mac1);
+		PRINT_RESULT("%f, ", battery_consumed(c));
 	}
 		while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
 		packet_dealloc(packet);

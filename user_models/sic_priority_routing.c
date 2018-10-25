@@ -164,7 +164,6 @@ int unsetnode(call_t *c) {
 		PRINT_RESULT("%d, %d, %d, ", g_num_r, g_num_r_priority0, g_num_r_priority1);
 		PRINT_RESULT("%f, %f, %f, ", g_delay/g_num_r, g_delay_priority0/g_num_r_priority0, g_delay_priority1/g_num_r_priority1);
 		PRINT_RESULT("%"PRId64", %"PRId64", ", g_delay_max0, g_delay_max1);
-		PRINT_RESULT("%f, ", battery_consumed(c));
 	}
 #endif// ADAM_TEST
     while ((neighbor = (struct neighbor *) das_pop(nodedata->neighbors_low)) != NULL) {
