@@ -135,7 +135,7 @@ int unsetnode(call_t *c) {
 #ifdef ADAM_TEST
 	//PRINT_RESULT("%d packets transmitted\n", g_num_t);
 	//PRINT_RESULT("%d prioriy0 packets transmitted, %d prioriy1 packets transmitted\n", g_num_t_priority0, g_num_t_priority1);
-	if(0 < battery_remaining(c))
+	//if(0 < battery_remaining(c))
 	{
 		PRINT_RESULT("%d, %d, %d\n", g_num_t, g_num_t_priority0, g_num_t_priority1);
 	}

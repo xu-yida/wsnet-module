@@ -159,9 +159,9 @@ int unsetnode(call_t *c) {
 	//PRINT_RESULT("maximal priority0 delay is %"PRId64", maximal priority1 delay is %"PRId64"\n", g_delay_max0, g_delay_max1);
 	//PRINT_RESULT("average delay of priority0 packets is %f, average delay of priority1 packets is %f\n", g_delay_priority0/g_num_r_priority0, g_delay_priority1/g_num_r_priority1);
 	//PRINT_RESULT("node %d consumes energy: %f\n", c->node, battery_consumed(c));
-	if(0 < battery_remaining(c))
+	//if(0 < battery_remaining(c))
 	{
-		PRINT_RESULT("%d , %d, %d, ", g_num_r, g_num_r_priority0, g_num_r_priority1);
+		PRINT_RESULT("%d, %d, %d, ", g_num_r, g_num_r_priority0, g_num_r_priority1);
 		PRINT_RESULT("%f, %f, %f, ", g_delay/g_num_r, g_delay_priority0/g_num_r_priority0, g_delay_priority1/g_num_r_priority1);
 		PRINT_RESULT("%"PRId64", %"PRId64", ", g_delay_max0, g_delay_max1);
 		PRINT_RESULT("%f, ", battery_consumed(c));

@@ -235,7 +235,7 @@ int setnode(call_t *c, void *params) {
 int unsetnode(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	packet_t *packet;
-	if(0 < battery_remaining(c))
+	//if(0 < battery_remaining(c))
 	{
 		PRINT_RESULT("%d, %d, %d, ", s_sent_mac, s_sent_mac0, s_sent_mac1);
 	}
