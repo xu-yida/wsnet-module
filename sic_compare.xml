@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="5" duration="3000s" x="200" y="100" z="0"/>
+<simulation nodes="7" duration="3000s" x="200" y="100" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -296,6 +296,16 @@
 
 <node id="4" as="sensor">
   <for entity="mobility" x="10" y="20" z="0"  />
+  <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
+<node id="5" as="sensor">
+  <for entity="mobility" x="3" y="3" z="0"  />
+  <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
+<node id="6" as="sensor">
+  <for entity="mobility" x="17" y="17" z="0"  />
   <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
 </node>
 
