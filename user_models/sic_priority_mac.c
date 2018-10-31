@@ -126,6 +126,8 @@ model_t model =  {
 static int s_sent_mac = 0;
 static int s_sent_mac0 = 0;
 static int s_sent_mac1 = 0;
+static int s_retry0 = 0;
+static int s_retry1 = 0;
 static int s_received_mac = 0;
 
 /* ************************************************** */
@@ -238,6 +240,7 @@ int unsetnode(call_t *c) {
 	//if(0 < battery_remaining(c))
 	{
 		PRINT_RESULT("%d, %d, %d, ", s_sent_mac, s_sent_mac0, s_sent_mac1);
+		PRINT_RESULT("%f, %f, ", s_retry0/s_sent_mac0, s_retry1/s_sent_mac1);
 		PRINT_RESULT("%f, ", battery_consumed(c));
 	}
 		while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
@@ -611,10 +614,12 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(1 == packet->type)
 		{
 			s_sent_mac1++;
+			s_retry1 += nodedata->NB;
 		}
 		else
 		{
 			s_sent_mac0++;
+			s_retry0 += nodedata->NB;
 		}
 		//PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
