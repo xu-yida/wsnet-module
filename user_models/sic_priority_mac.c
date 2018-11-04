@@ -42,10 +42,14 @@
 /* ************************************************** */
 #define macMinDIFSPeriod      50000   
 #define macMinSIFSPeriod      10000
-#define macMinBE              5     /* 32 slots */
-#define macMaxBE              10    /* 1024 slots */
-#define macMaxCSMARetries     7     /* 7 trials before dropping */
+#define macMinBE              3     /* 8 slots */
+#define macMaxBE              8    /* 256 slots */
+#define macMaxCSMARetries     5     /* 5 trials before dropping */
+#ifdef ADAM_SLOT_CSMA
+#define aUnitBackoffPeriod    250000
+#else// ADAM_SLOT_CSMA
 #define aUnitBackoffPeriod    20000
+#endif// ADAM_SLOT_CSMA
 #define EDThresholdMin        -74
 
 //#define MAX_CONTENTION_WINDOW_HIGH	3	/* 4 slots */
@@ -496,39 +500,19 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		goto END;
         }
 			
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
-#if 1//ndef ADAM_NO_SENSING
         /* Update backoff */
         if ((++nodedata->BE) > macMaxBE) {
             nodedata->BE = macMaxBE;
         }
 		
+#ifdef ADAM_SLOT_CSMA
+	nodedata->backoff = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * aUnitBackoffPeriod;
+#else //ADAM_SLOT_CSMA
         nodedata->backoff = get_random_double() 
             * (pow(2, nodedata->BE) - 1) 
             * aUnitBackoffPeriod 
             + macMinDIFSPeriod;
-#else //ADAM_NO_SENSING
-        /* Update backoff */
-	if(NULL != nodedata->txbuf)
-	{
-		if(1 == nodedata->txbuf->type)
-		{
-			if ((++nodedata->BE) > macMaxBE) 
-			{
-				nodedata->BE = macMaxBE;
-			}
-		}
-		else
-		{
-			if ((++nodedata->BE) > macMaxBE)
-			{
-				nodedata->BE = macMaxBE;
-			}
-		}
-	}
-	nodedata->backoff = ((int)(get_random_double() * (pow(2, nodedata->BE) - 1))) * aUnitBackoffPeriod;
-#endif//ADAM_NO_SENSING
-// ->RF00000000-AdamXu
+#endif//ADAM_SLOT_CSMA
 	PRINT_MAC("STATE_TIMEOUT: nodedata->BE=%d, nodedata->backoff=%"PRId64"\n", nodedata->BE, nodedata->backoff);
         nodedata->backoff_suspended = 0;
         nodedata->state = STATE_BACKOFF;

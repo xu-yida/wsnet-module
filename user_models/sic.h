@@ -14,10 +14,9 @@
 
 /* ************************************************** */
 /* ************************************************** */
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
 #define ADAM_NO_SENSING
-// ->RF00000000-AdamXu
 //#define ADAM_PRIORITY_TEST
+#define ADAM_SLOT_CSMA
 #define ADAM_HIGH_PRIOTITY_RATIO 0.2
 #define ADAM_HIGH_POWER_RATIO 2.1
 #define ADAM_HIGH_POWER_DBM_GAIN (log10(ADAM_HIGH_POWER_RATIO))
