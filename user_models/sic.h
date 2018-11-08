@@ -73,6 +73,9 @@ struct _sic_802_11_cts_header {
 	char padding[6];
 };
 struct _sic_802_11_data_header {
+#ifdef ADAM_TEST
+	uint64_t mac_start;
+#endif//ADAM_TEST
 	uint64_t nav;
 	int size;
 	//int priority;

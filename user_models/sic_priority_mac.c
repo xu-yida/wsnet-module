@@ -95,6 +95,9 @@ struct nodedata {
 	double EDThreshold;
 	double HighThreshold_mw;
 	double base_power_tx;
+#ifdef ADAM_TEST
+	uint64_t mac_start;
+#endif//ADAM_TEST
 #ifdef ADAM_NO_SENSING
 	double priority_ratio;
 	// 0: idle; -1: wait for high; -2: wait for low; -3: wait for data;
@@ -127,12 +130,21 @@ model_t model =  {
 
 /* ************************************************** */
 /* ************************************************** */
+#ifdef ADAM_TEST
 static int s_sent_mac = 0;
 static int s_sent_mac0 = 0;
 static int s_sent_mac1 = 0;
 static int s_retry0 = 0;
 static int s_retry1 = 0;
 static int s_received_mac = 0;
+static int s_received_mac0 = 0;
+static int s_received_mac1 = 0;
+static double s_delay_mac = 0;
+static double s_delay_mac0 = 0;
+static double s_delay_mac1 = 0;
+static uint64_t s_delaym_mac0 = 0;
+static uint64_t s_delaym_mac1 = 0;
+#endif//ADAM_TEST
 
 /* ************************************************** */
 /* ************************************************** */
@@ -241,13 +253,15 @@ int setnode(call_t *c, void *params) {
 int unsetnode(call_t *c) {
 	struct nodedata *nodedata = get_node_private_data(c);
 	packet_t *packet;
-	//if(0 < battery_remaining(c))
-	{
-		PRINT_RESULT("%d, %d, %d, ", s_sent_mac, s_sent_mac0, s_sent_mac1);
-		PRINT_RESULT("%f, %f, ", s_retry0/s_sent_mac0, s_retry1/s_sent_mac1);
-		PRINT_RESULT("%f, ", battery_consumed(c));
-	}
-		while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
+#ifdef ADAM_TEST
+	PRINT_RESULT("%d, %d, %d, ", s_received_mac, s_received_mac0, s_received_mac1);
+	PRINT_RESULT("%f, %f, %f, ", s_delay_mac/s_received_mac, s_delay_mac0/s_received_mac0, s_delay_mac1/s_received_mac1);
+	PRINT_RESULT("%"PRId64", %"PRId64", ", s_delaym_mac0, s_delaym_mac1);
+	PRINT_RESULT("%d, %d, %d, ", s_sent_mac, s_sent_mac0, s_sent_mac1);
+	PRINT_RESULT("%f, %f, ", s_retry0/s_sent_mac0, s_retry1/s_sent_mac1);
+	PRINT_RESULT("%f, ", battery_consumed(c));
+#endif//ADAM_TEST	
+	while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
 		packet_dealloc(packet);
 	}
 	das_destroy(nodedata->packets);    
@@ -359,6 +373,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 				goto END;
 			}
 		}
+#ifdef ADAM_TEST
+		nodedata->mac_start = get_time();
+#endif//ADAM_TEST
 
 		/* Initial backoff */
 		nodedata->BE = macMinBE - 1;
@@ -566,6 +583,9 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		header = (struct _sic_802_11_header *) packet->data;
 		data_header = (struct _sic_802_11_data_header *) (packet->data + sizeof(struct _sic_802_11_header));
 		data_header->nav = macMinSIFSPeriod + (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_ack_header)) * 8 * radio_get_Tb(&c0);
+#ifdef ADAM_TEST
+		data_header->mac_start = nodedata->mac_start;
+#endif//ADAM_TEST
 #ifdef ADAM_NO_SENSING
 		timeout = packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + SPEED_LIGHT;
 #else// ADAM_NO_SENSING
@@ -593,6 +613,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->power_type_data = 0;
 #endif// ADAM_NO_SENSING
 		PRINT_MAC("STATE_DATA radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
+#ifdef ADAM_TEST
 		++s_sent_mac;
 		PRINT_MAC("s_sent_mac=%d\n", s_sent_mac);
 		if(1 == packet->type)
@@ -605,6 +626,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 			s_sent_mac0++;
 			s_retry0 += nodedata->NB;
 		}
+#endif//ADAM_TEST
 		//PRINT_RESULT("STATE_DATA radio_get_power=%f\n", radio_get_power(&c0));
 		/* Send data */
 		TX(&c0, packet);
@@ -898,11 +920,12 @@ void rx(call_t *c, packet_t *packet) {
 	// struct _sic_802_11_ack_header *ack_header;
 	array_t *up = get_entity_bindings_up(c);
 	int i = up->size;
-// <-RF00000000-AdamXu-2018/09/10-mac without carrier sensing.
+#ifdef ADAM_TEST
+	uint64_t delay;
+#endif//ADAM_TEST
 #ifdef ADAM_NO_SENSING
 	uint64_t timeout;
 #endif//ADAM_NO_SENSING
-// ->RF00000000-AdamXu
 	int error_id = 0;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
@@ -1049,8 +1072,30 @@ void rx(call_t *c, packet_t *packet) {
 		error_id = 3;
 		goto END;
         }
-
-		PRINT_MAC("s_received_mac=%d, s_sent_mac=%d\n", ++s_received_mac, s_sent_mac);
+#ifdef ADAM_TEST
+		delay = get_time() - data_header->mac_start;
+		s_delay_mac += delay;
+		if(0 == packet->type)
+		{
+			if(delay > s_delaym_mac0)
+			{
+				s_delaym_mac0 = delay;
+			}
+			s_delay_mac0 += delay;
+			s_received_mac0++;
+		}
+		else if(1 == packet->type)
+		{
+			if(delay > s_delaym_mac1)
+			{
+				s_delaym_mac1 = delay;
+			}
+			s_delay_mac1 += delay;
+			s_received_mac1++;
+		}
+		s_received_mac++;
+		PRINT_MAC("s_received_mac=%d, s_sent_mac=%d\n", s_received_mac, s_sent_mac);
+#endif//ADAM_TEST
 
 #ifndef ADAM_NO_SENSING
         /* Send ACK */
