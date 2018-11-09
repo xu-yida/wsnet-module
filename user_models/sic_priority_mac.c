@@ -258,7 +258,7 @@ int unsetnode(call_t *c) {
 	PRINT_RESULT("%f, %f, %f, ", s_delay_mac/s_received_mac, s_delay_mac0/s_received_mac0, s_delay_mac1/s_received_mac1);
 	PRINT_RESULT("%"PRId64", %"PRId64", ", s_delaym_mac0, s_delaym_mac1);
 	PRINT_RESULT("%d, %d, %d, ", s_sent_mac, s_sent_mac0, s_sent_mac1);
-	PRINT_RESULT("%f, %f, ", s_retry0/s_sent_mac0, s_retry1/s_sent_mac1);
+	PRINT_RESULT("%f, %f, ", ((double)s_retry0)/((double)s_sent_mac0), ((double)s_retry1)/((double)s_sent_mac1));
 	PRINT_RESULT("%f, ", battery_consumed(c));
 #endif//ADAM_TEST	
 	while ((packet = (packet_t *) das_pop(nodedata->packets)) != NULL) {
@@ -342,7 +342,8 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif// ADAM_NO_SENSING
 	uint64_t timeout;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
-	int priority, channel_state;
+	int channel_state;
+	//int priority;
 	adam_error_code_t error_id = ADAM_ERROR_NO_ERROR;
 		
 	PRINT_MAC("B: c->node=%d, nodedata->state=%d\n", c->node, nodedata->state);
@@ -411,7 +412,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		goto END;
 	}
 	data_header = (struct _sic_802_11_data_header *) (nodedata->txbuf->data + sizeof(struct _sic_802_11_header));
-	priority = nodedata->txbuf->type;
+	//priority = nodedata->txbuf->type;
 	//low channel power blocks low priority; high channel power blocks high priority
 	channel_state = adam_check_channel_busy(c);
         /* Backoff or channel busy*/
