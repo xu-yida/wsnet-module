@@ -1143,7 +1143,7 @@ void rx(call_t *c, packet_t *packet) {
 					}
 				}
 			}
-			else if{MIN_CONTENTION_WINDOW <= nodedata->window_low}
+			else if(MIN_CONTENTION_WINDOW <= nodedata->window_low)
 			{
 				// explore new window size
 				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
@@ -1262,7 +1262,7 @@ void rx(call_t *c, packet_t *packet) {
 					}
 				}
 			}
-			else if{MIN_CONTENTION_WINDOW <= nodedata->window_high}
+			else if(MIN_CONTENTION_WINDOW <= nodedata->window_high)
 			{
 				// explore new window size
 				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
