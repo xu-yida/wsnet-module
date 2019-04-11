@@ -52,8 +52,11 @@
 #endif// ADAM_SLOT_CSMA
 #define EDThresholdMin        -74
 
-//#define MAX_CONTENTION_WINDOW_HIGH	3	/* 4 slots */
-#define MAX_CONTENTION_WINDOW_LOW	3	/* 8 slots */
+#define MAX_CONTENTION_WINDOW_HIGH	5	/* 5 slots */
+#define MAX_CONTENTION_WINDOW_LOW	6	/* 6 slots */
+#define MAX_CONTENTION_WINDOW		10	/* 10 slots */
+#define MIN_CONTENTION_WINDOW		1	/* 1 slot */
+#define CONTENTION_WINDOW_STAY		100	/* 100 times for convergence */
 
 #define RTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_rts_header)) * 8 * radio_get_Tb(&c0))
 #define CTS_TIME							((sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0))
@@ -109,6 +112,16 @@ struct nodedata {
 	int allowed_high;
 	int allowed_low;
 #endif//ADAM_NO_SENSING
+#ifdef ADAM_ADAPT
+	int window_high;
+	int window_low;
+	//delay_by_window [0]: packet number
+	//delay_by_window [1]: total delay
+	double delay_by_window_high[2][10];
+	double delay_by_window_low[2][10];
+	int window_stay_high;
+	int window_stay_low;
+#endif//ADAM_TEST
 ;
 };
 
@@ -210,6 +223,14 @@ int setnode(call_t *c, void *params) {
 	nodedata->allowed_high = -1;
 	nodedata->allowed_low = -1;
 #endif//ADAM_NO_SENSING
+#ifdef ADAM_ADAPT
+	nodedata->window_low = MAX_CONTENTION_WINDOW_LOW;
+	nodedata->window_high = MAX_CONTENTION_WINDOW_HIGH;
+	memset(nodedata->delay_by_window_high, 0, sizeof(nodedata->delay_by_window_high));
+	memset(nodedata->delay_by_window_low, 0, sizeof(nodedata->delay_by_window_low));
+	nodedata->window_stay_high = 0;
+	nodedata->window_stay_low = 0;
+#endif//ADAM_ADAPT
 
     /* get params */
     das_init_traverse(params);
@@ -745,7 +766,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		{
 			nodedata->allowed_low = cts_header->node_allowed;
 			// Timeout
-			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio)))  * MIN_CONTENTION_BACKOFF_PERIOD;
+#ifdef ADAM_ADAPT
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + nodedata->window_high * MIN_CONTENTION_BACKOFF_PERIOD;
+#else
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + MAX_CONTENTION_WINDOW_HIGH * MIN_CONTENTION_BACKOFF_PERIOD;
+#endif//ADAM_ADAPT
 			cts_header->priority_type = 2;
 		}
 		// CTS for high priority RTS, begin low contention
@@ -753,7 +778,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		{
 			nodedata->allowed_high = cts_header->node_allowed;
 			// Timeout
-			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + pow(2, MAX_CONTENTION_WINDOW_LOW) * MIN_CONTENTION_BACKOFF_PERIOD;
+#ifdef ADAM_ADAPT
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + nodedata->window_low * MIN_CONTENTION_BACKOFF_PERIOD;
+#else
+			timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + MAX_CONTENTION_WINDOW_LOW * MIN_CONTENTION_BACKOFF_PERIOD;
+#endif//ADAM_ADAPT
 			cts_header->priority_type = 1;
 		}
 		// no situation fit
@@ -927,6 +956,12 @@ void rx(call_t *c, packet_t *packet) {
 #ifdef ADAM_NO_SENSING
 	uint64_t timeout;
 #endif//ADAM_NO_SENSING
+#ifdef ADAM_ADAPT
+	int flag_change_window = 1;
+	double delay_prev = 0;
+	double delay_now = 0;
+	double delay_next = 0;
+#endif//ADAM_ADAPT
 	int error_id = 0;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
 
@@ -1084,6 +1119,116 @@ void rx(call_t *c, packet_t *packet) {
 			}
 			s_delay_mac0 += delay;
 			s_received_mac0++;
+#ifdef ADAM_ADAPT
+			nodedata->delay_by_window_low[0][nodedata->window_low] += 1;
+			nodedata->delay_by_window_low[1][nodedata->window_low] += delay;
+			if(MAX_CONTENTION_WINDOW <= nodedata->window_low)
+			{
+				// explore new window size
+				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])
+				{
+					nodedata->window_low -= 1;
+				}
+				else
+				{
+					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
+					delay_prev = nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1];
+					if(delay_now <= delay_prev)
+					{
+						flag_change_window = 0;
+					}
+					else
+					{
+						nodedata->window_low -= 1;
+					}
+				}
+			}
+			else if{MIN_CONTENTION_WINDOW <= nodedata->window_low}
+			{
+				// explore new window size
+				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
+				{
+					nodedata->window_low += 1;
+				}
+				else
+				{
+					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
+					delay_next = nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1];
+					if(delay_now <= delay_next)
+					{
+						flag_change_window = 0;
+					}
+					else
+					{
+						nodedata->window_low += 1;
+					}
+				}
+			}
+			else
+			{
+				// both prev and next are null
+				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low-1] && 0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
+				{
+					nodedata->window_low -= 1;
+				}
+				// only prev is null
+				else if(0 ==  nodedata->delay_by_window_low[0][nodedata->window_low-1] && 0 != nodedata->delay_by_window_low[0][nodedata->window_low+1])
+				{
+					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
+					delay_next = nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1];
+					if(delay_now <= delay_next)
+					{
+						nodedata->window_low -= 1;
+					}
+					else
+					{
+						nodedata->window_low += 1;
+					}
+				}
+				// only next is null
+				else if(0 !=  nodedata->delay_by_window_low[0][nodedata->window_low-1] && 0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
+				{
+					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
+					delay_prev = nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1];
+					if(delay_now <= delay_next)
+					{
+						nodedata->window_low -= 1;
+					}
+					else
+					{
+						nodedata->window_low += 1;
+					}
+				}
+				// none of next or prev is null
+				else
+				{
+					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
+					delay_prev = nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1];
+					delay_next = nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1];
+					if(delay_prev < delay_now)
+					{
+						nodedata->window_low -= 1;
+					}
+					else if(delay_next < delay_now)
+					{
+						nodedata->window_low += 1;
+					}
+					else
+					{
+						flag_change_window = 0;
+					}
+				}
+			}
+			if(1 == flag_change_window)
+			{
+				nodedata->window_stay_low = 0;
+			}
+			else
+			{
+				nodedata->window_stay_low += 1;
+			}
+			PRINT_MAC("nodedata->window_stay_low=%d\n", nodedata->window_stay_low);
+#endif//ADAM_ADAPT
 		}
 		else if(1 == packet->type)
 		{
@@ -1093,6 +1238,116 @@ void rx(call_t *c, packet_t *packet) {
 			}
 			s_delay_mac1 += delay;
 			s_received_mac1++;
+#ifdef ADAM_ADAPT
+			nodedata->delay_by_window_high[0][nodedata->window_high] += 1;
+			nodedata->delay_by_window_high[1][nodedata->window_high] += delay;
+			if(MAX_CONTENTION_WINDOW <= nodedata->window_high)
+			{
+				// explore new window size
+				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])
+				{
+					nodedata->window_high -= 1;
+				}
+				else
+				{
+					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
+					delay_prev = nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1];
+					if(delay_now <= delay_prev)
+					{
+						flag_change_window = 0;
+					}
+					else
+					{
+						nodedata->window_high -= 1;
+					}
+				}
+			}
+			else if{MIN_CONTENTION_WINDOW <= nodedata->window_high}
+			{
+				// explore new window size
+				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
+				{
+					nodedata->window_high += 1;
+				}
+				else
+				{
+					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
+					delay_next = nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1];
+					if(delay_now <= delay_next)
+					{
+						flag_change_window = 0;
+					}
+					else
+					{
+						nodedata->window_high += 1;
+					}
+				}
+			}
+			else
+			{
+				// both prev and next are null
+				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high-1] && 0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
+				{
+					nodedata->window_high -= 1;
+				}
+				// only prev is null
+				else if(0 ==  nodedata->delay_by_window_high[0][nodedata->window_high-1] && 0 != nodedata->delay_by_window_high[0][nodedata->window_high+1])
+				{
+					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
+					delay_next = nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1];
+					if(delay_now <= delay_next)
+					{
+						nodedata->window_high -= 1;
+					}
+					else
+					{
+						nodedata->window_high += 1;
+					}
+				}
+				// only next is null
+				else if(0 !=  nodedata->delay_by_window_high[0][nodedata->window_high-1] && 0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
+				{
+					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
+					delay_prev = nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1];
+					if(delay_now <= delay_next)
+					{
+						nodedata->window_high -= 1;
+					}
+					else
+					{
+						nodedata->window_high += 1;
+					}
+				}
+				// none of next or prev is null
+				else
+				{
+					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
+					delay_prev = nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1];
+					delay_next = nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1];
+					if(delay_prev < delay_now)
+					{
+						nodedata->window_high -= 1;
+					}
+					else if(delay_next < delay_now)
+					{
+						nodedata->window_high += 1;
+					}
+					else
+					{
+						flag_change_window = 0;
+					}
+				}
+			}
+			if(1 == flag_change_window)
+			{
+				nodedata->window_stay_high = 0;
+			}
+			else
+			{
+				nodedata->window_stay_high += 1;
+			}
+			PRINT_MAC("nodedata->window_stay_high=%d\n", nodedata->window_stay_high);
+#endif//ADAM_ADAPT
 		}
 		s_received_mac++;
 		PRINT_MAC("s_received_mac=%d, s_sent_mac=%d\n", s_received_mac, s_sent_mac);
@@ -1221,14 +1476,22 @@ void rx(call_t *c, packet_t *packet) {
 			{
 				nodedata->power_type_data = 2;
 				// wait for low
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW)  * MIN_CONTENTION_BACKOFF_PERIOD;
+#ifdef ADAM_ADAPT
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + nodedata->window_low * MIN_CONTENTION_BACKOFF_PERIOD;
+#else
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + MAX_CONTENTION_WINDOW_LOW * MIN_CONTENTION_BACKOFF_PERIOD;
+#endif//ADAM_ADAPT
 			}
 			// low
 			else
 			{
 				nodedata->power_type_data = 1;
 				// wait for high
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio)))  * MIN_CONTENTION_BACKOFF_PERIOD;
+#ifdef ADAM_ADAPT
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + nodedata->window_high * MIN_CONTENTION_BACKOFF_PERIOD;
+#else
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + MAX_CONTENTION_WINDOW_HIGH * MIN_CONTENTION_BACKOFF_PERIOD;
+#endif//ADAM_ADAPT
 			}
 			timeout += nodedata->txbuf->size*8*radio_get_Tb(&c0);
 			nodedata->state = STATE_TIMEOUT;
@@ -1250,7 +1513,11 @@ void rx(call_t *c, packet_t *packet) {
 			{
 				packet_dealloc(packet);
 				// wait for period end
-				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT +pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio)))  * MIN_CONTENTION_BACKOFF_PERIOD + nodedata->txbuf->size*8*radio_get_Tb(&c0);
+#ifdef ADAM_ADAPT
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + nodedata->window_high  * MIN_CONTENTION_BACKOFF_PERIOD + nodedata->txbuf->size*8*radio_get_Tb(&c0);
+#else
+				timeout = CTS_TIME + macMinSIFSPeriod + RTS_TIME+ macMinSIFSPeriod + SPEED_LIGHT + MAX_CONTENTION_WINDOW_HIGH * MIN_CONTENTION_BACKOFF_PERIOD + nodedata->txbuf->size*8*radio_get_Tb(&c0);
+#endif//ADAM_ADAPT
 				nodedata->clock = get_time() + timeout;
 				scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 				error_id = 4;
@@ -1267,11 +1534,19 @@ void rx(call_t *c, packet_t *packet) {
 		//high power contention random backoff contention
 		if(2 == cts_header->priority_type)
 		{
-			timeout = ((int)(get_random_double() * (pow(2, MAX_CONTENTION_WINDOW_LOW-(int)(MAX_CONTENTION_WINDOW_LOW*(1-nodedata->priority_ratio))) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+#ifdef ADAM_ADAPT
+			timeout = ((int)(get_random_double() * (nodedata->window_high- 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+#else//ADAM_ADAPT
+			timeout = ((int)(get_random_double() * (MAX_CONTENTION_WINDOW_HIGH- 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+#endif//ADAM_ADAPT
 		}
 		else
 		{
-			timeout = ((int)(get_random_double() * (pow(2, MAX_CONTENTION_WINDOW_LOW) - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+#ifdef ADAM_ADAPT
+			timeout = ((int)(get_random_double() * (nodedata->window_low - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+#else//ADAM_ADAPT
+			timeout = ((int)(get_random_double() * (MAX_CONTENTION_WINDOW_LOW - 1))) * MIN_CONTENTION_BACKOFF_PERIOD;
+#endif//ADAM_ADAPT
 		}
 		
 		packet_dealloc(packet);
