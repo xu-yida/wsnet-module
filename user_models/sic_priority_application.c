@@ -207,7 +207,11 @@ void tx(call_t *c) {
 	// add priority here
 	if(1 > nodedata->priority_ratio)
 	{
+#ifdef ADAM_ADAPT
+		packet->type = (get_random_double()<get_random_double())?1:0;
+#else//ADAM_ADAPT
 		packet->type = (get_random_double()<nodedata->priority_ratio)?1:0;
+#endif//ADAM_ADAPT
 	}
 	else if(0 <= nodedata->priority_ratio)
 	{

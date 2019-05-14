@@ -73,6 +73,9 @@
 #define CONTENTION_END_TYPE	7
 #define CONTENTION_TYPE		8
 
+#ifdef ADAM_ADAPT
+#define RATE_QL 0.8
+#endif//ADAM_ADAPT
 /* ************************************************** */
 /* ************************************************** */
 struct nodedata {
@@ -1121,7 +1124,7 @@ void rx(call_t *c, packet_t *packet) {
 			s_received_mac0++;
 #ifdef ADAM_ADAPT
 			nodedata->delay_by_window_low[0][nodedata->window_low] += 1;
-			nodedata->delay_by_window_low[1][nodedata->window_low] += delay;
+			nodedata->delay_by_window_low[1][nodedata->window_low] = delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low];
 			if(MAX_CONTENTION_WINDOW <= nodedata->window_low)
 			{
 				// explore new window size
@@ -1240,7 +1243,7 @@ void rx(call_t *c, packet_t *packet) {
 			s_received_mac1++;
 #ifdef ADAM_ADAPT
 			nodedata->delay_by_window_high[0][nodedata->window_high] += 1;
-			nodedata->delay_by_window_high[1][nodedata->window_high] += delay;
+			nodedata->delay_by_window_high[1][nodedata->window_high] = delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high];
 			if(MAX_CONTENTION_WINDOW <= nodedata->window_high)
 			{
 				// explore new window size
