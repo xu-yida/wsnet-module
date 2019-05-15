@@ -42,6 +42,9 @@ int g_num_t_priority0 = 0;
 int g_num_t_priority1 = 0;
 #endif//ADAM_TEST
 
+#ifdef ADAM_ADAPT
+//#define INT_MAX 65535
+#endif//ADAM_ADAPT
 /* ************************************************** */
 /* ************************************************** */
 int callmeback(call_t *c, void *args);
@@ -208,7 +211,12 @@ void tx(call_t *c) {
 	if(1 > nodedata->priority_ratio)
 	{
 #ifdef ADAM_ADAPT
+#ifdef ADAM_RANDOM
+		// 20 for poisson distribution
+		packet->type = (get_random_double_distribution(20)<get_random_double_distribution(20))?1:0;
+#else//ADAM_RANDOM
 		packet->type = (get_random_double()<get_random_double())?1:0;
+#endif//ADAM_RANDOM
 #else//ADAM_ADAPT
 		packet->type = (get_random_double()<nodedata->priority_ratio)?1:0;
 #endif//ADAM_ADAPT
@@ -251,7 +259,22 @@ void rx(call_t *c, packet_t *packet) {
 	packet_dealloc(packet);
 }
 
-
+#ifdef ADAM_ADAPT
+/*
+int poissonRandom(double expectedValue) {
+	int n = 0; //counter of iteration
+	double limit; 
+	double x;  //pseudo random number
+	limit = pow(2.72, -expectedValue);
+	x = get_random_integer() / INT_MAX; 
+	while (x > limit) {
+		n++;
+		x *= get_random_integer() / INT_MAX;
+	}
+	return n;
+}
+*/
+#endif//ADAM_ADAPT
 /* ************************************************** */
 /* ************************************************** */
 application_methods_t methods = {rx};
