@@ -212,9 +212,8 @@ void tx(call_t *c) {
 	{
 #ifdef ADAM_ADAPT
 #ifdef ADAM_RANDOM
-		// 20 for poisson distribution
-		printf("[SIC APP] get_random_double_distribution(20)=%f  \n", get_random_double_distribution(20));
-		packet->type = (get_random_double_distribution(20)<get_random_double_distribution(20))?1:0;
+		//printf("[SIC APP] get_random_double_distribution(0.5)=%f  \n", get_random_double_distribution(0.5));
+		packet->type = (get_random_double_poisson(0.5)<get_random_double_poisson(0.5))?1:0;
 #else//ADAM_RANDOM
 		packet->type = (get_random_double()<get_random_double())?1:0;
 #endif//ADAM_RANDOM
