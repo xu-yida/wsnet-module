@@ -28,7 +28,7 @@
 // out: 0 first, 1 second
 #define MIN_BI(in1, in2, out) do\
 {\
-	out = (in1 <= in2)?0:1;
+	out = (in1 <= in2)?0:1;\
 }while(0);
 
 // out: 0 first, 1 second, 2 third
