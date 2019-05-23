@@ -22,6 +22,45 @@
 #define ADAM_HIGH_POWER_RATIO 2.1
 #define ADAM_HIGH_POWER_DBM_GAIN (log10(ADAM_HIGH_POWER_RATIO))
 
+/* ************************************************** */
+/* ************************************************** */
+
+// out: 0 first, 1 second
+#define MIN_BI(in1, in2, out) do\
+{\
+	out = (in1 <= in2)?0:1;
+}while(0);
+
+// out: 0 first, 1 second, 2 third
+#define MIN_TRI(in1, in2, in3, out) do\
+{\
+	if(in1 <= in2)\
+	{\
+		if(in1 <= in3)\
+		{\
+			out = 0;\
+		}\
+		else\
+		{\
+			out = 2;\
+		}\
+	}\
+	else\
+	{\
+		if(in2 <= in3)\
+		{\
+			out = 1;\
+		}\
+		else\
+		{\
+			out = 2;\
+		}\
+	}\
+}while(0);
+
+/* ************************************************** */
+/* ************************************************** */
+
 typedef enum
 {
 	ADAM_ERROR_NO_ERROR = 0,

@@ -210,16 +210,12 @@ void tx(call_t *c) {
 	// add priority here
 	if(1 > nodedata->priority_ratio)
 	{
-#ifdef ADAM_ADAPT
 #ifdef ADAM_RANDOM
 		//printf("[SIC APP] get_random_double_distribution(0.5)=%f  \n", get_random_double_distribution(0.5));
 		packet->type = (get_random_double_poisson(0.5)<get_random_double_poisson(0.5))?1:0;
 #else//ADAM_RANDOM
-		packet->type = (get_random_double()<get_random_double())?1:0;
-#endif//ADAM_RANDOM
-#else//ADAM_ADAPT
 		packet->type = (get_random_double()<nodedata->priority_ratio)?1:0;
-#endif//ADAM_ADAPT
+#endif//ADAM_RANDOM
 	}
 	else if(0 <= nodedata->priority_ratio)
 	{
