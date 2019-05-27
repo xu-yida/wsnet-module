@@ -962,13 +962,12 @@ void rx(call_t *c, packet_t *packet) {
 #endif//ADAM_NO_SENSING
 #ifdef ADAM_ADAPT
 	int flag_change_window = 1;
-	// 0: prev; 1: current; 2:next;
 	int next_q = 0;
-	// 0: prev; 1: current; 2:next;
 	int next_action = 0;
 	double q_prev = 0;
 	double q_now = 0;
 	double q_next = 0;
+	double temp[3] = {0};
 #endif//ADAM_ADAPT
 	int error_id = 0;
 	call_t c0 = {get_entity_bindings_down(c)->elts[0], c->node, c->entity};
@@ -1128,52 +1127,74 @@ void rx(call_t *c, packet_t *packet) {
 			s_delay_mac0 += delay;
 			s_received_mac0++;
 #ifdef ADAM_ADAPT
+			// not on the border
 			if(MAX_CONTENTION_WINDOW > nodedata->window_low && MIN_CONTENTION_WINDOW < nodedata->window_low)
 			{
-				// explore new window size
-				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])
+				// when prev is null, explore new window size
+				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low-1] && MIN_CONTENTION_WINDOW <= (nodedata->window_low-1))
 				{
 					nodedata->window_low -= 1;
+					flag_change_window = 1;
+				}
+				// when next is null, explore new window size
+				else if(0 == nodedata->delay_by_window_low[0][nodedata->window_low+1] && MAX_CONTENTION_WINDOW >= (nodedata->window_low+1))
+				{
+					nodedata->window_low += 1;
+					flag_change_window = 1;
 				}
 				else
 				{
-					// consider prev, whether reach the border
+					// consider prev, not reach the border
 					if(MIN_CONTENTION_WINDOW < nodedata->window_low-1)
 					{
-						MIN_TRI(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2], nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1], (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1), next_q);
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2]));
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[2] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
-						q_prev = delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-2+next_q];
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-2+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-2+next_q]);
 					}
+					// prev reach the border
 					else
 					{
-						MIN_BI(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1], (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1), next_q);
-						//decide nex q among prev, now and next window sizes
-						q_prev = delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q];
-					}					
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q between now and next window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-1+next_q]);
+					}
 					
 					// consider keep
-					MIN_TRI(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1], (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1), nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1], next_q);
+					temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+					temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+					temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+					MIN_TRI(temp[0], temp[1], temp[2], next_q);
 					//decide nex q among prev, now and next window sizes
-					q_now = delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q];
+					q_now = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-1+next_q]);
 
-					// consider next, whether reach the border
+					// consider next, not reach the border
 					if(MAX_CONTENTION_WINDOW > nodedata->window_low+1)
 					{
-						MIN_TRI((nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1), nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1], nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2], next_q);
+						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+						temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2]));
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
-						q_next = delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q];
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
 					}
+					// next reach the border
 					else
 					{
-						MIN_BI((nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1), nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1], next_q);
+						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q among prev, now and next window sizes
-						q_next = delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q];
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
 					}
 
 					MIN_TRI(q_prev, q_now, q_next, next_action);
+					// decide action
 					nodedata->window_low = nodedata->window_low - 1 + next_action;
-					nodedata->delay_by_window_low[0][nodedata->window_low] += 1;
-					nodedata->delay_by_window_low[1][nodedata->window_low] = delay + RATE_QL*nodedata->delay_by_window_low[1][nodedata->window_low];
 					if(1 == next_action)
 					{
 						flag_change_window = 0;
@@ -1182,93 +1203,116 @@ void rx(call_t *c, packet_t *packet) {
 					{
 						flag_change_window = 1;
 					}
-					//delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
-					//delay_prev = nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1];
-					//if(delay_now <= delay_prev)
-					//{
-					//	flag_change_window = 0;
-					//}
-					//else
-					//{
-					//	nodedata->window_low -= 1;
-					//}
 				}
+				nodedata->delay_by_window_low[0][nodedata->window_low] += 1;
+				nodedata->delay_by_window_low[1][nodedata->window_low] = delay + RATE_QL*nodedata->delay_by_window_low[1][nodedata->window_low];
 			}
-			else if(MIN_CONTENTION_WINDOW <= nodedata->window_low)
+			// on the min border
+			else if(MIN_CONTENTION_WINDOW == nodedata->window_low)
 			{
-				// explore new window size
-				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
+				// when next is null, explore new window size
+				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low+1] && MAX_CONTENTION_WINDOW >= (nodedata->window_low+1))
 				{
 					nodedata->window_low += 1;
+					flag_change_window = 1;
 				}
 				else
 				{
-					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
-					delay_next = nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1];
-					if(delay_now <= delay_next)
+					temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+					temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+					// consider keep
+					MIN_BI(temp[0], temp[1], next_q);
+					//decide nex q among now and next window sizes
+					q_now = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
+
+					// consider next, whether reach the border
+					if(MAX_CONTENTION_WINDOW > nodedata->window_low+1)
+					{
+						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+						temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2]));
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
+					}
+					else
+					{
+						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
+					}
+
+					MIN_BI(q_now, q_next, next_action);
+					// decide action
+					nodedata->window_low = nodedata->window_low + next_action;
+					if(0 == next_action)
 					{
 						flag_change_window = 0;
 					}
 					else
 					{
-						nodedata->window_low += 1;
+						flag_change_window = 1;
 					}
 				}
+				nodedata->delay_by_window_low[0][nodedata->window_low] += 1;
+				nodedata->delay_by_window_low[1][nodedata->window_low] = delay + RATE_QL*nodedata->delay_by_window_low[1][nodedata->window_low];
 			}
-			else
+			// on the max border
+			else if(MAX_CONTENTION_WINDOW == nodedata->window_low)
 			{
-				// both prev and next are null
-				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low-1] && 0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
+				// when prev is null, explore new window size
+				if(0 == nodedata->delay_by_window_low[0][nodedata->window_low-1] && MIN_CONTENTION_WINDOW <= (nodedata->window_low-1))
 				{
 					nodedata->window_low -= 1;
 				}
-				// only prev is null
-				else if(0 ==  nodedata->delay_by_window_low[0][nodedata->window_low-1] && 0 != nodedata->delay_by_window_low[0][nodedata->window_low+1])
-				{
-					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
-					delay_next = nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1];
-					if(delay_now <= delay_next)
-					{
-						nodedata->window_low -= 1;
-					}
-					else
-					{
-						nodedata->window_low += 1;
-					}
-				}
-				// only next is null
-				else if(0 !=  nodedata->delay_by_window_low[0][nodedata->window_low-1] && 0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])
-				{
-					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
-					delay_prev = nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1];
-					if(delay_now <= delay_next)
-					{
-						nodedata->window_low -= 1;
-					}
-					else
-					{
-						nodedata->window_low += 1;
-					}
-				}
-				// none of next or prev is null
 				else
 				{
-					delay_now = nodedata->delay_by_window_low[1][nodedata->window_low]/nodedata->delay_by_window_low[0][nodedata->window_low];
-					delay_prev = nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1];
-					delay_next = nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1];
-					if(delay_prev < delay_now)
+					// consider prev, whether reach the border
+					if(MIN_CONTENTION_WINDOW < nodedata->window_low-1)
 					{
-						nodedata->window_low -= 1;
-					}
-					else if(delay_next < delay_now)
-					{
-						nodedata->window_low += 1;
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2]));
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[2] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-2+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-2+next_q]);
 					}
 					else
+					{
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q between prev and now window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-1+next_q]);
+					}
+					
+					// consider keep
+					temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+					temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
+					MIN_BI(temp[0], temp[1], next_q);
+					//decide nex q between prev and now window sizes
+					q_now = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-1+next_q]);
+
+					MIN_BI(q_prev, q_now, next_action);
+					// decide action
+					nodedata->window_low = nodedata->window_low - 1 + next_action;
+					if(1 == next_action)
 					{
 						flag_change_window = 0;
 					}
+					else
+					{
+						flag_change_window = 1;
+					}
 				}
+				nodedata->delay_by_window_low[0][nodedata->window_low] += 1;
+				nodedata->delay_by_window_low[1][nodedata->window_low] = delay + RATE_QL*nodedata->delay_by_window_low[1][nodedata->window_low];
+			}
+			else
+			{
+				printf("Error! nodedata->window_low=%d", nodedata->window_low);
 			}
 			if(1 == flag_change_window)
 			{
@@ -1278,7 +1322,7 @@ void rx(call_t *c, packet_t *packet) {
 			{
 				nodedata->window_stay_low += 1;
 			}
-			PRINT_MAC("nodedata->window_stay_low=%d\n", nodedata->window_stay_low);
+			PRINT_MAC("nodedata->window_low=%d, nodedata->window_stay_low=%d\n", nodedata->window_low, nodedata->window_stay_low);
 #endif//ADAM_ADAPT
 		}
 		else if(1 == packet->type)
@@ -1290,104 +1334,192 @@ void rx(call_t *c, packet_t *packet) {
 			s_delay_mac1 += delay;
 			s_received_mac1++;
 #ifdef ADAM_ADAPT
-			nodedata->delay_by_window_high[0][nodedata->window_high] += 1;
-			nodedata->delay_by_window_high[1][nodedata->window_high] = delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high];
-			if(MAX_CONTENTION_WINDOW <= nodedata->window_high)
+			// not on the border
+			if(MAX_CONTENTION_WINDOW > nodedata->window_high && MIN_CONTENTION_WINDOW < nodedata->window_high)
 			{
-				// explore new window size
-				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])
+				// when prev is null, explore new window size
+				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high-1] && MIN_CONTENTION_WINDOW <= (nodedata->window_high-1))
+				{
+					nodedata->window_high -= 1;
+					flag_change_window = 1;
+				}
+				// when next is null, explore new window size
+				else if(0 == nodedata->delay_by_window_high[0][nodedata->window_high+1] && MAX_CONTENTION_WINDOW >= (nodedata->window_high+1))
+				{
+					nodedata->window_high += 1;
+					flag_change_window = 1;
+				}
+				else
+				{
+					// consider prev, not reach the border
+					if(MIN_CONTENTION_WINDOW < nodedata->window_high-1)
+					{
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-2]/nodedata->delay_by_window_high[0][nodedata->window_high-2]));
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[2] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-2+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-2+next_q]);
+					}
+					// prev reach the border
+					else
+					{
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q between now and next window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-1+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-1+next_q]);
+					}
+					
+					// consider keep
+					temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+					temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+					temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+					MIN_TRI(temp[0], temp[1], temp[2], next_q);
+					//decide nex q among prev, now and next window sizes
+					q_now = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-1+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-1+next_q]);
+
+					// consider next, not reach the border
+					if(MAX_CONTENTION_WINDOW > nodedata->window_high+1)
+					{
+						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+						temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+2]/nodedata->delay_by_window_high[0][nodedata->window_high+2]));
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
+					}
+					// next reach the border
+					else
+					{
+						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
+					}
+
+					MIN_TRI(q_prev, q_now, q_next, next_action);
+					// decide action
+					nodedata->window_high = nodedata->window_high - 1 + next_action;
+					if(1 == next_action)
+					{
+						flag_change_window = 0;
+					}
+					else
+					{
+						flag_change_window = 1;
+					}
+				}
+				nodedata->delay_by_window_high[0][nodedata->window_high] += 1;
+				nodedata->delay_by_window_high[1][nodedata->window_high] = delay + RATE_QL*nodedata->delay_by_window_high[1][nodedata->window_high];
+			}
+			// on the min border
+			else if(MIN_CONTENTION_WINDOW == nodedata->window_high)
+			{
+				// when next is null, explore new window size
+				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high+1] && MAX_CONTENTION_WINDOW >= (nodedata->window_high+1))
+				{
+					nodedata->window_high += 1;
+					flag_change_window = 1;
+				}
+				else
+				{
+					temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+					temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+					// consider keep
+					MIN_BI(temp[0], temp[1], next_q);
+					//decide nex q among now and next window sizes
+					q_now = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
+
+					// consider next, whether reach the border
+					if(MAX_CONTENTION_WINDOW > nodedata->window_high+1)
+					{
+						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+						temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+2]/nodedata->delay_by_window_high[0][nodedata->window_high+2]));
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
+					}
+					else
+					{
+						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
+					}
+
+					MIN_BI(q_now, q_next, next_action);
+					// decide action
+					nodedata->window_high = nodedata->window_high + next_action;
+					if(0 == next_action)
+					{
+						flag_change_window = 0;
+					}
+					else
+					{
+						flag_change_window = 1;
+					}
+				}
+				nodedata->delay_by_window_high[0][nodedata->window_high] += 1;
+				nodedata->delay_by_window_high[1][nodedata->window_high] = delay + RATE_QL*nodedata->delay_by_window_high[1][nodedata->window_high];
+			}
+			// on the max border
+			else if(MAX_CONTENTION_WINDOW == nodedata->window_high)
+			{
+				// when prev is null, explore new window size
+				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high-1] && MIN_CONTENTION_WINDOW <= (nodedata->window_high-1))
 				{
 					nodedata->window_high -= 1;
 				}
 				else
 				{
-					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
-					delay_prev = nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1];
-					if(delay_now <= delay_prev)
+					// consider prev, whether reach the border
+					if(MIN_CONTENTION_WINDOW < nodedata->window_high-1)
+					{
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-2]/nodedata->delay_by_window_high[0][nodedata->window_high-2]));
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[2] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						MIN_TRI(temp[0], temp[1], temp[2], next_q);
+						//decide nex q among prev, now and next window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-2+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-2+next_q]);
+					}
+					else
+					{
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+						MIN_BI(temp[0], temp[1], next_q);
+						//decide nex q between prev and now window sizes
+						q_prev = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-1+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-1+next_q]);
+					}
+					
+					// consider keep
+					temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+					temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
+					MIN_BI(temp[0], temp[1], next_q);
+					//decide nex q between prev and now window sizes
+					q_now = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-1+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-1+next_q]);
+
+					MIN_BI(q_prev, q_now, next_action);
+					// decide action
+					nodedata->window_high = nodedata->window_high - 1 + next_action;
+					if(1 == next_action)
 					{
 						flag_change_window = 0;
 					}
 					else
 					{
-						nodedata->window_high -= 1;
+						flag_change_window = 1;
 					}
 				}
-			}
-			else if(MIN_CONTENTION_WINDOW <= nodedata->window_high)
-			{
-				// explore new window size
-				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
-				{
-					nodedata->window_high += 1;
-				}
-				else
-				{
-					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
-					delay_next = nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1];
-					if(delay_now <= delay_next)
-					{
-						flag_change_window = 0;
-					}
-					else
-					{
-						nodedata->window_high += 1;
-					}
-				}
+				nodedata->delay_by_window_high[0][nodedata->window_high] += 1;
+				nodedata->delay_by_window_high[1][nodedata->window_high] = delay + RATE_QL*nodedata->delay_by_window_high[1][nodedata->window_high];
 			}
 			else
 			{
-				// both prev and next are null
-				if(0 == nodedata->delay_by_window_high[0][nodedata->window_high-1] && 0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
-				{
-					nodedata->window_high -= 1;
-				}
-				// only prev is null
-				else if(0 ==  nodedata->delay_by_window_high[0][nodedata->window_high-1] && 0 != nodedata->delay_by_window_high[0][nodedata->window_high+1])
-				{
-					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
-					delay_next = nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1];
-					if(delay_now <= delay_next)
-					{
-						nodedata->window_high -= 1;
-					}
-					else
-					{
-						nodedata->window_high += 1;
-					}
-				}
-				// only next is null
-				else if(0 !=  nodedata->delay_by_window_high[0][nodedata->window_high-1] && 0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])
-				{
-					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
-					delay_prev = nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1];
-					if(delay_now <= delay_next)
-					{
-						nodedata->window_high -= 1;
-					}
-					else
-					{
-						nodedata->window_high += 1;
-					}
-				}
-				// none of next or prev is null
-				else
-				{
-					delay_now = nodedata->delay_by_window_high[1][nodedata->window_high]/nodedata->delay_by_window_high[0][nodedata->window_high];
-					delay_prev = nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1];
-					delay_next = nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1];
-					if(delay_prev < delay_now)
-					{
-						nodedata->window_high -= 1;
-					}
-					else if(delay_next < delay_now)
-					{
-						nodedata->window_high += 1;
-					}
-					else
-					{
-						flag_change_window = 0;
-					}
-				}
+				printf("Error! nodedata->window_high=%d", nodedata->window_high);
 			}
 			if(1 == flag_change_window)
 			{
