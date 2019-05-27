@@ -1147,8 +1147,8 @@ void rx(call_t *c, packet_t *packet) {
 					// consider prev, not reach the border
 					if(MIN_CONTENTION_WINDOW < nodedata->window_low-1)
 					{
-						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2]));
-						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-2])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2]);
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]);
 						temp[2] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
@@ -1157,7 +1157,7 @@ void rx(call_t *c, packet_t *packet) {
 					// prev reach the border
 					else
 					{
-						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]);
 						temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q between now and next window sizes
@@ -1165,9 +1165,9 @@ void rx(call_t *c, packet_t *packet) {
 					}
 					
 					// consider keep
-					temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+					temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]);
 					temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
-					temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+					temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]);
 					MIN_TRI(temp[0], temp[1], temp[2], next_q);
 					//decide nex q among prev, now and next window sizes
 					q_now = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low-1+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low-1+next_q]);
@@ -1176,8 +1176,8 @@ void rx(call_t *c, packet_t *packet) {
 					if(MAX_CONTENTION_WINDOW > nodedata->window_low+1)
 					{
 						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
-						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
-						temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2]));
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]);
+						temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+2])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2]);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
@@ -1186,7 +1186,7 @@ void rx(call_t *c, packet_t *packet) {
 					else
 					{
 						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
-						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
@@ -1219,7 +1219,7 @@ void rx(call_t *c, packet_t *packet) {
 				else
 				{
 					temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
-					temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+					temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]);
 					// consider keep
 					MIN_BI(temp[0], temp[1], next_q);
 					//decide nex q among now and next window sizes
@@ -1229,8 +1229,8 @@ void rx(call_t *c, packet_t *packet) {
 					if(MAX_CONTENTION_WINDOW > nodedata->window_low+1)
 					{
 						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
-						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
-						temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2]));
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]);
+						temp[2] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+2])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+2]/nodedata->delay_by_window_low[0][nodedata->window_low+2]);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
@@ -1238,7 +1238,7 @@ void rx(call_t *c, packet_t *packet) {
 					else
 					{
 						temp[0] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
-						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]));
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low+1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low+1]/nodedata->delay_by_window_low[0][nodedata->window_low+1]);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_low[1][nodedata->window_low+next_q])/(1 + nodedata->delay_by_window_low[0][nodedata->window_low+next_q]);
@@ -1272,8 +1272,8 @@ void rx(call_t *c, packet_t *packet) {
 					// consider prev, whether reach the border
 					if(MIN_CONTENTION_WINDOW < nodedata->window_low-1)
 					{
-						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-2])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2]));
-						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-2])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-2]/nodedata->delay_by_window_low[0][nodedata->window_low-2]);
+						temp[1] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]);
 						temp[2] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
@@ -1281,7 +1281,7 @@ void rx(call_t *c, packet_t *packet) {
 					}
 					else
 					{
-						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+						temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]);
 						temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q between prev and now window sizes
@@ -1289,7 +1289,7 @@ void rx(call_t *c, packet_t *packet) {
 					}
 					
 					// consider keep
-					temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0:(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]));
+					temp[0] = (0 == nodedata->delay_by_window_low[0][nodedata->window_low-1])?(0):(nodedata->delay_by_window_low[1][nodedata->window_low-1]/nodedata->delay_by_window_low[0][nodedata->window_low-1]);
 					temp[1] = (nodedata->delay_by_window_low[1][nodedata->window_low]+delay)/(nodedata->delay_by_window_low[0][nodedata->window_low]+1);
 					MIN_BI(temp[0], temp[1], next_q);
 					//decide nex q between prev and now window sizes
@@ -1312,7 +1312,8 @@ void rx(call_t *c, packet_t *packet) {
 			}
 			else
 			{
-				printf("Error! nodedata->window_low=%d", nodedata->window_low);
+				error_id = 6;
+				goto END;
 			}
 			if(1 == flag_change_window)
 			{
@@ -1354,8 +1355,8 @@ void rx(call_t *c, packet_t *packet) {
 					// consider prev, not reach the border
 					if(MIN_CONTENTION_WINDOW < nodedata->window_high-1)
 					{
-						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-2]/nodedata->delay_by_window_high[0][nodedata->window_high-2]));
-						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-2])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-2]/nodedata->delay_by_window_high[0][nodedata->window_high-2]);
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]);
 						temp[2] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
@@ -1364,7 +1365,7 @@ void rx(call_t *c, packet_t *packet) {
 					// prev reach the border
 					else
 					{
-						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]);
 						temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q between now and next window sizes
@@ -1372,9 +1373,9 @@ void rx(call_t *c, packet_t *packet) {
 					}
 					
 					// consider keep
-					temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+					temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]);
 					temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
-					temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+					temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]);
 					MIN_TRI(temp[0], temp[1], temp[2], next_q);
 					//decide nex q among prev, now and next window sizes
 					q_now = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high-1+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high-1+next_q]);
@@ -1383,8 +1384,8 @@ void rx(call_t *c, packet_t *packet) {
 					if(MAX_CONTENTION_WINDOW > nodedata->window_high+1)
 					{
 						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
-						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
-						temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+2]/nodedata->delay_by_window_high[0][nodedata->window_high+2]));
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]);
+						temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+2])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+2]/nodedata->delay_by_window_high[0][nodedata->window_high+2]);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
@@ -1393,7 +1394,7 @@ void rx(call_t *c, packet_t *packet) {
 					else
 					{
 						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
-						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
@@ -1426,7 +1427,7 @@ void rx(call_t *c, packet_t *packet) {
 				else
 				{
 					temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
-					temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+					temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]);
 					// consider keep
 					MIN_BI(temp[0], temp[1], next_q);
 					//decide nex q among now and next window sizes
@@ -1436,8 +1437,8 @@ void rx(call_t *c, packet_t *packet) {
 					if(MAX_CONTENTION_WINDOW > nodedata->window_high+1)
 					{
 						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
-						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
-						temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+2]/nodedata->delay_by_window_high[0][nodedata->window_high+2]));
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]);
+						temp[2] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+2])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+2]/nodedata->delay_by_window_high[0][nodedata->window_high+2]);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
@@ -1445,7 +1446,7 @@ void rx(call_t *c, packet_t *packet) {
 					else
 					{
 						temp[0] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
-						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]));
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high+1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high+1]/nodedata->delay_by_window_high[0][nodedata->window_high+1]);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q among prev, now and next window sizes
 						q_next = (delay + RATE_QL * nodedata->delay_by_window_high[1][nodedata->window_high+next_q])/(1 + nodedata->delay_by_window_high[0][nodedata->window_high+next_q]);
@@ -1479,8 +1480,8 @@ void rx(call_t *c, packet_t *packet) {
 					// consider prev, whether reach the border
 					if(MIN_CONTENTION_WINDOW < nodedata->window_high-1)
 					{
-						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-2])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-2]/nodedata->delay_by_window_high[0][nodedata->window_high-2]));
-						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-2])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-2]/nodedata->delay_by_window_high[0][nodedata->window_high-2]);
+						temp[1] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]);
 						temp[2] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
 						MIN_TRI(temp[0], temp[1], temp[2], next_q);
 						//decide nex q among prev, now and next window sizes
@@ -1488,7 +1489,7 @@ void rx(call_t *c, packet_t *packet) {
 					}
 					else
 					{
-						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+						temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]);
 						temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
 						MIN_BI(temp[0], temp[1], next_q);
 						//decide nex q between prev and now window sizes
@@ -1496,7 +1497,7 @@ void rx(call_t *c, packet_t *packet) {
 					}
 					
 					// consider keep
-					temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0:(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]));
+					temp[0] = (0 == nodedata->delay_by_window_high[0][nodedata->window_high-1])?(0):(nodedata->delay_by_window_high[1][nodedata->window_high-1]/nodedata->delay_by_window_high[0][nodedata->window_high-1]);
 					temp[1] = (nodedata->delay_by_window_high[1][nodedata->window_high]+delay)/(nodedata->delay_by_window_high[0][nodedata->window_high]+1);
 					MIN_BI(temp[0], temp[1], next_q);
 					//decide nex q between prev and now window sizes
@@ -1519,7 +1520,8 @@ void rx(call_t *c, packet_t *packet) {
 			}
 			else
 			{
-				printf("Error! nodedata->window_high=%d", nodedata->window_high);
+				error_id = 6;
+				goto END;
 			}
 			if(1 == flag_change_window)
 			{
