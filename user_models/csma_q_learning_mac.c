@@ -138,7 +138,7 @@ model_t model =  {
     {NULL, 0}
 };
 
-double s_rcw = {1, 0.871, 0.714, 0.571, 0.429, 0.286, 0.143};
+double s_rcw[NUM_STATE] = {1, 0.871, 0.714, 0.571, 0.429, 0.286, 0.143};
 /* ************************************************** */
 /* ************************************************** */
 int init(call_t *c, void *params) {
@@ -284,7 +284,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
     //  struct _dcf_802_11_ack_header *ack_header;
     uint64_t timeout;
 	// <-RF00000000-AdamXu-2019/05/28-qlearning.
-	int state_order = nodedata->BE - nodedata->MinBE;
+	int state_order = nodedata->BE - macMinBE;
 	int next_q = 0;
 	int next_action = 0;
 	int temp_q[3] = {0};
@@ -653,7 +653,7 @@ void rx(call_t *c, packet_t *packet) {
     array_t *up = get_entity_bindings_up(c);
     int i = up->size;
 	// <-RF00000000-AdamXu-2019/05/28-qlearning.
-	int state_order = nodedata->BE - nodedata->MinBE;
+	int state_order = nodedata->BE - macMinBE;
 	int next_q = 0;
 	int next_action = 0;
 	int temp_q[3] = {0};
