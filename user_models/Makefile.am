@@ -1,4 +1,4 @@
-lib_LTLIBRARIES = libapplication_sic.la libradio_sic.la libmac_sic.la librouting_sic.la libmobility_sway.la
+lib_LTLIBRARIES = libapplication_sic.la libradio_sic.la libmac_sic.la librouting_sic.la libmobility_sway.la libmac_qlcsma.la
 
 libapplication_sic_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
 
@@ -29,3 +29,9 @@ libmobility_sway_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
 libmobility_sway_la_SOURCES = sway.c
 
 libmobility_sway_la_LDFLAGS = -module
+
+libmac_qlcsma_la_CFLAGS = $(CFLAGS) $(GLIB_FLAGS) -Wall
+
+libmac_qlcsma_la_SOURCES = csma_q_learning_mac.c
+
+libmac_qlcsma_la_LDFLAGS = -module

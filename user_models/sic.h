@@ -58,6 +58,38 @@
 	}\
 }while(0);
 
+// out: 0 first, 1 second
+#define MAX_BI(in1, in2, out) do\
+{\
+	out = (in1 >= in2)?0:1;\
+}while(0);
+
+// out: 0 first, 1 second, 2 third
+#define MAX_TRI(in1, in2, in3, out) do\
+{\
+	if(in1 >= in2)\
+	{\
+		if(in1 >= in3)\
+		{\
+			out = 0;\
+		}\
+		else\
+		{\
+			out = 2;\
+		}\
+	}\
+	else\
+	{\
+		if(in2 >= in3)\
+		{\
+			out = 1;\
+		}\
+		else\
+		{\
+			out = 2;\
+		}\
+	}\
+}while(0);
 /* ************************************************** */
 /* ************************************************** */
 
