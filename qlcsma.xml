@@ -31,15 +31,14 @@
 
 <!-- == MAC ===================================================== -->
 
-<entity name="mac" library="mac_qlsic" >
+<entity name="mac" library="mac_qlcsma" >
 
 </entity>
 
 
 <!-- == ROUTING ===================================================== -->
 
-<entity name="routing" library="routing_sic" >
-
+<entity name="routing" library="routing_greedy" >
 </entity>
 
 <!-- == APPLICATION ===================================================== -->
