@@ -851,12 +851,13 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// recover power
 		radio_set_power(&c0, 1);
 		
-		/* Send Data request */
-		TX(&c0, packet); 
-
 		/* Wait for timeout or DATA */
 		nodedata->state = STATE_CTS_TIMEOUT;
 		nodedata->clock = get_time() + timeout;
+		
+		/* Send Data request */
+		TX(&c0, packet); 
+
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 		goto END;
 
@@ -997,12 +998,8 @@ void rx(call_t *c, packet_t *packet) {
         }
         
 #if 1//ndef ADAM_NO_SENSING
-#ifdef ADAM_SIC_MULHOP
-        if (nodedata->state != STATE_IDLE)
-#else//ADAM_SIC_MULHOP
         if ((nodedata->state != STATE_IDLE) 
             && (nodedata->state != STATE_BACKOFF))
-#endif//ADAM_SIC_MULHOP
 #else// ADAM_NO_SENSING
         if ((STATE_CONTENTION_WAITING_HIGH !=  nodedata->state) && (STATE_CONTENTION_WAITING_LOW !=  nodedata->state))
 #endif//ADAM_NO_SENSING
