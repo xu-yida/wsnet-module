@@ -851,14 +851,14 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		// recover power
 		radio_set_power(&c0, 1);
 		
+		/* Send Data request */
+		TX(&c0, packet); 
+		
 		/* Wait for timeout or DATA */
 		nodedata->state = STATE_CTS_TIMEOUT;
 		nodedata->clock = get_time() + timeout;
-		
-		/* Send Data request */
-		TX(&c0, packet); 
-
 		scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
+
 		goto END;
 
 	case STATE_CONTENTION:
