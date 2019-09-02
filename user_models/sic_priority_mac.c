@@ -1765,7 +1765,7 @@ void rx(call_t *c, packet_t *packet) {
 		}
 // <-RF00000000-AdamXu-2019/08/30-if a receiver receives an EOC during contention period, it ends its current contention.
 #ifdef ADAM_SIC_MULHOP
-		if(STATE_CONTENTION_WAITING_DATA != nodedata->state || header->src != nodedata->dst)
+		if(STATE_CONTENTION_WAITING_DATA == nodedata->state || header->src != nodedata->dst)
 #else//ADAM_SIC_MULHOP
 		if(header->src != nodedata->dst)
 #endif//ADAM_SIC_MULHOP
