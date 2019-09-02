@@ -997,8 +997,12 @@ void rx(call_t *c, packet_t *packet) {
         }
         
 #if 1//ndef ADAM_NO_SENSING
+#ifdef ADAM_SIC_MULHOP
+        if (nodedata->state != STATE_IDLE)
+#else//ADAM_SIC_MULHOP
         if ((nodedata->state != STATE_IDLE) 
             && (nodedata->state != STATE_BACKOFF))
+#endif//ADAM_SIC_MULHOP
 #else// ADAM_NO_SENSING
         if ((STATE_CONTENTION_WAITING_HIGH !=  nodedata->state) && (STATE_CONTENTION_WAITING_LOW !=  nodedata->state))
 #endif//ADAM_NO_SENSING
@@ -1744,7 +1748,11 @@ void rx(call_t *c, packet_t *packet) {
 	case CONTENTION_END_TYPE:
 	        /* Receive CTS */
 	        cts_header = (struct _sic_802_11_cts_header *) (packet->data + sizeof(struct _sic_802_11_header));
+#ifdef ADAM_SIC_MULHOP
+		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state) && (STATE_CONTENTION_WAITING_DATA != nodedata->state))
+#else//ADAM_SIC_MULHOP
 		if ((STATE_IDLE != nodedata->state) && (STATE_TIMEOUT!= nodedata->state) && (STATE_BACKOFF != nodedata->state))
+#endif//ADAM_SIC_MULHOP
 		{
 			/* If not expecting request, do nothing */
 			packet_dealloc(packet);
@@ -1758,9 +1766,18 @@ void rx(call_t *c, packet_t *packet) {
 			error_id = 3;
 			goto END;
 		}
+// <-RF00000000-AdamXu-2019/08/30-if a receiver receives an EOC during contention period, it ends its current contention.
+#ifdef ADAM_SIC_MULHOP
+		if(STATE_CONTENTION_WAITING_DATA != nodedata->state || header->src != nodedata->dst)
+#else//ADAM_SIC_MULHOP
 		if(header->src != nodedata->dst)
+#endif//ADAM_SIC_MULHOP
+// ->RF00000000-AdamXu
 		{
-			/* If not request from destination, do nothing */
+			/* If not request from destination, end current state */
+			nodedata->state = nodedata->state_pending;
+			nodedata->clock = get_time() + macMinSIFSPeriod;
+			scheduler_add_callback(nodedata->clock, c, dcf_802_11_state_machine, NULL);
 			packet_dealloc(packet);
 			error_id = 4;
 			goto END;

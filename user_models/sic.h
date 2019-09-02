@@ -15,6 +15,7 @@
 /* ************************************************** */
 /* ************************************************** */
 #define ADAM_NO_SENSING
+#define ADAM_SIC_MULHOP
 //#define ADAM_PRIORITY_TEST
 #define ADAM_SLOT_CSMA
 #define ADAM_ADAPT
