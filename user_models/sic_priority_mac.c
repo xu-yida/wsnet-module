@@ -217,7 +217,12 @@ int setnode(call_t *c, void *params) {
 	nodedata->packets = das_create();
 	nodedata->txbuf = NULL;
 //#ifdef ADAM_PRIORITY_TEST
+#ifdef ADAM_RANDOM_POS
+	nodedata->base_power_tx = radio_get_power(c);
+	PRINT_MAC("setnode nodedata->base_power_tx=%f\n", nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 	nodedata->base_power_tx = 0;
+#endif//ADAM_RANDOM_POS
 //#endif//ADAM_PRIORITY_TEST
 #ifdef ADAM_NO_SENSING
 	nodedata->priority_ratio = ADAM_HIGH_PRIOTITY_RATIO;
@@ -391,6 +396,7 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(0 == nodedata->base_power_tx)
 		{
 			nodedata->base_power_tx = radio_get_power(&c0);
+			PRINT_MAC("dcf_802_11_state_machine nodedata->base_power_tx=%f\n", nodedata->base_power_tx);
 		}
 		    /* Next packet to send */
 		if (nodedata->txbuf == NULL) {
@@ -515,7 +521,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 	}
 #endif//ADAM_NO_SENSING
 	// recover power
+#ifdef ADAM_RANDOM_POS
+	radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 	radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 	/* Send RTS */
 	TX(&c0, packet); 
         
@@ -579,7 +589,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout = (sizeof(struct _sic_802_11_header) + sizeof(struct _sic_802_11_cts_header)) * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod + nodedata->size * 8 * radio_get_Tb(&c0) + SPEED_LIGHT;
 
 		// recover power
+#ifdef ADAM_RANDOM_POS
+		radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 		radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 
 		/* Send CTS */
 		TX(&c0, packet); 
@@ -626,13 +640,20 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		if(1 == packet->type && 1 == adam_check_channel_busy(c))
 #endif//ADAM_NO_SENSING
 		{
-			//radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+#ifdef ADAM_RANDOM_POS
+			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 			radio_set_power(&c0, 0-ADAM_HIGH_POWER_RATIO);
+#endif//ADAM_RANDOM_POS
 		}
 		else
 		{
 			// recover power
+#ifdef ADAM_RANDOM_POS
+			radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 			radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 		}
 
 #ifdef ADAM_NO_SENSING
@@ -687,12 +708,20 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 #endif//ADAM_NO_SENSING
 // ->RF00000000-AdamXu
 		{
+#ifdef ADAM_RANDOM_POS
+			radio_set_power(&c0, ADAM_HIGH_POWER_DBM_GAIN+nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 			radio_set_power(&c0, 0-ADAM_HIGH_POWER_RATIO);
+#endif//ADAM_RANDOM_POS
 		}
 		else
 		{
 			// recover power
+#ifdef ADAM_RANDOM_POS
+			radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 			radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 		}
 		
 		//PRINT_MAC("STATE_BROADCAST radio_get_power=%f, packet->id=%d\n", radio_get_power(&c0), packet->id);
@@ -718,7 +747,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		timeout =  packet->size * 8 * radio_get_Tb(&c0) + macMinSIFSPeriod;
 
 		// recover power
+#ifdef ADAM_RANDOM_POS
+		radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 		radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 
 		/* Send ack */
 		TX(&c0, packet);
@@ -802,7 +835,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->dst = -1;
 		
 		// recover power
+#ifdef ADAM_RANDOM_POS
+		radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 		radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 		
 		/* Send CTS */
 		TX(&c0, packet); 
@@ -849,7 +886,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->sink_state = 0;
 
 		// recover power
+#ifdef ADAM_RANDOM_POS
+		radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 		radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 		
 		/* Send Data request */
 		TX(&c0, packet); 
@@ -893,7 +934,11 @@ int dcf_802_11_state_machine(call_t *c, void *args) {
 		nodedata->source_state = 0;
 
 		// recover power
+#ifdef ADAM_RANDOM_POS
+		radio_set_power(&c0, nodedata->base_power_tx);
+#else//ADAM_RANDOM_POS
 		radio_set_power(&c0, 1);
+#endif//ADAM_RANDOM_POS
 		
 		/* Send Contention */
 		TX(&c0, packet); 

@@ -11,16 +11,23 @@
 #define MIN_SIC_ITERATION 2
 #define DEFAULT_SIC_THRESHOLD 1
 
+/* ************************************************** */
+/* 					Global Variants					  */
+/* ************************************************** */
+#define ADAM_SINK_CART_X 100
+#define ADAM_SINK_CART_Y 100
+#define ADAM_HIGH_PRIOTITY_RATIO 0.2
+#define ADAM_HIGH_POWER_RATIO 2.1
 
 /* ************************************************** */
+/* 						Switches					  	  */
 /* ************************************************** */
 #define ADAM_NO_SENSING
 #define ADAM_SIC_MULHOP
+#define ADAM_RANDOM_POS
 //#define ADAM_PRIORITY_TEST
 #define ADAM_SLOT_CSMA
 #define ADAM_ADAPT
-#define ADAM_HIGH_PRIOTITY_RATIO 0.2
-#define ADAM_HIGH_POWER_RATIO 2.1
 #define ADAM_HIGH_POWER_DBM_GAIN (log10(ADAM_HIGH_POWER_RATIO))
 
 /* ************************************************** */
