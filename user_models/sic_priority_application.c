@@ -236,6 +236,7 @@ void tx(call_t *c) {
 		g_num_t_priority1++;
 	}
 	g_num_t++;
+	PRINT_APPLICATION("%d, %d, %d\n", g_num_t, g_num_t_priority0, g_num_t_priority1);
 #endif//ADAM_TEST
 	if (SET_HEADER(&c0, packet, &destination) == -1) {
 		packet_dealloc(packet);
