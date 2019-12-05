@@ -136,7 +136,7 @@ int unsetnode(call_t *c) {
     struct _sic_private *nodedata = get_node_private_data(c);
 	
 #ifdef ADAM_TEST
-	PRINT_APPLICATION("%d, %d, %d\n", g_num_t, g_num_t_priority0, g_num_t_priority1);
+	//PRINT_APPLICATION("%d, %d, %d\n", g_num_t, g_num_t_priority0, g_num_t_priority1);
 	//PRINT_RESULT("%d packets transmitted\n", g_num_t);
 	//PRINT_RESULT("%d prioriy0 packets transmitted, %d prioriy1 packets transmitted\n", g_num_t_priority0, g_num_t_priority1);
 	//if(0 < battery_remaining(c))
@@ -237,7 +237,7 @@ void tx(call_t *c) {
 		g_num_t_priority1++;
 	}
 	g_num_t++;
-	PRINT_APPLICATION("%d, %d, %d\n", g_num_t, g_num_t_priority0, g_num_t_priority1);
+	//PRINT_APPLICATION("%d, %d, %d\n", g_num_t, g_num_t_priority0, g_num_t_priority1);
 #endif//ADAM_TEST
 	if (SET_HEADER(&c0, packet, &destination) == -1) {
 		packet_dealloc(packet);
