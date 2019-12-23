@@ -3,7 +3,7 @@
 
 
 <!-- == Worldsens ===================================================== -->
-<simulation nodes="8" duration="3000s" x="200" y="100" z="0"/>
+<simulation nodes="8" duration="3000s" x="200" y="200" z="0"/>
 
 
 <!-- == Entities ====================================================== -->
@@ -70,7 +70,7 @@
 
 <!-- == Environment ===================================================== -->
 <environment>
-<propagation entity="free-space" range="11"/>
+<propagation entity="free-space" range="100"/>
 <interferences entity="interf"/>
 <modulation entity="none"/>
 </environment>
@@ -147,50 +147,66 @@
 </node>
 -->
 <!-- == Multi-Hop Configuration === -->
-<!--
+<!-- == 0 is the sink node === -->
 <node id="0" as="sensor">
-  <for entity="mobility" x="10" y="0" z="0"  />
-  <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
+  <for entity="mobility" x="0" y="100" z="0"  />
+  <for entity="app" period="300000000" start='5000s' destination="0" destination-x="100" destination-y="100" destination-z="0" priority_ratio="0.8"/>
 </node>
 
 <node id="1" as="sensor">
-  <for entity="mobility" x="0" y="10" z="0"  />
-  <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
-</node>
-
-<node id="3" as="sensor">
-  <for entity="mobility" x="20" y="10" z="0"  />
-  <for entity="app" period="300000000" destination="2" destination-x="10" destination-y="10" destination-z="0" priority_ratio="0.8"/>  
+  <for entity="mobility" x="60" y="0" z="0"  />
+  <for entity="app" period="300000000" destination="0" destination-x="0" destination-y="100" destination-z="0" priority_ratio="0.8"/>
 </node>
 
 <node id="2" as="sensor">
-  <for entity="mobility" x="10" y="10" z="0"  />
-  <for entity="app" period="300000000" start='5000s' destination="1" destination-x="10" destination-y="0" destination-z="0" priority_ratio="0.8"/>  
+  <for entity="mobility" x="60" y="40" z="0"  />
+  <for entity="app" period="300000000" destination="0" destination-x="0" destination-y="100" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
+<node id="3" as="sensor">
+  <for entity="mobility" x="60" y="120" z="0"  />
+  <for entity="app" period="300000000" destination="0" destination-x="0" destination-y="100" destination-z="0" priority_ratio="0.8"/>
 </node>
 
 <node id="4" as="sensor">
-  <for entity="mobility" x="0" y="20" z="0"  />
-  <for entity="app" period="300000000" destination="5" destination-x="10" destination-y="20" destination-z="0" priority_ratio="0.8"/>  
-</node>
-
-<node id="6" as="sensor">
-  <for entity="mobility" x="20" y="20" z="0"  />
-  <for entity="app" period="300000000" destination="5" destination-x="10" destination-y="20" destination-z="0" priority_ratio="0.8"/>  
-</node>
-
-<node id="7" as="sensor">
-  <for entity="mobility" x="10" y="30" z="0"  />
-  <for entity="app" period="300000000" destination="5" destination-x="10" destination-y="20" destination-z="0" priority_ratio="0.8"/>  
+  <for entity="mobility" x="60" y="160" z="0"  />
+  <for entity="app" period="300000000" destination="0" destination-x="0" destination-y="100" destination-z="0" priority_ratio="0.8"/>  
 </node>
 
 <node id="5" as="sensor">
-  <for entity="mobility" x="10" y="20" z="0"  />
-  <for entity="app" period="300000000" start='5000s' destination="1" destination-x="10" destination-y="0" destination-z="0" priority_ratio="0.8"/>  
+  <for entity="mobility" x="60" y="200" z="0"  />
+  <for entity="app" period="300000000" destination="0" destination-x="0" destination-y="100" destination-z="0" priority_ratio="0.8"/>  
 </node>
--->
+
+<node id="6" as="sensor">
+  <for entity="mobility" x="120" y="0" z="0"  />
+  <for entity="app" period="300000000" destination="1" destination-x="60" destination-y="0" destination-z="0" priority_ratio="0.8"/>
+</node>
+
+<node id="7" as="sensor">
+  <for entity="mobility" x="120" y="160" z="0"  />
+  <for entity="app" period="300000000" destination="5" destination-x="60" destination-y="200" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
+<node id="8" as="sensor">
+  <for entity="mobility" x="120" y="200" z="0"  />
+  <for entity="app" period="300000000" destination="5" destination-x="60" destination-y="200" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
+<node id="9" as="sensor">
+  <for entity="mobility" x="180" y="160" z="0"  />
+  <for entity="app" period="300000000" destination="7" destination-x="120" destination-y="160" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
+<node id="10" as="sensor">
+  <for entity="mobility" x="120" y="160" z="0"  />
+  <for entity="app" period="300000000" destination="8" destination-x="120" destination-y="200" destination-z="0" priority_ratio="0.8"/>  
+</node>
+
 
 <!-- == twenty-nodes Configuration === -->
 <!-- == 0 is the sink node === -->
+<!--
 <node id="0" as="sensor">
   <for entity="mobility" x="100" y="100" z="0"  />
   <for entity="app" period="300000000" start='5000s' destination="0" destination-x="100" destination-y="100" destination-z="0" priority_ratio="0.8"/>
@@ -316,5 +332,5 @@
   <for entity="app" period="300000000" destination="0" destination-x="100" destination-y="100" destination-z="0" priority_ratio="0.8"/>
     <for entity="radio" sensibility="-92" T_s="727" dBm="18.481" channel="0" modulation="none"/>
 </node>
-
+-->
 </worldsens>
